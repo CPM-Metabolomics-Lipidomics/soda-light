@@ -245,16 +245,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
 
         shiny::fluidRow(
-          # Data upload
-          shiny::column(
-            width = 6,
-            shiny::fileInput(
-              inputId = ns("file_meta"),
-              label = NULL,
-              multiple = F,
-              accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-              width = "100%")
-          ),
           # Table select
           shiny::column(
             width = 3,
@@ -267,14 +257,14 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             )
           ),
           # Download metadata button
-          shiny::column(
-            width = 3,
-            shiny::downloadButton(
-              outputId = ns("download_metatable"),
-              label = "Download",
-              style = "width:100%;"
-            )
-          )
+          # shiny::column(
+          #   width = 3,
+          #   shiny::downloadButton(
+          #     outputId = ns("download_metatable"),
+          #     label = "Download",
+          #     style = "width:100%;"
+          #   )
+          # )
         ),
 
         # Table preview box
@@ -799,16 +789,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
 
         shiny::fluidRow(
-          # Data upload
-          shiny::column(
-            width = 6,
-            shiny::fileInput(
-              inputId = ns("file_data"),
-              label = NULL,
-              multiple = F,
-              accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-              width = "100%")
-          ),
           # Table select
           shiny::column(
             width = 3,
@@ -821,14 +801,14 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             )
           ),
           # Download button
-          shiny::column(
-            width = 3,
-            shiny::downloadButton(
-              outputId = ns("download_datatable"),
-              label = "Download",
-              style = "width:100%;"
-            )
-          )
+          # shiny::column(
+          #   width = 3,
+          #   shiny::downloadButton(
+          #     outputId = ns("download_datatable"),
+          #     label = "Download",
+          #     style = "width:100%;"
+          #   )
+          # )
         ),
         # Table preview box
         bs4Dash::box(
