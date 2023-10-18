@@ -245,16 +245,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
 
         shiny::fluidRow(
-          # Data upload
-          shiny::column(
-            width = 6,
-            shiny::fileInput(
-              inputId = ns("file_meta"),
-              label = NULL,
-              multiple = F,
-              accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-              width = "100%")
-          ),
           # Table select
           shiny::column(
             width = 3,
@@ -267,14 +257,14 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             )
           ),
           # Download metadata button
-          shiny::column(
-            width = 3,
-            shiny::downloadButton(
-              outputId = ns("download_metatable"),
-              label = "Download",
-              style = "width:100%;"
-            )
-          )
+          # shiny::column(
+          #   width = 3,
+          #   shiny::downloadButton(
+          #     outputId = ns("download_metatable"),
+          #     label = "Download",
+          #     style = "width:100%;"
+          #   )
+          # )
         ),
 
         # Table preview box
@@ -478,8 +468,13 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   #------------------------------------------------- Metadata upload server ----
 
   # Upload metadata
-  session$userData[[id]]$upload_meta = shiny::observeEvent(input$file_meta, {
-    file_path = input$file_meta$datapath
+  # session$userData[[id]]$upload_meta = shiny::observeEvent(input$file_meta, {
+  session$userData[[id]]$upload_meta = shiny::observe({
+    shiny::req(r6$meta_file,
+               input$table_box_meta$collapsed,
+               input$summary_box_meta$collapsed)
+
+    file_path = file.path("data", r6$meta_file) #input$file_meta$datapath
     data_table = soda_read_table(file_path = file_path)
 
     if (ncol(data_table) > 70) {
@@ -535,9 +530,11 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   # Get ID
   session$userData[[id]]$id_select_meta = shiny::observeEvent(input$select_id_meta, {
-    shiny::req(r6$tables$imp_meta)
+    shiny::req(r6$tables$imp_meta,
+               input$select_id_meta)
     if (r6$preloaded_data) {return()}
     print_tm(m, 'Setting ID column')
+
     if (length(r6$tables$imp_meta[,input$select_id_meta]) == length(unique(r6$tables$imp_meta[,input$select_id_meta]))) {
       r6$indices$id_col_meta = input$select_id_meta
       r6$set_raw_meta()
@@ -792,16 +789,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
 
         shiny::fluidRow(
-          # Data upload
-          shiny::column(
-            width = 6,
-            shiny::fileInput(
-              inputId = ns("file_data"),
-              label = NULL,
-              multiple = F,
-              accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-              width = "100%")
-          ),
           # Table select
           shiny::column(
             width = 3,
@@ -814,14 +801,14 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             )
           ),
           # Download button
-          shiny::column(
-            width = 3,
-            shiny::downloadButton(
-              outputId = ns("download_datatable"),
-              label = "Download",
-              style = "width:100%;"
-            )
-          )
+          # shiny::column(
+          #   width = 3,
+          #   shiny::downloadButton(
+          #     outputId = ns("download_datatable"),
+          #     label = "Download",
+          #     style = "width:100%;"
+          #   )
+          # )
         ),
         # Table preview box
         bs4Dash::box(
@@ -1017,10 +1004,16 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   #----------------------------------------------------- Data upload server ----
   # Upload metadata
-  session$userData[[id]]$upload_data = shiny::observeEvent(input$file_data, {
-    file_path = input$file_data$datapath
+  # session$userData[[id]]$upload_data = shiny::observeEvent(input$file_data, {
+  session$userData[[id]]$upload_data = shiny::observe({
+    shiny::req(r6$data_file,
+               input$table_box_data$collapsed,
+               input$summary_box_data$collapsed)
+
+    file_path = file.path("data", r6$data_file) #input$file_data$datapath
     data_table = soda_read_table(file_path = file_path)
     r6$tables$imp_data = data_table
+
     # Preview table
     output$data_preview_table = renderDataTable({
       DT::datatable(data_table, options = list(paging = TRUE))
@@ -1087,7 +1080,8 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   # Get ID
   session$userData[[id]]$id_select_data = shiny::observeEvent(input$select_id_data, {
-    shiny::req(r6$tables$imp_data)
+    shiny::req(r6$tables$imp_data,
+               input$select_id_data)
 
     if (r6$preloaded_data) {return()}
     print_tm(m, 'Setting ID column')

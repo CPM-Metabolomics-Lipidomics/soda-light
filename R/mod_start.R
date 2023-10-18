@@ -19,13 +19,13 @@ start_ui = function(id){
               label = 'Exp. name',
               placeholder = 'lips_1',
               width = '100%'
+            ),
+            shiny::selectInput(
+              inputId = ns('exp_select'),
+              label = 'Select a study',
+              choices = 'Select a study',
+              width = '100%'
             )
-            # shiny::selectInput(
-            #   inputId = ns('exp_type'),
-            #   label = 'Exp. type',
-            #   choices = c('Lipidomics', 'Proteomics', 'Transcriptomics'),
-            #   width = '100%'
-            # )
           ),
           shiny::column(
             width = 6,
@@ -63,79 +63,15 @@ start_ui = function(id){
             )
           )
         )
-        # shiny::fluidRow(
-        #   shiny::column(
-        #     width = 12,
-        #     shiny::br(),
-        #     shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-        #     shiny::h3('... or try out SODA with our example datasets!'),
-        #     shiny::br(),
-        #     shiny::fluidRow(
-        #       shiny::column(
-        #         width = 4,
-        #         shinyWidgets::actionBttn(
-        #           inputId = ns('add_lipidomics_ex'),
-        #           label = "Lipidomics",
-        #           style = "pill",
-        #           color = 'primary',
-        #           block = T,
-        #           icon = icon("upload")
-        #         )
-        #       ),
-        #       shiny::column(
-        #         width = 4,
-        #         shinyWidgets::actionBttn(
-        #           inputId = ns('add_proteomics_ex'),
-        #           label = "Proteomics",
-        #           style = "pill",
-        #           color = 'primary',
-        #           block = T,
-        #           icon = icon("upload")
-        #         )
-        #       ),
-        #       shiny::column(
-        #         width = 4,
-        #         shinyWidgets::actionBttn(
-        #           inputId = ns('add_transcriptomics_ex'),
-        #           label = "Transcriptomics",
-        #           style = "pill",
-        #           color = 'primary',
-        #           block = T,
-        #           icon = icon("upload")
-        #         )
-        #       )
-        #     )
-        #   )
-        # )
+      ),
+      shiny::column(
+        width = 1
+      ),
+      shiny::column(
+        width = 5,
+        shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+        shiny::htmlOutput(outputId = ns("db_info"))
       )
-      # shiny::column(
-      #   width = 1
-      # ),
-      # shiny::column(
-      #   width = 5,
-      #   shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-      #   shiny::h3('What is the SODA app?'),
-      #   shiny::p('SODA is designed to analyze and visualize preprocessed omics data.
-      #            Currently available omic experiments are lipidomics, proteomics
-      #            and transcriptomics.'),
-      #   shiny::p("Start using SODA by creating an experiment with the options on
-      #            the left, by defining an experiment name (for you), a it's type
-      #            and pressing ADD EXP. This will create a new module on the sidebar
-      #            for you to start importing and analysing your data. Made a mistake
-      #            creating an experiment? You can select one or multiple experiments
-      #            in Delete exp. and remove them by pressing REMOVE EXP. Bear in
-      #            mind, SODA is currently limited to a maximum of 6 simultaneous
-      #            experiments."),
-      #   shiny::p('The general workflow consists in uploading a metadata and a data
-      #             table: samples and rows, descriptors/features as columns. The
-      #             metadata table contains all types of data describing each sample
-      #             and the data table contains only numeric data.'),
-      #   shiny::p('Samples and features are then be filtered and imputed according
-      #            to user set parameters.'),
-      #   shiny::p('Finally, data can be analyzed and visualized via interactive
-      #            plots, and even further analysed with geneset enrichment, over-representation
-      #            analysis and multiomics integration if the data allows it.')
-      # )
     )
   )
 }
@@ -146,6 +82,43 @@ start_server = function(id, main_input, main_output, main_session, module_contro
   shiny::moduleServer(
     id,
     function(input, output, session) {
+
+      # read the master database file
+      db_data <- readxl::read_xlsx(path = "./data/databaseInfo.xlsx",
+                                   sheet = 1)
+
+      # update the study select
+      shiny::observe({
+        req(db_data)
+
+        shiny::updateSelectInput(inputId = "exp_select",
+                                 choices = c("Select a study",
+                                             db_data$DataSetName))
+      })
+
+      # show the study information
+      output$db_info <- shiny::renderUI({
+        req(db_data,
+            input$exp_select)
+
+        exp_select <- input$exp_select
+
+        if(exp_select == "Select a study") {
+          "Please select a study!"
+        } else {
+          db_data$Information[db_data$DataSetName == exp_select]
+        }
+      })
+
+      shiny::observeEvent(input$exp_select, {
+        select_exp <- input$exp_select
+
+        if(select_exp == "Select a study") {
+          shinyjs::disable("add_exp")
+        } else {
+          shinyjs::enable("add_exp")
+        }
+      })
 
       # Create experiments
       shiny::observeEvent(input$add_exp,{
@@ -183,7 +156,12 @@ start_server = function(id, main_input, main_output, main_session, module_contro
         module_controler$slot_taken[[slot]] = TRUE
         module_controler$exp_names[[slot]] = exp_name
         module_controler$exp_types[[slot]] = exp_type
-        module_controler$exp_r6[[slot]] = r6_switch(exp_type = exp_type, name = exp_name, id = paste0('mod_', slot), slot = slot)
+        module_controler$exp_r6[[slot]] = r6_switch(exp_type = exp_type,
+                                                    name = exp_name,
+                                                    id = paste0('mod_', slot),
+                                                    slot = slot,
+                                                    data_file = db_data$DataFileName[db_data$DataSetName == input$exp_select],
+                                                    meta_file = db_data$MetaFileName[db_data$DataSetName == input$exp_select])
 
         if (sum(sapply(module_controler$slot_taken, base::isTRUE)) >= 6) {
           shinyjs::disable("add_exp")
@@ -232,32 +210,6 @@ start_server = function(id, main_input, main_output, main_session, module_contro
 
         shinyjs::enable('add_exp')
       })
-
-      # Switch experiment
-
-      # shiny::observeEvent(input$exp_type,{
-      #   if (input$exp_type == 'Proteomics') {
-      #     shiny::updateTextInput(
-      #       inputId = 'exp_name',
-      #       value = character(0),
-      #       placeholder = 'prot_1'
-      #     )
-      #   } else if (input$exp_type == 'Transcriptomics') {
-      #     shiny::updateTextInput(
-      #       inputId = 'exp_name',
-      #       value = character(0),
-      #       placeholder = 'trns_1'
-      #     )
-      #   } else if (input$exp_type == 'Lipidomics') {
-      #     shiny::updateTextInput(
-      #       inputId = 'exp_name',
-      #       value = character(0),
-      #       placeholder = 'lips_1'
-      #     )
-      #   }
-      #
-      # })
-
     }
   )
 }
