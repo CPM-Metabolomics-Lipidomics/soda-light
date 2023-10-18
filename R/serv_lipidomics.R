@@ -503,8 +503,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     if (input$summary_box_meta$collapsed) {
       bs4Dash::updateBox(id = 'summary_box_meta', action = 'toggle')
     }
-    print(r6$tables$imp_meta)
-    print(colnames(r6$tables$imp_meta))
+
     # Update select inputs
     shiny::updateSelectInput(
       inputId = 'select_id_meta',
@@ -1025,10 +1024,16 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   #----------------------------------------------------- Data upload server ----
   # Upload metadata
-  session$userData[[id]]$upload_data = shiny::observeEvent(input$file_data, {
-    file_path = input$file_data$datapath
+  # session$userData[[id]]$upload_data = shiny::observeEvent(input$file_data, {
+  session$userData[[id]]$upload_data = shiny::observe({
+    shiny::req(r6$data_file,
+               input$table_box_data$collapsed,
+               input$summary_box_data$collapsed)
+
+    file_path = file.path("data", r6$data_file) #input$file_data$datapath
     data_table = soda_read_table(file_path = file_path)
     r6$tables$imp_data = data_table
+
     # Preview table
     output$data_preview_table = renderDataTable({
       DT::datatable(data_table, options = list(paging = TRUE))
@@ -1095,7 +1100,8 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   # Get ID
   session$userData[[id]]$id_select_data = shiny::observeEvent(input$select_id_data, {
-    shiny::req(r6$tables$imp_data)
+    shiny::req(r6$tables$imp_data,
+               input$select_id_data)
 
     if (r6$preloaded_data) {return()}
     print_tm(m, 'Setting ID column')
