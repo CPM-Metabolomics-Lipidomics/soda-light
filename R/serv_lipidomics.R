@@ -478,10 +478,15 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   #------------------------------------------------- Metadata upload server ----
 
   # Upload metadata
-  session$userData[[id]]$upload_meta = shiny::observeEvent(input$file_meta, {
-    file_path = input$file_meta$datapath
-    data_table = soda_read_table(file_path = file_path)
+  # session$userData[[id]]$upload_meta = shiny::observeEvent(input$file_meta, {
+  session$userData[[id]]$upload_meta = shiny::observe({
+    shiny::req(r6$meta_file,
+               input$table_box_meta$collapsed,
+               input$summary_box_meta$collapsed)
 
+    file_path = file.path("data", r6$meta_file) #input$file_meta$datapath
+    data_table = soda_read_table(file_path = file_path)
+    print(data_table)
     if (ncol(data_table) > 70) {
       print_tm(m, 'ERROR: uploaded file has more than 70 columns, unlikely to be a metadata file')
       return()
@@ -498,7 +503,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     if (input$summary_box_meta$collapsed) {
       bs4Dash::updateBox(id = 'summary_box_meta', action = 'toggle')
     }
-
+    print(r6$tables$imp_meta)
     # Update select inputs
     shiny::updateSelectInput(
       inputId = 'select_id_meta',
@@ -540,6 +545,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     print_tm(m, 'Setting ID column')
     if (length(r6$tables$imp_meta[,input$select_id_meta]) == length(unique(r6$tables$imp_meta[,input$select_id_meta]))) {
       r6$indices$id_col_meta = input$select_id_meta
+      print("Am I here?")
       r6$set_raw_meta()
       update_sample_filters(input = input, session = session, r6 = r6)
 

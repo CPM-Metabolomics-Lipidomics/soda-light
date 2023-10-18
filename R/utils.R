@@ -36,9 +36,9 @@ feature_table_cols_switch = function(col) {
   )
 }
 
-r6_switch = function(exp_type, name, id, slot){
+r6_switch = function(exp_type, name, id, slot, data_file, meta_file){
   switch(EXPR = exp_type,
-         "Lipidomics" = Lips_exp$new(name = name, id = id, slot = slot),
+         "Lipidomics" = Lips_exp$new(name = name, id = id, slot = slot, data_file = data_file, meta_file = meta_file),
          "Proteomics" = Prot_exp$new(name = name, id = id, slot = slot),
          "Transcriptomics" = Trns_exp$new(name = name, id = id, slot = slot)
 

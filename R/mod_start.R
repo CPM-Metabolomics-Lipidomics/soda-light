@@ -156,7 +156,12 @@ start_server = function(id, main_input, main_output, main_session, module_contro
         module_controler$slot_taken[[slot]] = TRUE
         module_controler$exp_names[[slot]] = exp_name
         module_controler$exp_types[[slot]] = exp_type
-        module_controler$exp_r6[[slot]] = r6_switch(exp_type = exp_type, name = exp_name, id = paste0('mod_', slot), slot = slot)
+        module_controler$exp_r6[[slot]] = r6_switch(exp_type = exp_type,
+                                                    name = exp_name,
+                                                    id = paste0('mod_', slot),
+                                                    slot = slot,
+                                                    data_file = db_data$DataFileName[db_data$DataSetName == input$exp_select],
+                                                    meta_file = db_data$MetaFileName[db_data$DataSetName == input$exp_select])
 
         if (sum(sapply(module_controler$slot_taken, base::isTRUE)) >= 6) {
           shinyjs::disable("add_exp")
