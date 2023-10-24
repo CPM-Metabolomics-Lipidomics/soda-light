@@ -5,13 +5,13 @@ experiment_ui = function(id) {
   bs4Dash::tabsetPanel(
     type = "tabs",
     shiny::tabPanel(
-      title = "Upload metadata",
+      title = "Metadata",
       shiny::uiOutput(
         outputId = ns('up_metadata_ui')
       )
     ),
     shiny::tabPanel(
-      title = "Upload data",
+      title = "Data",
       shiny::uiOutput(
         outputId = ns('up_data_ui')
       )
