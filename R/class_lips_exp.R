@@ -8,7 +8,6 @@ Lips_exp = R6::R6Class(
       self$slot = slot
       self$preloaded_data = preloaded
       self$data_file = data_file
-      self$meta_file = meta_file
     },
     #--------------------------------------------------------------- Global ----
     name = NA,
@@ -17,7 +16,6 @@ Lips_exp = R6::R6Class(
     type = 'Lipidomics',
     preloaded_data = F,
     data_file = NA,
-    meta_file = NA,
 
     #----------------------------------------------------------- Parameters ----
     params = list(

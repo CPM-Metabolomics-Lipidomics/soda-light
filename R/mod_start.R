@@ -84,8 +84,9 @@ start_server = function(id, main_input, main_output, main_session, module_contro
     function(input, output, session) {
 
       # read the master database file
-      db_data <- readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
-                                   sheet = 1)
+      db_data <- utils::read.delim(file = "./data/Database/SampleMasterfile.csv",
+                                   header = TRUE,
+                                   sep = ",")
 
       # update the study select
       shiny::observe({
@@ -93,7 +94,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
 
         # get the unique Experiment ID's
         # there is a NA present, remove it
-        uniqExpId = unique(db_data$`ExperimentID (lab_date YYMMDD_no)`)
+        uniqExpId = unique(db_data$experimentId)
         uniqExpId = uniqExpId[!is.na(uniqExpId)]
 
         shiny::updateSelectInput(inputId = "exp_select",
@@ -119,7 +120,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
       shiny::observeEvent(input$exp_select, {
         select_exp <- input$exp_select
 
-        if(select_exp == "Select a study") {
+        if(select_exp == "Select an experiment") {
           shinyjs::disable("add_exp")
         } else {
           shinyjs::enable("add_exp")
@@ -159,6 +160,11 @@ start_server = function(id, main_input, main_output, main_session, module_contro
           )
         })
 
+        # get the batches for the samples belonging to the experiment
+        data_files = (db_data$Batchnumber[db_data$experimentId == input$exp_select])
+        print("Rico: data files")
+        print(data_files)
+
         module_controler$slot_taken[[slot]] = TRUE
         module_controler$exp_names[[slot]] = exp_name
         module_controler$exp_types[[slot]] = exp_type
@@ -166,8 +172,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
                                                     name = exp_name,
                                                     id = paste0('mod_', slot),
                                                     slot = slot,
-                                                    data_file = db_data$DataFileName[db_data$DataSetName == input$exp_select],
-                                                    meta_file = db_data$MetaFileName[db_data$DataSetName == input$exp_select])
+                                                    data_file = data_files)
 
         if (sum(sapply(module_controler$slot_taken, base::isTRUE)) >= 6) {
           shinyjs::disable("add_exp")

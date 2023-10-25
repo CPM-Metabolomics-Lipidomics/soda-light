@@ -245,28 +245,28 @@ show_exp_info <- function(data = NULL, experiment = NULL) {
   # how are non samples annotated
   nonSamples = c("Blank", "Quality control Plasma", "Quality control Cells")
   # selection to get the correct info
-  generalSelection = data$`ExperimentID (lab_date YYMMDD_no)` == experiment &
-    !(data$CellType %in% nonSamples)
+  generalSelection = data$experimentId == experiment &
+    !(data$cellType %in% nonSamples)
 
   # get all info
-  infoSource = unique(data$Source[generalSelection])
+  infoSource = unique(data$source[generalSelection])
   infoSource = infoSource[!is.na(infoSource)]
-  infoCellType = unique(data$CellType[generalSelection])
+  infoCellType = unique(data$cellType[generalSelection])
   infoCellType = paste(infoCellType[!is.na(infoCellType)],
                        collapse = " | ")
-  infoHarvestDate = unique(data$`harvest date (YYYY/MM/DD)`[generalSelection])
+  infoHarvestDate = unique(data$harvestDate[generalSelection])
   infoHarvestDate = paste(infoHarvestDate[!is.na(infoHarvestDate)],
                           collapse = " | ")
-  infoGenoTypes = unique(data$genotype[generalSelection])
+  infoGenoTypes = unique(data$genoType[generalSelection])
   infoGenoTypes = paste(infoGenoTypes[!is.na(infoGenoTypes)],
                         collapse = " | ")
-  infoParentalCellLine = unique(data$`Parental cell line`[generalSelection])
+  infoParentalCellLine = unique(data$parentalCellLine[generalSelection])
   infoParentalCellLine = paste(infoParentalCellLine[!is.na(infoParentalCellLine)],
                                collapse = " | ")
-  infoCellLineName = unique(data$`Cell line name`[generalSelection])
+  infoCellLineName = unique(data$`cellLineName`[generalSelection])
   infoCellLineName = paste(infoCellLineName[!is.na(infoCellLineName)],
                            collapse = " | ")
-  infoGender = unique(data$Sex[generalSelection])
+  infoGender = unique(data$sex[generalSelection])
   infoGender = paste(infoGender[!is.na(infoGender)],
                      collapse = " | ")
 
