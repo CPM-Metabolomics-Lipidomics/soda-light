@@ -251,6 +251,8 @@ show_exp_info <- function(data = NULL, experiment = NULL) {
   # get all info
   infoSource = unique(data$source[generalSelection])
   infoSource = infoSource[!is.na(infoSource)]
+  infoSource = paste(infoSource[!is.na(infoSource)],
+                     collapse = " | ")
   infoCellType = unique(data$cellType[generalSelection])
   infoCellType = paste(infoCellType[!is.na(infoCellType)],
                        collapse = " | ")

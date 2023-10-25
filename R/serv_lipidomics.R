@@ -473,10 +473,13 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     shiny::req(input$table_box_meta$collapsed,
                input$summary_box_meta$collapsed)
 
-    file_path = file.path("data", "Database", "SampleMasterfile.csv") #input$file_meta$datapath
+    file_path = file.path("data", "Database", "SampleMasterfile.xlsx") #input$file_meta$datapath
     data_table = soda_read_table(file_path = file_path)
+
     # clean up data_table, too much meta data in there
-    data_table = data_table[data_table$batchNumber == r6$data_file, 1:18]
+    data_table = data_table[data_table$batchNumber %in% r6$data_file, 1:18]
+    print("Rico: show data_table")
+    print(class(data_table))
 
     if (ncol(data_table) > 70) {
       print_tm(m, 'ERROR: uploaded file has more than 70 columns, unlikely to be a metadata file')
@@ -1086,6 +1089,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
     if (r6$preloaded_data) {return()}
     print_tm(m, 'Setting ID column')
+    print("Rico: set raw data")
     if (length(r6$tables$imp_data[,input$select_id_data]) == length(unique(r6$tables$imp_data[,input$select_id_data]))) {
       r6$indices$id_col_data = input$select_id_data
       r6$get_blank_table()
@@ -1098,7 +1102,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                       sample_threshold = as.numeric(input$sample_threshold),
                       group_threshold = as.numeric(input$group_threshold),
                       norm_col = input$normalise_to_col)
-
+      print("Rico: raw data has been set")
       r6$derive_data_tables()
 
       shiny::updateSelectInput(

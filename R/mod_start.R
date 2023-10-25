@@ -84,9 +84,8 @@ start_server = function(id, main_input, main_output, main_session, module_contro
     function(input, output, session) {
 
       # read the master database file
-      db_data <- utils::read.delim(file = "./data/Database/SampleMasterfile.csv",
-                                   header = TRUE,
-                                   sep = ",")
+      db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
+                                                 sheet = 1))
 
       # update the study select
       shiny::observe({
@@ -96,6 +95,11 @@ start_server = function(id, main_input, main_output, main_session, module_contro
         # there is a NA present, remove it
         uniqExpId = unique(db_data$experimentId)
         uniqExpId = uniqExpId[!is.na(uniqExpId)]
+        uniqBatchNumber = unique(db_data$batchNumber)
+        uniqBatchNumber = uniqBatchNumber[!is.na(uniqBatchNumber)]
+        # if the experimentId and batchNumber are the same don't show this name
+        remove_exp_id = intersect(uniqBatchNumber, uniqExpId)
+        uniqExpId = uniqExpId[!(uniqExpId %in% remove_exp_id)]
 
         shiny::updateSelectInput(inputId = "exp_select",
                                  choices = c("Select an experiment",
@@ -162,6 +166,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
 
         # get the batches for the samples belonging to the experiment
         data_files = unique(db_data$batchNumber[db_data$experimentId == input$exp_select])
+        data_files = data_files[!is.na(data_files)]
 
         module_controler$slot_taken[[slot]] = TRUE
         module_controler$exp_names[[slot]] = exp_name
