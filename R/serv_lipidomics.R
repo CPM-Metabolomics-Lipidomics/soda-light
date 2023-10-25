@@ -470,13 +470,13 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   # Upload metadata
   # session$userData[[id]]$upload_meta = shiny::observeEvent(input$file_meta, {
   session$userData[[id]]$upload_meta = shiny::observe({
-    shiny::req(r6$meta_file,
-               input$table_box_meta$collapsed,
+    shiny::req(input$table_box_meta$collapsed,
                input$summary_box_meta$collapsed)
 
-    file_path = file.path("data", "Database", "SampleMasterfile.xlsx") #input$file_meta$datapath
+    file_path = file.path("data", "Database", "SampleMasterfile.csv") #input$file_meta$datapath
     data_table = soda_read_table(file_path = file_path)
     # clean up data_table, too much meta data in there
+    data_table = data_table[data_table$batchNumber == r6$data_file, 1:18]
 
     if (ncol(data_table) > 70) {
       print_tm(m, 'ERROR: uploaded file has more than 70 columns, unlikely to be a metadata file')
@@ -499,22 +499,22 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     shiny::updateSelectInput(
       inputId = 'select_id_meta',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[1]
+      selected = colnames(r6$tables$imp_meta)[4]
     )
     shiny::updateSelectInput(
       inputId = 'select_group_col',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[3]
+      selected = colnames(r6$tables$imp_meta)[6]
     )
     shiny::updateSelectInput(
       inputId = 'select_type_col',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[2]
+      selected = colnames(r6$tables$imp_meta)[10]
     )
     shiny::updateSelectInput(
       inputId = 'select_batch_col',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[4]
+      selected = colnames(r6$tables$imp_meta)[1]
     )
     shinyjs::disable("file_meta")
   })
@@ -1011,7 +1011,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                input$table_box_data$collapsed,
                input$summary_box_data$collapsed)
 
-    file_path = file.path("data", r6$data_file) #input$file_data$datapath
+    file_path = file.path("data", "Database", r6$data_file, paste0(r6$data_file, "_output_merge.xlsx")) #input$file_data$datapath
     data_table = soda_read_table(file_path = file_path)
     r6$tables$imp_data = data_table
 
