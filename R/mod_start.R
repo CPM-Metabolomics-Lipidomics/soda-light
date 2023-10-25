@@ -161,9 +161,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
         })
 
         # get the batches for the samples belonging to the experiment
-        data_files = (db_data$Batchnumber[db_data$experimentId == input$exp_select])
-        print("Rico: data files")
-        print(data_files)
+        data_files = unique(db_data$batchNumber[db_data$experimentId == input$exp_select])
 
         module_controler$slot_taken[[slot]] = TRUE
         module_controler$exp_names[[slot]] = exp_name
