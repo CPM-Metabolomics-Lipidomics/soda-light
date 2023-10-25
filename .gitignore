@@ -2,3 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# some files for fixing
+R/fix_*
+
+# data
+data/*

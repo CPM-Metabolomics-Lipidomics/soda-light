@@ -241,6 +241,54 @@ is_num_coercible = function(x) {
   all(grepl('^(?=.)([+-]?([0-9]*)(\\.([0-9]+))?)$', x, perl = TRUE))
 }
 
+show_exp_info <- function(data = NULL, experiment = NULL) {
+  # how are non samples annotated
+  nonSamples = c("Blank", "Quality control Plasma", "Quality control Cells")
+  # selection to get the correct info
+  generalSelection = data$experimentId == experiment &
+    !(data$cellType %in% nonSamples)
+
+  # get all info
+  infoSource = unique(data$source[generalSelection])
+  infoSource = infoSource[!is.na(infoSource)]
+  infoSource = paste(infoSource[!is.na(infoSource)],
+                     collapse = " | ")
+  infoCellType = unique(data$cellType[generalSelection])
+  infoCellType = paste(infoCellType[!is.na(infoCellType)],
+                       collapse = " | ")
+  infoHarvestDate = unique(data$harvestDate[generalSelection])
+  infoHarvestDate = paste(infoHarvestDate[!is.na(infoHarvestDate)],
+                          collapse = " | ")
+  infoGenoTypes = unique(data$genoType[generalSelection])
+  infoGenoTypes = paste(infoGenoTypes[!is.na(infoGenoTypes)],
+                        collapse = " | ")
+  infoParentalCellLine = unique(data$parentalCellLine[generalSelection])
+  infoParentalCellLine = paste(infoParentalCellLine[!is.na(infoParentalCellLine)],
+                               collapse = " | ")
+  infoCellLineName = unique(data$`cellLineName`[generalSelection])
+  infoCellLineName = paste(infoCellLineName[!is.na(infoCellLineName)],
+                           collapse = " | ")
+  infoGender = unique(data$sex[generalSelection])
+  infoGender = paste(infoGender[!is.na(infoGender)],
+                     collapse = " | ")
+
+  # generate the output
+  exp_info = shiny::HTML(paste0("<h3> Information experiment: <i>", experiment, "</i></h3>"),
+                         "<hr style=\"margin-left:0;max-width:50%\">",
+                         "<ul>",
+                         paste0("<li><b>Source :</b> ", infoSource, "</li>"),
+                         paste0("<li><b>Cell type :</b> ", infoCellType, "</li>"),
+                         paste0("<li><b>Harvest date :</b> ", infoHarvestDate, "</li>"),
+                         paste0("<li><b>Genotype :</b> ", infoGenoTypes, "</li>"),
+                         paste0("<li><b>Parental cell line :</b> ", infoParentalCellLine, "</li>"),
+                         paste0("<li><b>Cell line name :</b> ", infoCellLineName, "</li>"),
+                         paste0("<li><b>Gender :</b> ", infoGender, "</li>"),
+                         "</ul>")
+
+  return(exp_info)
+}
+
+
 #----------------------------------------------------- Print time functions ----
 
 get_time = function() {

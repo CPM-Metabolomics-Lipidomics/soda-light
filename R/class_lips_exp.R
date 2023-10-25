@@ -8,7 +8,6 @@ Lips_exp = R6::R6Class(
       self$slot = slot
       self$preloaded_data = preloaded
       self$data_file = data_file
-      self$meta_file = meta_file
     },
     #--------------------------------------------------------------- Global ----
     name = NA,
@@ -17,7 +16,6 @@ Lips_exp = R6::R6Class(
     type = 'Lipidomics',
     preloaded_data = F,
     data_file = NA,
-    meta_file = NA,
 
     #----------------------------------------------------------- Parameters ----
     params = list(
@@ -263,9 +261,7 @@ Lips_exp = R6::R6Class(
                             sample_threshold = 0.8,
                             group_threshold = 0.8,
                             norm_col = "") {
-
       if (!is.na(self$indices$id_col_data) & !is.null(self$tables$imp_data) & !is.null(self$tables$raw_meta)){
-
         # Copy imported table
         data_table = self$tables$imp_data
 
@@ -273,6 +269,8 @@ Lips_exp = R6::R6Class(
         rownames(data_table) = data_table[,self$indices$id_col_data]
         data_table[,self$indices$id_col_data] = NULL
         data_table = as.matrix(data_table)
+        print(dim(data_table))
+        print(rownames(self$tables$raw_meta))
 
         # Keep only rows from raw_meta
         data_table = data_table[rownames(self$tables$raw_meta),]
@@ -284,7 +282,6 @@ Lips_exp = R6::R6Class(
 
         # Remove empty columns
         data_table = remove_empty_cols(data_table)
-
         # Imputation and filtering
         if (apply_imputation & impute_before & apply_filtering) {
           data_table = impute_na(method = imputation_function,
@@ -308,7 +305,6 @@ Lips_exp = R6::R6Class(
                                        group_threshold = group_threshold)
 
           data_table = drop_cols(data_table, del_cols)
-
         } else if (apply_imputation & !impute_before & apply_filtering) {
           del_cols = lips_get_del_cols(data_table = data_table,
                                        blank_table = self$tables$blank_table,

@@ -22,8 +22,8 @@ start_ui = function(id){
             ),
             shiny::selectInput(
               inputId = ns('exp_select'),
-              label = 'Select a study',
-              choices = 'Select a study',
+              label = 'Select an experiment',
+              choices = 'Select an experiment',
               width = '100%'
             )
           ),
@@ -84,16 +84,26 @@ start_server = function(id, main_input, main_output, main_session, module_contro
     function(input, output, session) {
 
       # read the master database file
-      db_data <- readxl::read_xlsx(path = "./data/databaseInfo.xlsx",
-                                   sheet = 1)
+      db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
+                                                 sheet = 1))
 
       # update the study select
       shiny::observe({
         req(db_data)
 
+        # get the unique Experiment ID's
+        # there is a NA present, remove it
+        uniqExpId = unique(db_data$experimentId)
+        uniqExpId = uniqExpId[!is.na(uniqExpId)]
+        uniqBatchNumber = unique(db_data$batchNumber)
+        uniqBatchNumber = uniqBatchNumber[!is.na(uniqBatchNumber)]
+        # if the experimentId and batchNumber are the same don't show this name
+        remove_exp_id = intersect(uniqBatchNumber, uniqExpId)
+        uniqExpId = uniqExpId[!(uniqExpId %in% remove_exp_id)]
+
         shiny::updateSelectInput(inputId = "exp_select",
-                                 choices = c("Select a study",
-                                             db_data$DataSetName))
+                                 choices = c("Select an experiment",
+                                             uniqExpId))
       })
 
       # show the study information
@@ -103,17 +113,18 @@ start_server = function(id, main_input, main_output, main_session, module_contro
 
         exp_select <- input$exp_select
 
-        if(exp_select == "Select a study") {
-          "Please select a study!"
+        if(exp_select == "Select an experiment") {
+          "Please select an experiment!"
         } else {
-          db_data$Information[db_data$DataSetName == exp_select]
+          show_exp_info(data = db_data,
+                        experiment = exp_select)
         }
       })
 
       shiny::observeEvent(input$exp_select, {
         select_exp <- input$exp_select
 
-        if(select_exp == "Select a study") {
+        if(select_exp == "Select an experiment") {
           shinyjs::disable("add_exp")
         } else {
           shinyjs::enable("add_exp")
@@ -153,6 +164,10 @@ start_server = function(id, main_input, main_output, main_session, module_contro
           )
         })
 
+        # get the batches for the samples belonging to the experiment
+        data_files = unique(db_data$batchNumber[db_data$experimentId == input$exp_select])
+        data_files = data_files[!is.na(data_files)]
+
         module_controler$slot_taken[[slot]] = TRUE
         module_controler$exp_names[[slot]] = exp_name
         module_controler$exp_types[[slot]] = exp_type
@@ -160,8 +175,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
                                                     name = exp_name,
                                                     id = paste0('mod_', slot),
                                                     slot = slot,
-                                                    data_file = db_data$DataFileName[db_data$DataSetName == input$exp_select],
-                                                    meta_file = db_data$MetaFileName[db_data$DataSetName == input$exp_select])
+                                                    data_file = data_files)
 
         if (sum(sapply(module_controler$slot_taken, base::isTRUE)) >= 6) {
           shinyjs::disable("add_exp")
