@@ -474,8 +474,9 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                input$table_box_meta$collapsed,
                input$summary_box_meta$collapsed)
 
-    file_path = file.path("data", r6$meta_file) #input$file_meta$datapath
+    file_path = file.path("data", "Database", "SampleMasterfile.xlsx") #input$file_meta$datapath
     data_table = soda_read_table(file_path = file_path)
+    # clean up data_table, too much meta data in there
 
     if (ncol(data_table) > 70) {
       print_tm(m, 'ERROR: uploaded file has more than 70 columns, unlikely to be a metadata file')

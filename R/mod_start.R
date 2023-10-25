@@ -22,8 +22,8 @@ start_ui = function(id){
             ),
             shiny::selectInput(
               inputId = ns('exp_select'),
-              label = 'Select a study',
-              choices = 'Select a study',
+              label = 'Select an experiment',
+              choices = 'Select an experiment',
               width = '100%'
             )
           ),
@@ -84,16 +84,21 @@ start_server = function(id, main_input, main_output, main_session, module_contro
     function(input, output, session) {
 
       # read the master database file
-      db_data <- readxl::read_xlsx(path = "./data/databaseInfo.xlsx",
+      db_data <- readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
                                    sheet = 1)
 
       # update the study select
       shiny::observe({
         req(db_data)
 
+        # get the unique Experiment ID's
+        # there is a NA present, remove it
+        uniqExpId = unique(db_data$`ExperimentID (lab_date YYMMDD_no)`)
+        uniqExpId = uniqExpId[!is.na(uniqExpId)]
+
         shiny::updateSelectInput(inputId = "exp_select",
-                                 choices = c("Select a study",
-                                             db_data$DataSetName))
+                                 choices = c("Select an experiment",
+                                             uniqExpId))
       })
 
       # show the study information
@@ -103,10 +108,11 @@ start_server = function(id, main_input, main_output, main_session, module_contro
 
         exp_select <- input$exp_select
 
-        if(exp_select == "Select a study") {
-          "Please select a study!"
+        if(exp_select == "Select an experiment") {
+          "Please select an experiment!"
         } else {
-          db_data$Information[db_data$DataSetName == exp_select]
+          show_exp_info(data = db_data,
+                        experiment = exp_select)
         }
       })
 
