@@ -475,9 +475,11 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
     file_path = file.path("data", "Database", "SampleMasterfile.xlsx") #input$file_meta$datapath
     data_table = soda_read_table(file_path = file_path)
-
+    print(r6)
     # clean up data_table, too much meta data in there
-    data_table = data_table[data_table$batchNumber %in% r6$data_file, 1:18]
+    data_table = data_table[data_table$batchNumber %in% r6$data_file &
+                              (data_table$experimentId %in% r6$experiment_id |
+                                 data_table$experimentId %in% r6$data_file), 1:18]
     print("Rico: show data_table")
     print(class(data_table))
 

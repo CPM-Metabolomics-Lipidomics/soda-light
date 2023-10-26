@@ -2,12 +2,13 @@
 Lips_exp = R6::R6Class(
   "Lips_exp",
   public = list(
-    initialize = function(name, id = NA, slot = NA, preloaded = F, data_file, meta_file){
+    initialize = function(name, id = NA, slot = NA, preloaded = F, data_file, experiment_id){
       self$name = name
       self$id = id
       self$slot = slot
       self$preloaded_data = preloaded
       self$data_file = data_file
+      self$experiment_id = experiment_id
     },
     #--------------------------------------------------------------- Global ----
     name = NA,
@@ -16,6 +17,7 @@ Lips_exp = R6::R6Class(
     type = 'Lipidomics',
     preloaded_data = F,
     data_file = NA,
+    experiment_id = NA,
 
     #----------------------------------------------------------- Parameters ----
     params = list(
