@@ -1016,7 +1016,8 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     file_path = file.path("data", "Database", r6$data_file, paste0(r6$data_file, "_output_merge.xlsx")) #input$file_data$datapath
     data_table = soda_read_table(file_path = file_path)
     # The imported data needs to be filtered because of sometimes a batch having multiple experiments
-    r6$tables$imp_data = data_table[data_table[, "ID"] %in% rownames(r6$tables$raw_meta), ]
+    # this is probably not the best solution
+    r6$tables$imp_data = data_table[data_table[, "ID"] %in% r6$tables$imp_meta[, "analystId"], ]
 
     # Preview table
     output$data_preview_table = renderDataTable({
@@ -1091,7 +1092,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     print_tm(m, 'Setting ID column')
 
     if (length(r6$tables$imp_data[,input$select_id_data]) == length(unique(r6$tables$imp_data[,input$select_id_data]))) {
-      print("Rico: start")
       r6$indices$id_col_data = input$select_id_data
       r6$get_blank_table()
       r6$set_raw_data(apply_imputation = input$apply_imputation,

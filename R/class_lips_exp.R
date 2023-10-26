@@ -245,7 +245,6 @@ Lips_exp = R6::R6Class(
     #-------------------------------------------------------- Table methods ----
 
     set_raw_meta = function(){
-      print("Rico: insideze set_raw_meta")
       if (!is.na(self$indices$id_col_meta) & !is.null(self$tables$imp_meta)){
         data_table = self$tables$imp_meta
         rownames(data_table) = data_table[,self$indices$id_col_meta]
@@ -263,14 +262,11 @@ Lips_exp = R6::R6Class(
                             sample_threshold = 0.8,
                             group_threshold = 0.8,
                             norm_col = "") {
-      print("Rico: inside set_raw_data")
       if (!is.na(self$indices$id_col_data) & !is.null(self$tables$imp_data) & !is.null(self$tables$raw_meta)){
         # Copy imported table
         data_table = self$tables$imp_data
 
         # Set ID column
-        print("Rico: rownames imported data:")
-        print(rownames(data_table[, self$indices$id_col_data]))
         rownames(data_table) = data_table[, self$indices$id_col_data]
         data_table[,self$indices$id_col_data] = NULL
         data_table = as.matrix(data_table)
@@ -372,9 +368,6 @@ Lips_exp = R6::R6Class(
     },
 
     get_blank_table = function() {
-      print("Rico: get_blank_table")
-      print(self$indices$id_col_data)
-
       blank_table = self$tables$imp_data[self$indices$idx_blanks,]
       print(blank_table[,self$indices$id_col_data])
       rownames(blank_table) = blank_table[,self$indices$id_col_data]
