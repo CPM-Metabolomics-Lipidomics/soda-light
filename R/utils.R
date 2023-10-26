@@ -632,7 +632,6 @@ lips_get_del_cols = function(data_table,
                              blank_multiplier,
                              sample_threshold,
                              group_threshold) {
-
   # Blank filtering
   del_cols = c()
   all_batches = unique(imp_meta[, batch_col])
