@@ -468,12 +468,12 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   #------------------------------------------------- Metadata upload server ----
 
   # Upload metadata
-  # session$userData[[id]]$upload_meta = shiny::observeEvent(input$file_meta, {
   session$userData[[id]]$upload_meta = shiny::observe({
     shiny::req(input$table_box_meta$collapsed,
                input$summary_box_meta$collapsed)
 
-    file_path = file.path("data", "Database", "SampleMasterfile.xlsx") #input$file_meta$datapath
+    # this is executed twice
+    file_path = file.path("data", "Database", "SampleMasterfile.xlsx")
     data_table = soda_read_table(file_path = file_path)
     # clean up data_table, too much meta data in there
     data_table = data_table[data_table$batchNumber %in% r6$data_file &
@@ -485,6 +485,9 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
       return()
     }
     r6$tables$imp_meta = data_table
+    # Set the sample id column name for the meta data.
+    r6$indices$id_col_meta = "sampleId"
+
     # Preview table
     output$metadata_preview_table = renderDataTable({
       DT::datatable(data_table, options = list(paging = TRUE))
@@ -499,79 +502,119 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
     # Update select inputs
     shiny::updateSelectInput(
+      session = session,
       inputId = 'select_id_meta',
       choices = colnames(r6$tables$imp_meta),
       selected = colnames(r6$tables$imp_meta)[4]
     )
+
     shiny::updateSelectInput(
+      session = session,
       inputId = 'select_group_col',
       choices = colnames(r6$tables$imp_meta),
       selected = colnames(r6$tables$imp_meta)[11]
     )
+
     shiny::updateSelectInput(
+      session = session,
       inputId = 'select_type_col',
       choices = colnames(r6$tables$imp_meta),
       selected = colnames(r6$tables$imp_meta)[10]
     )
+
     shiny::updateSelectInput(
+      session = session,
       inputId = 'select_batch_col',
       choices = colnames(r6$tables$imp_meta),
       selected = colnames(r6$tables$imp_meta)[1]
     )
-    shinyjs::disable("file_meta")
+
+    # This is a crappy solution
+    print("Rico: outside test")
+    if(input$select_id_meta != "" & input$select_group_col != "" & input$select_type_col != "" & input$select_batch_col != "") {
+      print("Rico: inside test")
+      if (length(r6$tables$imp_meta[, r6$indices$id_col_meta]) == length(unique(r6$tables$imp_meta[, r6$indices$id_col_meta]))) {
+        r6$set_raw_meta()
+        update_sample_filters(input = input, session = session, r6 = r6)
+
+        # Update metadata column input
+        shiny::updateSelectInput(
+          session = session,
+          inputId = "exclusion_meta_col",
+          choices = colnames(r6$tables$raw_meta)
+        )
+
+        shiny::updateSelectInput(
+          inputId = 'select_meta_table',
+          choices = c('Imported metadata table', 'Raw metadata table'),
+          selected = 'Raw metadata table'
+        )
+      } else {
+        print_tm(m, 'ERROR: Non-unique IDs in ID column')
+        r6$tables$raw_meta = NULL
+        shiny::updateSelectInput(
+          inputId = 'select_meta_table',
+          choices = c('Imported metadata table'),
+          selected = 'Imported metadata table'
+        )
+      }
+    }
+
   })
 
   # Preview all / subset switch
   session$userData[[id]]$select_meta_table = shiny::observeEvent(input$select_meta_table, {
     shiny::req(r6$tables$imp_meta)
+
     data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
     output$metadata_preview_table = renderDataTable({
       DT::datatable(data_table, options = list(paging = TRUE))
     })
-
   })
 
   # Get ID
-  session$userData[[id]]$id_select_meta = shiny::observeEvent(input$select_id_meta, {
-    shiny::req(r6$tables$imp_meta,
-               input$select_id_meta)
-    if (r6$preloaded_data) {return()}
-    print_tm(m, 'Setting ID column')
-
-    if (length(r6$tables$imp_meta[,input$select_id_meta]) == length(unique(r6$tables$imp_meta[,input$select_id_meta]))) {
-      r6$indices$id_col_meta = input$select_id_meta
-      r6$set_raw_meta()
-      update_sample_filters(input = input, session = session, r6 = r6)
-
-      # Update metadata column input
-      shiny::updateSelectInput(
-        session = session,
-        inputId = "exclusion_meta_col",
-        choices = colnames(r6$tables$raw_meta)
-      )
-
-      shiny::updateSelectInput(
-        inputId = 'select_meta_table',
-        choices = c('Imported metadata table', 'Raw metadata table'),
-        selected = 'Raw metadata table'
-      )
-    } else {
-      print_tm(m, 'ERROR: Non-unique IDs in ID column')
-      r6$tables$raw_meta = NULL
-      shiny::updateSelectInput(
-        inputId = 'select_meta_table',
-        choices = c('Imported metadata table'),
-        selected = 'Imported metadata table'
-      )
-    }
-  })
+  # session$userData[[id]]$id_select_meta = shiny::observeEvent(input$select_id_meta, {
+  #   shiny::req(r6$tables$imp_meta,
+  #              input$select_id_meta)
+  #   print_tm(m, 'Setting ID column')
+  #
+  #   if (length(r6$tables$imp_meta[, r6$indices$id_col_meta]) == length(unique(r6$tables$imp_meta[, r6$indices$id_col_meta]))) {
+  #     # r6$indices$id_col_meta = input$select_id_meta
+  #     r6$set_raw_meta()
+  #     update_sample_filters(input = input, session = session, r6 = r6)
+  #
+  #     # Update metadata column input
+  #     shiny::updateSelectInput(
+  #       session = session,
+  #       inputId = "exclusion_meta_col",
+  #       choices = colnames(r6$tables$raw_meta)
+  #     )
+  #
+  #     shiny::updateSelectInput(
+  #       inputId = 'select_meta_table',
+  #       choices = c('Imported metadata table', 'Raw metadata table'),
+  #       selected = 'Raw metadata table'
+  #     )
+  #   } else {
+  #     print_tm(m, 'ERROR: Non-unique IDs in ID column')
+  #     r6$tables$raw_meta = NULL
+  #     shiny::updateSelectInput(
+  #       inputId = 'select_meta_table',
+  #       choices = c('Imported metadata table'),
+  #       selected = 'Imported metadata table'
+  #     )
+  #   }
+  # })
 
   # Group col selection
-  session$userData[[id]]$select_group_col = shiny::observeEvent(c(input$select_group_col, input$selection_drop, input$selection_keep, input$reset_meta), {
+  session$userData[[id]]$select_group_col = shiny::observeEvent(c(input$select_group_col,
+                                                                  input$selection_drop,
+                                                                  input$selection_keep,
+                                                                  input$reset_meta), {
     shiny::req(r6$tables$raw_meta)
-    if (r6$preloaded_data) {return()}
 
     print_tm(m, 'Setting group column')
+
     data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
     r6$indices$group_col = input$select_group_col
     groups = unique_na_rm(r6$tables$imp_meta[, input$select_group_col])
@@ -598,15 +641,24 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   # Batch col selection
   session$userData[[id]]$select_batch_col = shiny::observeEvent(input$select_batch_col, {
-    shiny::req(r6$tables$imp_meta)
-    if (r6$preloaded_data) {return()}
+    shiny::req(r6$tables$imp_meta,
+               input$select_batch_col)
+
     print_tm(m, 'Setting batch column')
     r6$indices$batch_col = input$select_batch_col
   })
 
   # Type col selection
-  session$userData[[id]]$select_type_col = shiny::observeEvent(c(input$select_type_col, input$blank_pattern, input$qc_pattern, input$pool_pattern, input$select_id_meta), {
-    shiny::req(c(r6$tables$imp_meta, input$blank_pattern, input$qc_pattern, input$pool_pattern))
+  session$userData[[id]]$select_type_col = shiny::observeEvent(c(input$select_type_col,
+                                                                 input$blank_pattern,
+                                                                 input$qc_pattern,
+                                                                 input$pool_pattern,
+                                                                 input$select_id_meta), {
+    shiny::req(c(r6$tables$imp_meta,
+                 input$blank_pattern,
+                 input$qc_pattern,
+                 input$pool_pattern))
+
     if ((input$select_type_col != "") & (!is.null(input$blank_pattern)) & (!is.null(input$qc_pattern)) & (!is.null(input$pool_pattern))) {
       r6$indices$type_col = input$select_type_col
       type_vector = r6$tables$imp_meta[, input$select_type_col]
@@ -638,9 +690,18 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
 
   # Type col selection
-  session$userData[[id]]$select_type_col = shiny::observeEvent(c(input$select_type_col, input$blank_pattern, input$qc_pattern, input$pool_pattern, input$select_id_meta, input$select_meta_table, input$selection_drop, input$selection_keep, input$reset_meta), {
-    shiny::req(r6$tables$raw_meta)
-    if (r6$preloaded_data) {return()}
+  session$userData[[id]]$select_type_col = shiny::observeEvent(c(input$select_type_col,
+                                                                 input$blank_pattern,
+                                                                 input$qc_pattern,
+                                                                 input$pool_pattern,
+                                                                 input$select_id_meta,
+                                                                 input$select_meta_table,
+                                                                 input$selection_drop,
+                                                                 input$selection_keep,
+                                                                 input$reset_meta), {
+    shiny::req(r6$tables$raw_meta,
+               input$select_type_col)
+
     print_tm(m, 'Updating type plot.')
 
     data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
@@ -696,7 +757,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   # Update the rows to filter once a metadata value is selected
   session$userData[[id]]$exclusion_meta_val = shiny::observeEvent(c(input$exclusion_meta_val),{
-    print('here')
     if (!is.null(input$exclusion_meta_val)) {
       bool_vector = c()
       for (value in input$exclusion_meta_val) {
@@ -722,6 +782,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   # Reset button
   session$userData[[id]]$reset_meta = shiny::observeEvent(input$reset_meta, {
     print_tm(m, 'Reseting metadata table')
+
     r6$set_raw_meta()
     update_sample_filters(input = input, session = session, r6 = r6)
   })
@@ -729,6 +790,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   # Drop button
   session$userData[[id]]$selection_drop = shiny::observeEvent(input$selection_drop, {
     print_tm(m, 'Dropping selected samples')
+
     selected_rows = sample_row_selection(input = input, r6 = r6)
     if (!is.null(selected_rows)){
       r6$tables$raw_meta = drop_rows(data_table = r6$tables$raw_meta,
@@ -741,6 +803,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   # Keep button
   session$userData[[id]]$selection_keep = shiny::observeEvent(input$selection_keep, {
     print_tm(m, 'Keeping selected samples')
+
     selected_rows = sample_row_selection(input = input, r6 = r6)
     if (!is.null(selected_rows)){
       r6$tables$raw_meta = keep_rows(data_table = r6$tables$raw_meta,
@@ -751,8 +814,12 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   })
 
   # Row count progress bar
-  session$userData[[id]]$row_count_bar_meta = shiny::observeEvent(c(input$selection_keep, input$selection_drop, input$reset_meta, input$select_meta_table), {
+  session$userData[[id]]$row_count_bar_meta = shiny::observeEvent(c(input$selection_keep,
+                                                                    input$selection_drop,
+                                                                    input$reset_meta,
+                                                                    input$select_meta_table), {
     data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
+
     shinyWidgets::updateProgressBar(
       session = session,
       id = "row_count_bar_meta",
@@ -1037,6 +1104,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
     # Update normalise to column
     shiny::updateSelectInput(
+      session = session,
       inputId = 'normalise_to_col',
       choices = colnames(r6$tables$raw_meta),
       selected = character(0)
@@ -1058,6 +1126,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
       r6$derive_data_tables()
 
       shiny::updateSelectInput(
+        session = session,
         inputId = 'select_data_table',
         choices = c('Imported data table', 'Raw data table', 'Feature table', 'Blank table', 'Class normalized table', 'Total normalized table', 'Z-scored table', 'Z-scored class normalized table', 'Z-scored total normalized table', 'Class table', 'Class table total normalized', 'Class table z-scored total normalized', 'Species summary table', 'Class summary table'),
         selected = 'Raw data table'
@@ -1084,6 +1153,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
       print_tm(m, 'ERROR: Non-unique IDs in ID column')
       r6$tables$raw_meta = NULL
       shiny::updateSelectInput(
+        session = session,
         inputId = 'select_meta_table',
         choices = c('Imported metadata table'),
         selected = 'Imported metadata table'
@@ -1100,7 +1170,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     data_table = table_switch(table_name = input$select_data_table, r6 = r6)
 
     if (input$select_data_table %in% c('Imported data table', 'Raw data table')) {
-
 
       shinyWidgets::updateProgressBar(
         session = session,
