@@ -2,12 +2,13 @@
 Lips_exp = R6::R6Class(
   "Lips_exp",
   public = list(
-    initialize = function(name, id = NA, slot = NA, preloaded = F, data_file, meta_file){
+    initialize = function(name, id = NA, slot = NA, preloaded = F, data_file, experiment_id){
       self$name = name
       self$id = id
       self$slot = slot
       self$preloaded_data = preloaded
       self$data_file = data_file
+      self$experiment_id = experiment_id
     },
     #--------------------------------------------------------------- Global ----
     name = NA,
@@ -16,6 +17,7 @@ Lips_exp = R6::R6Class(
     type = 'Lipidomics',
     preloaded_data = F,
     data_file = NA,
+    experiment_id = NA,
 
     #----------------------------------------------------------- Parameters ----
     params = list(
@@ -243,7 +245,6 @@ Lips_exp = R6::R6Class(
     #-------------------------------------------------------- Table methods ----
 
     set_raw_meta = function(){
-
       if (!is.na(self$indices$id_col_meta) & !is.null(self$tables$imp_meta)){
         data_table = self$tables$imp_meta
         rownames(data_table) = data_table[,self$indices$id_col_meta]
@@ -266,11 +267,9 @@ Lips_exp = R6::R6Class(
         data_table = self$tables$imp_data
 
         # Set ID column
-        rownames(data_table) = data_table[,self$indices$id_col_data]
+        rownames(data_table) = data_table[, self$indices$id_col_data]
         data_table[,self$indices$id_col_data] = NULL
         data_table = as.matrix(data_table)
-        print(dim(data_table))
-        print(rownames(self$tables$raw_meta))
 
         # Keep only rows from raw_meta
         data_table = data_table[rownames(self$tables$raw_meta),]

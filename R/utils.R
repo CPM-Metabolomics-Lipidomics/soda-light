@@ -36,9 +36,9 @@ feature_table_cols_switch = function(col) {
   )
 }
 
-r6_switch = function(exp_type, name, id, slot, data_file, meta_file){
+r6_switch = function(exp_type, name, id, slot, data_file, experiment_id){
   switch(EXPR = exp_type,
-         "Lipidomics" = Lips_exp$new(name = name, id = id, slot = slot, data_file = data_file, meta_file = meta_file),
+         "Lipidomics" = Lips_exp$new(name = name, id = id, slot = slot, data_file = data_file, experiment_id = experiment_id),
          "Proteomics" = Prot_exp$new(name = name, id = id, slot = slot),
          "Transcriptomics" = Trns_exp$new(name = name, id = id, slot = slot)
 
@@ -632,7 +632,6 @@ lips_get_del_cols = function(data_table,
                              blank_multiplier,
                              sample_threshold,
                              group_threshold) {
-
   # Blank filtering
   del_cols = c()
   all_batches = unique(imp_meta[, batch_col])

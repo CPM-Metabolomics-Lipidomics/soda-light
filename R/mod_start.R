@@ -175,6 +175,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
                                                     name = exp_name,
                                                     id = paste0('mod_', slot),
                                                     slot = slot,
+                                                    experiment_id = input$exp_select,
                                                     data_file = data_files)
 
         if (sum(sapply(module_controler$slot_taken, base::isTRUE)) >= 6) {
