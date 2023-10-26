@@ -501,12 +501,12 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     }
 
     # Update select inputs
-    shiny::updateSelectInput(
-      session = session,
-      inputId = 'select_id_meta',
-      choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[4]
-    )
+    # shiny::updateSelectInput(
+    #   session = session,
+    #   inputId = 'select_id_meta',
+    #   choices = colnames(r6$tables$imp_meta),
+    #   selected = colnames(r6$tables$imp_meta)[4]
+    # )
 
     shiny::updateSelectInput(
       session = session,
@@ -531,7 +531,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
     # This is a crappy solution
     print("Rico: outside test")
-    if(input$select_id_meta != "" & input$select_group_col != "" & input$select_type_col != "" & input$select_batch_col != "") {
+    if(input$select_group_col != "" & input$select_type_col != "" & input$select_batch_col != "") {
       print("Rico: inside test")
       if (length(r6$tables$imp_meta[, r6$indices$id_col_meta]) == length(unique(r6$tables$imp_meta[, r6$indices$id_col_meta]))) {
         r6$set_raw_meta()
