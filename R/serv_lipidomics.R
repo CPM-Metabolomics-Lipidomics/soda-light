@@ -1017,6 +1017,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     for(a in 1:length(r6$data_file)) {
       file_path = file.path("data", "Database", r6$data_file[a], paste0(r6$data_file[a], "_output_merge.xlsx")) #input$file_data$datapath
       data_tables[[a]] = soda_read_table(file_path = file_path)
+      # too easy, not working!!
       data_tables[[a]]$ID = paste(r6$tables$raw_meta$experimentId[r6$tables$raw_meta$batchNumber == r6$data_file[a]], data_tables[[a]]$ID, sep = "_")
     }
 
@@ -1097,10 +1098,13 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
     if (r6$preloaded_data) {return()}
     print_tm(m, 'Setting ID column')
-
+    print("Rico: I'am here")
     if (length(r6$tables$imp_data[,input$select_id_data]) == length(unique(r6$tables$imp_data[,input$select_id_data]))) {
+      print("Rico: inside")
       r6$indices$id_col_data = input$select_id_data
       r6$get_blank_table()
+      print(r6$tables$blank_table[, 1:10])
+      print("Rico: set raw data")
       r6$set_raw_data(apply_imputation = input$apply_imputation,
                       impute_before = input$impute_before,
                       apply_filtering = input$apply_filtering,
