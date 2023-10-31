@@ -501,7 +501,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     shiny::updateSelectInput(
       inputId = 'select_id_meta',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[4]
+      selected = colnames(r6$tables$imp_meta)[5]
     )
     shiny::updateSelectInput(
       inputId = 'select_group_col',
@@ -1013,11 +1013,18 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                input$table_box_data$collapsed,
                input$summary_box_data$collapsed)
 
-    file_path = file.path("data", "Database", r6$data_file, paste0(r6$data_file, "_output_merge.xlsx")) #input$file_data$datapath
-    data_table = soda_read_table(file_path = file_path)
+    data_tables <- vector("list", length = length(r6$data_file))
+    for(a in 1:length(r6$data_file)) {
+      file_path = file.path("data", "Database", r6$data_file[a], paste0(r6$data_file[a], "_output_merge.xlsx")) #input$file_data$datapath
+      data_tables[[a]] = soda_read_table(file_path = file_path)
+      data_tables[[a]]$ID = paste(r6$tables$raw_meta$experimentId[r6$tables$raw_meta$batchNumber == r6$data_file[a]], data_tables[[a]]$ID, sep = "_")
+    }
+
+    data_table = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
+
     # The imported data needs to be filtered because of sometimes a batch having multiple experiments
     # this is probably not the best solution
-    r6$tables$imp_data = data_table[data_table[, "ID"] %in% r6$tables$imp_meta[, "analystId"], ]
+    r6$tables$imp_data = data_table[data_table[, "ID"] %in% r6$tables$imp_meta[, "sampleId"], ]
 
     # Preview table
     output$data_preview_table = renderDataTable({
@@ -1103,6 +1110,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                       sample_threshold = as.numeric(input$sample_threshold),
                       group_threshold = as.numeric(input$group_threshold),
                       norm_col = input$normalise_to_col)
+      print("Rico: done ID")
 
       r6$derive_data_tables()
 
