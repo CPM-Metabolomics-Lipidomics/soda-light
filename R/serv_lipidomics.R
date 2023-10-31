@@ -506,7 +506,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     shiny::updateSelectInput(
       inputId = 'select_group_col',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[6]
+      selected = colnames(r6$tables$imp_meta)[11]
     )
     shiny::updateSelectInput(
       inputId = 'select_type_col',
