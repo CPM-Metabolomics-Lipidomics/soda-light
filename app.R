@@ -157,6 +157,7 @@ server = function(input, output, session) {
         query[["experimentId"]] <- NULL
       }
     } else {
+      # for easy development
       query[["experimentId"]] <- "VDK_230228_02"
     }
     print(paste("Rico: experimentId", query[["experimentId"]]))
