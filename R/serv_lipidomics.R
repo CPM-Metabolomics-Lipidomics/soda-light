@@ -330,20 +330,40 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
           shiny::column(
             width = 6,
             # Select ID column
-            shiny::selectInput(inputId = ns("select_id_meta"), choices = NULL, label = "Sample IDs", multiple = F, width = "100%"),
+            shiny::selectInput(inputId = ns("select_id_meta"),
+                               choices = "analystId",
+                               selected = "analystId",
+                               label = "Sample IDs",
+                               multiple = FALSE,
+                               width = "100%"),
 
             # Select group column
-            shiny::selectInput(inputId = ns("select_group_col"), choices = NULL, label = "Group column", multiple = F, width = "100%"),
+            shiny::selectInput(inputId = ns("select_group_col"),
+                               choices = "genoType",
+                               selected = "genoType",
+                               label = "Group column",
+                               multiple = FALSE,
+                               width = "100%"),
             shiny::span(textOutput(outputId = ns("found_groups")))
 
           ),
           shiny::column(
             width = 6,
             # Select sample type column
-            shiny::selectInput(inputId = ns("select_type_col"), choices = NULL, label = "Type column", multiple = F, width = "100%"),
+            shiny::selectInput(inputId = ns("select_type_col"),
+                               choices = "cellType",
+                               selected = "cellType",
+                               label = "Type column",
+                               multiple = FALSE,
+                               width = "100%"),
 
             # Select batch column
-            shiny::selectInput(inputId = ns("select_batch_col"), choices = NULL, label = "Batch column", multiple = F, width = "100%"),
+            shiny::selectInput(inputId = ns("select_batch_col"),
+                               choices = "batchNumber",
+                               selected = "batchNumber",
+                               label = "Batch column",
+                               multiple = FALSE,
+                               width = "100%"),
 
             shiny::span(textOutput(outputId = ns("found_batches")))
           )
@@ -357,19 +377,19 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
         shiny::fluidRow(
           shiny::column(
             width = 4,
-            # Select blank battern text for regex
+            # Select blank pattern text for regex
             shiny::textInput(inputId = ns("blank_pattern"), label = "Blanks:", value = "blank", width = "100%")
           ),
 
           shiny::column(
             width = 4,
-            # Select QC battern text for regex
+            # Select QC pattern text for regex
             shiny::textInput(inputId = ns("qc_pattern"), label = "QCs:", value = "quality", width = "100%")
           ),
 
           shiny::column(
             width = 4,
-            # Select pool battern text for regex
+            # Select pool pattern text for regex
             shiny::textInput(inputId = ns("pool_pattern"), label = "Pools:", value = "pool", width = "100%")
           )
         ),
@@ -503,28 +523,28 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
       session = session,
       inputId = 'select_id_meta',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[4]
+      selected = "analystId"
     )
 
     shiny::updateSelectInput(
       session = session,
       inputId = 'select_group_col',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[11]
+      selected = "genoType"
     )
 
     shiny::updateSelectInput(
       session = session,
       inputId = 'select_type_col',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[10]
+      selected = "cellType"
     )
 
     shiny::updateSelectInput(
       session = session,
       inputId = 'select_batch_col',
       choices = colnames(r6$tables$imp_meta),
-      selected = colnames(r6$tables$imp_meta)[1]
+      selected = "batchNumber"
     )
   })
 
@@ -546,6 +566,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     print_tm(m, 'Setting ID column')
 
     if (length(r6$tables$imp_meta[,input$select_id_meta]) == length(unique(r6$tables$imp_meta[,input$select_id_meta]))) {
+
       r6$indices$id_col_meta = input$select_id_meta
       r6$set_raw_meta()
       update_sample_filters(input = input, session = session, r6 = r6)
@@ -571,13 +592,14 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
         selected = 'Imported metadata table'
       )
     }
+    print_tm(m, 'done')
   })
 
   # Group col selection
-  session$userData[[id]]$select_group_col = shiny::observeEvent(c(input$select_group_col,
-                                                                  input$selection_drop,
-                                                                  input$selection_keep,
-                                                                  input$reset_meta), {
+  session$userData[[id]]$select_group_col = shiny::observeEvent(c(input$select_group_col), {
+                                                                  # input$selection_drop,
+                                                                  # input$selection_keep,
+                                                                  # input$reset_meta), {
     shiny::req(r6$tables$raw_meta)
 
     print_tm(m, 'Setting group column')
@@ -604,6 +626,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
           axis.text.y = element_text(size = 15)
         )
     )
+    print_tm(m, 'done')
   })
 
   # Batch col selection
@@ -613,6 +636,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
     print_tm(m, 'Setting batch column')
     r6$indices$batch_col = input$select_batch_col
+    print_tm(m, 'done')
   })
 
   # Type col selection
@@ -626,6 +650,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                  input$qc_pattern,
                  input$pool_pattern))
 
+    print_tm(m, 'Setting type column')
     if ((input$select_type_col != "") & (!is.null(input$blank_pattern)) & (!is.null(input$qc_pattern)) & (!is.null(input$pool_pattern))) {
       r6$indices$type_col = input$select_type_col
       type_vector = r6$tables$imp_meta[, input$select_type_col]
@@ -652,6 +677,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
       r6$indices$rownames_pools = r6$tables$imp_meta[pool_idx, input$select_id_meta]
       r6$indices$rownames_samples = r6$tables$imp_meta[sample_idx, input$select_id_meta]
     }
+    print_tm(m, 'done')
   })
 
 
@@ -712,13 +738,14 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   # Update the metadata value once a metadata column is selected
   session$userData[[id]]$exclusion_meta_col = shiny::observeEvent(c(input$exclusion_meta_col),{
-    if (r6$preloaded_data) {return()}
-    shiny::updateSelectInput(
-      session = session,
-      inputId = "exclusion_meta_val",
-      choices = unique(r6$tables$raw_meta[,input$exclusion_meta_col]),
-      selected = character(0)
-    )
+    if(input$exclusion_meta_col != "") {
+      shiny::updateSelectInput(
+        session = session,
+        inputId = "exclusion_meta_val",
+        choices = unique(r6$tables$raw_meta[,input$exclusion_meta_col]),
+        selected = character(0)
+      )
+    }
   })
 
 
@@ -914,7 +941,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
               label = "Apply",
               onLabel = "Y",
               offLabel = "N",
-              value = F,
+              value = FALSE,
               labelWidth = "80px"
             )
           ),
@@ -925,7 +952,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
               label = "Before filtering",
               onLabel = "Y",
               offLabel = "N",
-              value = T,
+              value = TRUE,
               labelWidth = "120px"
             )
           )
@@ -937,7 +964,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                                   choices = c('minimum', 'mean', 'median', 'max'),
                                   selected = "median",
                                   label = 'Imputation method',
-                                  multiple = F,
+                                  multiple = FALSE,
                                   width = "100%")
           ),
           shiny::column(
@@ -975,19 +1002,34 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
         ),
 
         shiny::fluidRow(
-          shiny::textInput(inputId = ns("blank_multiplier"), label = 'Blank multiplier', value = 2, width = "100%")
+          shiny::textInput(inputId = ns("blank_multiplier"),
+                           label = 'Blank multiplier',
+                           value = 2,
+                           width = "100%")
         ),
 
         shiny::fluidRow(
           # Sample threshold
           shiny::column(
             width = 6,
-            shiny::sliderInput(inputId = ns("sample_threshold"), label = "Sample threshold", value = 0.8, min = 0, max = 1, step = 0.05, width = "100%")
+            shiny::sliderInput(inputId = ns("sample_threshold"),
+                               label = "Sample threshold",
+                               value = 0.8,
+                               min = 0,
+                               max = 1,
+                               step = 0.05,
+                               width = "100%")
           ),
           # Group threshold
           shiny::column(
             width = 6,
-            shiny::sliderInput(inputId = ns("group_threshold"), label = "Group threshold", value = 0.8, min = 0, max = 1, step = 0.05, width = "100%")
+            shiny::sliderInput(inputId = ns("group_threshold"),
+                               label = "Group threshold",
+                               value = 0.8,
+                               min = 0,
+                               max = 1,
+                               step = 0.05,
+                               width = "100%")
           )
         ),
 
