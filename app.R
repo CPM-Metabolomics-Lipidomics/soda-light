@@ -134,21 +134,24 @@ server = function(input, output, session) {
     )
   )
 
-  # help
-  about_server(id = 'mod_about', main_output = output)
+  # get client data, can not access url_search here, it is a reactive value
+  client_data <- session$clientData
 
   # read the master database file
   db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
                                              sheet = 1))
+
   # Single omics modules
-  # this doesn't stop executing
   shiny::observe({
-    query <- list("experimentId" = NULL)
+    req(client_data,
+        db_data)
+
     print("Rico: app starting")
 
-    print("Rico: get URL parameter")
     # get the url parameter
-    query <- parseQueryString(session$clientData$url_search)
+    # for easy development
+    query <- list("experimentId" = NULL)
+    query <- shiny::parseQueryString(client_data$url_search)
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
       print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
@@ -158,9 +161,9 @@ server = function(input, output, session) {
       }
     } else {
       # for easy development
-      query[["experimentId"]] <- "VDK_230228_02"
+      query[["experimentId"]] <- "VDK_230504_01"
     }
-    print(paste("Rico: experimentId", query[["experimentId"]]))
+    print(paste("Rico: experimentId:", query[["experimentId"]]))
 
     if(!is.null(query[["experimentId"]])) {
       # get the batches for the samples belonging to the experiment
@@ -175,7 +178,8 @@ server = function(input, output, session) {
     }
   })
 
-
+  # help
+  about_server(id = 'mod_about', main_output = output)
 }
 
 #---------------------------------------------------------------------- End ----
