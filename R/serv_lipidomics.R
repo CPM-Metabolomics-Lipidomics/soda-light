@@ -303,15 +303,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
                   width = '100%'
                 )
               ),
-              # Download metadata button
-              # shiny::column(
-              #   width = 3,
-              #   shiny::downloadButton(
-              #     outputId = ns("download_metatable"),
-              #     label = "Download",
-              #     style = "width:100%;"
-              #   )
-              # )
             ),
 
             # Table preview box
@@ -643,38 +634,70 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
       })
 
       # Group col selection
-      session$userData[[id]]$select_group_col = shiny::observeEvent(c(input$select_group_col), {
-        # input$selection_drop,
-        # input$selection_keep,
-        # input$reset_meta), {
-        shiny::req(r6$tables$raw_meta)
+      session$userData[[id]]$select_group_col = shiny::observeEvent(
+        c(input$select_group_col), {
+            shiny::req(r6$tables$raw_meta)
 
-        print_tm(m, 'Setting group column')
+            print_tm(m, 'Setting group column')
 
-        data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
-        r6$indices$group_col = input$select_group_col
-        groups = unique_na_rm(r6$tables$imp_meta[, input$select_group_col])
-        freq = data.frame(table(base::factor(na.omit(data_table[, input$select_group_col]), levels = groups)))
-        names(freq) = c("value", "count")
+            data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
+            r6$indices$group_col = input$select_group_col
+            groups = unique_na_rm(r6$tables$imp_meta[, input$select_group_col])
+            freq = data.frame(table(base::factor(na.omit(data_table[, input$select_group_col]), levels = groups)))
+            names(freq) = c("value", "count")
 
-        output$group_distribution_preview = shiny::renderPlot(
-          ggplot2::ggplot(data = freq, aes(x = value, y = count)) +
-            geom_bar(stat = "identity", fill="blue")+
-            geom_text(aes(label=count), vjust=0.5, hjust = -0.5, size=6)+
-            xlab(NULL) +
-            ylab(NULL) +
-            ylim(0,max(freq$count)+10) +
-            theme_minimal() +
-            coord_flip() +
-            labs(title = 'Groups distribution')+
-            theme(
-              plot.title = element_text(size=17, hjust = 0.5),
-              axis.text.x = element_text(size = 15),
-              axis.text.y = element_text(size = 15)
+            output$group_distribution_preview = shiny::renderPlot(
+              ggplot2::ggplot(data = freq, aes(x = value, y = count)) +
+                geom_bar(stat = "identity", fill="blue")+
+                geom_text(aes(label=count), vjust=0.5, hjust = -0.5, size=6)+
+                xlab(NULL) +
+                ylab(NULL) +
+                ylim(0,max(freq$count)+10) +
+                theme_minimal() +
+                coord_flip() +
+                labs(title = 'Groups distribution')+
+                theme(
+                  plot.title = element_text(size=17, hjust = 0.5),
+                  axis.text.x = element_text(size = 15),
+                  axis.text.y = element_text(size = 15)
+                )
             )
-        )
-        print_tm(m, 'done')
-      })
+            print_tm(m, 'done')
+          })
+
+      session$userData[[id]]$select_group_col = shiny::observeEvent(
+        c(input$selection_keep,
+          input$selection_drop,
+          input$selection_keep,
+          input$reset_meta), {
+            shiny::req(r6$tables$raw_meta)
+
+            print_tm(m, 'Updating groups plot')
+
+            data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
+            r6$indices$group_col = input$select_group_col
+            groups = unique_na_rm(r6$tables$imp_meta[, input$select_group_col])
+            freq = data.frame(table(base::factor(na.omit(data_table[, input$select_group_col]), levels = groups)))
+            names(freq) = c("value", "count")
+
+            output$group_distribution_preview = shiny::renderPlot(
+              ggplot2::ggplot(data = freq, aes(x = value, y = count)) +
+                geom_bar(stat = "identity", fill="blue")+
+                geom_text(aes(label=count), vjust=0.5, hjust = -0.5, size=6)+
+                xlab(NULL) +
+                ylab(NULL) +
+                ylim(0,max(freq$count)+10) +
+                theme_minimal() +
+                coord_flip() +
+                labs(title = 'Groups distribution')+
+                theme(
+                  plot.title = element_text(size=17, hjust = 0.5),
+                  axis.text.x = element_text(size = 15),
+                  axis.text.y = element_text(size = 15)
+                )
+            )
+            print_tm(m, 'done')
+          })
 
       # Batch col selection
       session$userData[[id]]$select_batch_col = shiny::observeEvent(input$select_batch_col, {
@@ -687,100 +710,102 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
       })
 
       # Type col selection
-      session$userData[[id]]$select_type_col = shiny::observeEvent(c(input$select_type_col,
-                                                                     input$blank_pattern,
-                                                                     input$qc_pattern,
-                                                                     input$pool_pattern,
-                                                                     input$select_id_meta), {
-                                                                       shiny::req(c(r6$tables$imp_meta,
-                                                                                    input$blank_pattern,
-                                                                                    input$qc_pattern,
-                                                                                    input$pool_pattern))
+      session$userData[[id]]$select_type_col = shiny::observeEvent(
+        c(input$select_type_col,
+          input$blank_pattern,
+          input$qc_pattern,
+          input$pool_pattern,
+          input$select_id_meta), {
+            shiny::req(c(r6$tables$imp_meta,
+                         input$blank_pattern,
+                         input$qc_pattern,
+                         input$pool_pattern))
 
-                                                                       print_tm(m, 'Setting type column')
-                                                                       if ((input$select_type_col != "") & (!is.null(input$blank_pattern)) & (!is.null(input$qc_pattern)) & (!is.null(input$pool_pattern))) {
-                                                                         r6$indices$type_col = input$select_type_col
-                                                                         type_vector = r6$tables$imp_meta[, input$select_type_col]
-                                                                         blank_idx = grep(pattern = input$blank_pattern,
-                                                                                          x = type_vector,
-                                                                                          ignore.case = TRUE)
-                                                                         qc_idx = grep(pattern = input$qc_pattern,
-                                                                                       x = type_vector,
-                                                                                       ignore.case = TRUE)
-                                                                         pool_idx = grep(pattern = input$pool_pattern,
-                                                                                         x = type_vector,
-                                                                                         ignore.case = TRUE)
+            print_tm(m, 'Setting type column')
+            if ((input$select_type_col != "") & (!is.null(input$blank_pattern)) & (!is.null(input$qc_pattern)) & (!is.null(input$pool_pattern))) {
+              r6$indices$type_col = input$select_type_col
+              type_vector = r6$tables$imp_meta[, input$select_type_col]
+              blank_idx = grep(pattern = input$blank_pattern,
+                               x = type_vector,
+                               ignore.case = TRUE)
+              qc_idx = grep(pattern = input$qc_pattern,
+                            x = type_vector,
+                            ignore.case = TRUE)
+              pool_idx = grep(pattern = input$pool_pattern,
+                              x = type_vector,
+                              ignore.case = TRUE)
 
-                                                                         sample_idx = 1:nrow(r6$tables$imp_meta)
-                                                                         sample_idx = setdiff(sample_idx, c(blank_idx, qc_idx, pool_idx))
+              sample_idx = 1:nrow(r6$tables$imp_meta)
+              sample_idx = setdiff(sample_idx, c(blank_idx, qc_idx, pool_idx))
 
-                                                                         r6$indices$idx_blanks = blank_idx
-                                                                         r6$indices$idx_qcs = qc_idx
-                                                                         r6$indices$idx_pools = pool_idx
-                                                                         r6$indices$idx_samples = sample_idx
+              r6$indices$idx_blanks = blank_idx
+              r6$indices$idx_qcs = qc_idx
+              r6$indices$idx_pools = pool_idx
+              r6$indices$idx_samples = sample_idx
 
-                                                                         r6$indices$rownames_blanks = r6$tables$imp_meta[blank_idx, input$select_id_meta]
-                                                                         r6$indices$rownames_qcs = r6$tables$imp_meta[qc_idx, input$select_id_meta]
-                                                                         r6$indices$rownames_pools = r6$tables$imp_meta[pool_idx, input$select_id_meta]
-                                                                         r6$indices$rownames_samples = r6$tables$imp_meta[sample_idx, input$select_id_meta]
-                                                                       }
-                                                                       print_tm(m, 'done')
-                                                                     })
+              r6$indices$rownames_blanks = r6$tables$imp_meta[blank_idx, input$select_id_meta]
+              r6$indices$rownames_qcs = r6$tables$imp_meta[qc_idx, input$select_id_meta]
+              r6$indices$rownames_pools = r6$tables$imp_meta[pool_idx, input$select_id_meta]
+              r6$indices$rownames_samples = r6$tables$imp_meta[sample_idx, input$select_id_meta]
+            }
+            print_tm(m, 'done')
+          })
 
 
 
       # Type col selection
-      session$userData[[id]]$select_type_col = shiny::observeEvent(c(input$select_type_col,
-                                                                     input$blank_pattern,
-                                                                     input$qc_pattern,
-                                                                     input$pool_pattern,
-                                                                     input$select_id_meta,
-                                                                     input$select_meta_table,
-                                                                     input$selection_drop,
-                                                                     input$selection_keep,
-                                                                     input$reset_meta), {
-                                                                       shiny::req(r6$tables$raw_meta,
-                                                                                  input$select_type_col)
+      session$userData[[id]]$select_type_col = shiny::observeEvent(
+        c(input$select_type_col,
+          input$blank_pattern,
+          input$qc_pattern,
+          input$pool_pattern,
+          input$select_id_meta,
+          input$select_meta_table,
+          input$selection_drop,
+          input$selection_keep,
+          input$reset_meta), {
+            shiny::req(r6$tables$raw_meta,
+                       input$select_type_col)
 
-                                                                       print_tm(m, 'Updating type plot.')
+            print_tm(m, 'Updating type plot.')
 
-                                                                       data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
-                                                                       if (input$select_meta_table == 'Imported metadata table') {
-                                                                         blank_idx = intersect(rownames(data_table), r6$indices$idx_blanks)
-                                                                         qc_idx = intersect(rownames(data_table), r6$indices$idx_qcs)
-                                                                         pool_idx = intersect(rownames(data_table), r6$indices$idx_pools)
-                                                                         sample_idx = intersect(rownames(data_table), r6$indices$idx_samples)
-                                                                       } else {
-                                                                         blank_idx = intersect(rownames(data_table), r6$indices$rownames_blanks)
-                                                                         qc_idx = intersect(rownames(data_table), r6$indices$rownames_qcs)
-                                                                         pool_idx = intersect(rownames(data_table), r6$indices$rownames_pools)
-                                                                         sample_idx = intersect(rownames(data_table), r6$indices$rownames_samples)
-                                                                       }
+            data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
+            if (input$select_meta_table == 'Imported metadata table') {
+              blank_idx = intersect(rownames(data_table), r6$indices$idx_blanks)
+              qc_idx = intersect(rownames(data_table), r6$indices$idx_qcs)
+              pool_idx = intersect(rownames(data_table), r6$indices$idx_pools)
+              sample_idx = intersect(rownames(data_table), r6$indices$idx_samples)
+            } else {
+              blank_idx = intersect(rownames(data_table), r6$indices$rownames_blanks)
+              qc_idx = intersect(rownames(data_table), r6$indices$rownames_qcs)
+              pool_idx = intersect(rownames(data_table), r6$indices$rownames_pools)
+              sample_idx = intersect(rownames(data_table), r6$indices$rownames_samples)
+            }
 
-                                                                       data_table[, input$select_type_col] = 'Samples'
-                                                                       data_table[blank_idx, input$select_type_col] = 'Blanks'
-                                                                       data_table[qc_idx, input$select_type_col] = 'QCs'
-                                                                       data_table[pool_idx, input$select_type_col] = 'Pools'
+            data_table[, input$select_type_col] = 'Samples'
+            data_table[blank_idx, input$select_type_col] = 'Blanks'
+            data_table[qc_idx, input$select_type_col] = 'QCs'
+            data_table[pool_idx, input$select_type_col] = 'Pools'
 
-                                                                       freq_table = data.frame(table(base::factor(data_table[, input$select_type_col], levels = c('Pools', 'QCs', 'Blanks', 'Samples'))))
-                                                                       names(freq_table) = c("value", "count")
+            freq_table = data.frame(table(base::factor(data_table[, input$select_type_col], levels = c('Pools', 'QCs', 'Blanks', 'Samples'))))
+            names(freq_table) = c("value", "count")
 
-                                                                       output$type_distribution_preview = shiny::renderPlot(
-                                                                         ggplot2::ggplot(data = freq_table, aes(x = value, y = count)) +
-                                                                           geom_bar(stat = "identity", fill="blue")+
-                                                                           geom_text(aes(label=count), vjust=-0.5, hjust = 0.5, size=6)+
-                                                                           xlab(NULL) +
-                                                                           ylab(NULL) +
-                                                                           ylim(0,max(freq_table$count)+10) +
-                                                                           theme_minimal() +
-                                                                           labs(title = 'Type distribution')+
-                                                                           theme(
-                                                                             plot.title = element_text(size=17, hjust = 0.5),
-                                                                             axis.text.x = element_text(size = 15),
-                                                                             axis.text.y = element_text(size = 15)
-                                                                           )
-                                                                       )
-                                                                     })
+            output$type_distribution_preview = shiny::renderPlot(
+              ggplot2::ggplot(data = freq_table, aes(x = value, y = count)) +
+                geom_bar(stat = "identity", fill="blue")+
+                geom_text(aes(label=count), vjust=-0.5, hjust = 0.5, size=6)+
+                xlab(NULL) +
+                ylab(NULL) +
+                ylim(0,max(freq_table$count)+10) +
+                theme_minimal() +
+                labs(title = 'Type distribution')+
+                theme(
+                  plot.title = element_text(size=17, hjust = 0.5),
+                  axis.text.x = element_text(size = 15),
+                  axis.text.y = element_text(size = 15)
+                )
+            )
+          })
 
 
       # Update the metadata value once a metadata column is selected
@@ -855,19 +880,20 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
       })
 
       # Row count progress bar
-      session$userData[[id]]$row_count_bar_meta = shiny::observeEvent(c(input$selection_keep,
-                                                                        input$selection_drop,
-                                                                        input$reset_meta,
-                                                                        input$select_meta_table), {
-                                                                          data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
+      session$userData[[id]]$row_count_bar_meta = shiny::observeEvent(
+        c(input$selection_keep,
+          input$selection_drop,
+          input$reset_meta,
+          input$select_meta_table), {
+            data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
 
-                                                                          shinyWidgets::updateProgressBar(
-                                                                            session = session,
-                                                                            id = "row_count_bar_meta",
-                                                                            value = nrow(data_table),
-                                                                            total = nrow(r6$tables$imp_meta)
-                                                                          )
-                                                                        })
+            shinyWidgets::updateProgressBar(
+              session = session,
+              id = "row_count_bar_meta",
+              value = nrow(data_table),
+              total = nrow(r6$tables$imp_meta)
+            )
+          })
 
       # Download meta table
       dl_meta_table = shiny::reactiveValues(
@@ -911,15 +937,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
                   width = '100%'
                 )
               ),
-              # Download button
-              # shiny::column(
-              #   width = 3,
-              #   shiny::downloadButton(
-              #     outputId = ns("download_datatable"),
-              #     label = "Download",
-              #     style = "width:100%;"
-              #   )
-              # )
             ),
             # Table preview box
             bs4Dash::box(
