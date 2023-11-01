@@ -1141,7 +1141,7 @@ example_lipidomics = function(name,
   data_files = data_files[!is.na(data_files)]
   meta_data = meta_data[meta_data$batchNumber %in% data_files &
                           (meta_data$experimentId %in% experiment_id |
-                             meta_data$experimentId %in% data_file), 1:18]
+                             meta_data$experimentId %in% data_files), 1:18]
 
   # get the lipid data
   data_tables <- vector("list", length = length(data_files))

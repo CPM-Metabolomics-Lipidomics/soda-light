@@ -248,8 +248,8 @@ lipidomics_ui = function(id) {
               shiny::selectInput(
                 inputId = ns('select_meta_table'),
                 label = NULL,
-                choices = c('Imported metadata table'),
-                selected = 'Imported metadata table',
+                choices = c('Imported metadata table', 'Raw metadata table'),
+                selected = 'Raw metadata table',
                 width = '100%'
               )
             ),
@@ -760,38 +760,40 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
       #------------------------------------------------- Metadata upload server ----
 
       # # Upload metadata
-      # session$userData[[id]]$upload_meta = shiny::observe({
-      #   shiny::req(input$table_box_meta$collapsed,
-      #              input$summary_box_meta$collapsed)
-      #
-      #   if(r6$preloaded_data) { return() }
-      #
-      #   # this is executed twice
-      #   file_path = file.path("data", "Database", "SampleMasterfile.xlsx")
-      #   data_table = soda_read_table(file_path = file_path)
-      #   # clean up data_table, too much meta data in there
-      #   data_table = data_table[data_table$batchNumber %in% r6$data_file &
-      #                             (data_table$experimentId %in% r6$experiment_id |
-      #                                data_table$experimentId %in% r6$data_file), 1:18]
-      #
-      #   if (ncol(data_table) > 70) {
-      #     print_tm(m, 'ERROR: Meta - uploaded file has more than 70 columns, unlikely to be a metadata file')
-      #     return()
-      #   }
-      #   r6$tables$imp_meta = data_table
-      #
-      #   # Preview table
-      #   output$metadata_preview_table = renderDataTable({
-      #     DT::datatable(data_table, options = list(paging = TRUE))
-      #   })
-      #
-      #   if (input$table_box_meta$collapsed) {
-      #     bs4Dash::updateBox(id = 'table_box_meta', action = 'toggle')
-      #   }
-      #   if (input$summary_box_meta$collapsed) {
-      #     bs4Dash::updateBox(id = 'summary_box_meta', action = 'toggle')
-      #   }
-      # })
+      session$userData[[id]]$upload_meta = shiny::observe({
+        shiny::req(input$table_box_meta$collapsed,
+                   input$summary_box_meta$collapsed)
+
+        # if(r6$preloaded_data) { return() }
+
+        # # this is executed twice
+        # file_path = file.path("data", "Database", "SampleMasterfile.xlsx")
+        # data_table = soda_read_table(file_path = file_path)
+        # # clean up data_table, too much meta data in there
+        # data_table = data_table[data_table$batchNumber %in% r6$data_file &
+        #                           (data_table$experimentId %in% r6$experiment_id |
+        #                              data_table$experimentId %in% r6$data_file), 1:18]
+        #
+        # if (ncol(data_table) > 70) {
+        #   print_tm(m, 'ERROR: Meta - uploaded file has more than 70 columns, unlikely to be a metadata file')
+        #   return()
+        # }
+        # r6$tables$imp_meta = data_table
+
+        data_table = r6$tables$imp_meta
+
+        # Preview table
+        output$metadata_preview_table = renderDataTable({
+          DT::datatable(data_table, options = list(paging = TRUE))
+        })
+
+        if (input$table_box_meta$collapsed) {
+          bs4Dash::updateBox(id = 'table_box_meta', action = 'toggle')
+        }
+        if (input$summary_box_meta$collapsed) {
+          bs4Dash::updateBox(id = 'summary_box_meta', action = 'toggle')
+        }
+      })
 
       # Preview all / subset switch
       session$userData[[id]]$select_meta_table = shiny::observeEvent(input$select_meta_table, {
@@ -841,7 +843,11 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
 
       # Group col selection
       session$userData[[id]]$select_group_col = shiny::observeEvent(
-        c(input$select_group_col), {
+        c(input$select_group_col,
+          input$selection_keep,
+          input$selection_drop,
+          input$selection_keep,
+          input$reset_meta), {
           shiny::req(r6$tables$raw_meta)
 
           print_tm(m, 'Meta - Setting group column')
@@ -870,38 +876,38 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
           )
         })
 
-      session$userData[[id]]$select_group_col = shiny::observeEvent(
-        c(input$selection_keep,
-          input$selection_drop,
-          input$selection_keep,
-          input$reset_meta), {
-            shiny::req(r6$tables$raw_meta)
-
-            print_tm(m, 'Meta - Updating groups plot')
-
-            data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
-            r6$indices$group_col = input$select_group_col
-            groups = unique_na_rm(r6$tables$imp_meta[, input$select_group_col])
-            freq = data.frame(table(base::factor(na.omit(data_table[, input$select_group_col]), levels = groups)))
-            names(freq) = c("value", "count")
-
-            output$group_distribution_preview = shiny::renderPlot(
-              ggplot2::ggplot(data = freq, aes(x = value, y = count)) +
-                geom_bar(stat = "identity", fill="blue")+
-                geom_text(aes(label=count), vjust=0.5, hjust = -0.5, size=6)+
-                xlab(NULL) +
-                ylab(NULL) +
-                ylim(0,max(freq$count)+10) +
-                theme_minimal() +
-                coord_flip() +
-                labs(title = 'Groups distribution')+
-                theme(
-                  plot.title = element_text(size=17, hjust = 0.5),
-                  axis.text.x = element_text(size = 15),
-                  axis.text.y = element_text(size = 15)
-                )
-            )
-          })
+      # session$userData[[id]]$select_group_col = shiny::observeEvent(
+      #   c(input$selection_keep,
+      #     input$selection_drop,
+      #     input$selection_keep,
+      #     input$reset_meta), {
+      #       shiny::req(r6$tables$raw_meta)
+      #
+      #       print_tm(m, 'Meta - Updating groups plot')
+      #
+      #       data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
+      #       r6$indices$group_col = input$select_group_col
+      #       groups = unique_na_rm(r6$tables$imp_meta[, input$select_group_col])
+      #       freq = data.frame(table(base::factor(na.omit(data_table[, input$select_group_col]), levels = groups)))
+      #       names(freq) = c("value", "count")
+      #
+      #       output$group_distribution_preview = shiny::renderPlot(
+      #         ggplot2::ggplot(data = freq, aes(x = value, y = count)) +
+      #           geom_bar(stat = "identity", fill="blue")+
+      #           geom_text(aes(label=count), vjust=0.5, hjust = -0.5, size=6)+
+      #           xlab(NULL) +
+      #           ylab(NULL) +
+      #           ylim(0,max(freq$count)+10) +
+      #           theme_minimal() +
+      #           coord_flip() +
+      #           labs(title = 'Groups distribution')+
+      #           theme(
+      #             plot.title = element_text(size=17, hjust = 0.5),
+      #             axis.text.x = element_text(size = 15),
+      #             axis.text.y = element_text(size = 15)
+      #           )
+      #       )
+      #     })
 
       # Batch col selection
       session$userData[[id]]$select_batch_col = shiny::observeEvent(input$select_batch_col, {
