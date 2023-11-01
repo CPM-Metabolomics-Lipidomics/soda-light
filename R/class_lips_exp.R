@@ -281,7 +281,6 @@ Lips_exp = R6::R6Class(
 
         # Remove empty columns
         data_table = remove_empty_cols(data_table)
-        print("Rico: after remove empty")
         # Imputation and filtering
         if (apply_imputation & impute_before & apply_filtering) {
           # impute and filter

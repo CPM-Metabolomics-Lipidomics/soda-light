@@ -485,8 +485,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
       return()
     }
     r6$tables$imp_meta = data_table
-    # Set the sample id column name for the meta data.
-    r6$indices$id_col_meta = "sampleId"
 
     # Preview table
     output$metadata_preview_table = renderDataTable({
@@ -501,12 +499,12 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     }
 
     # Update select inputs
-    # shiny::updateSelectInput(
-    #   session = session,
-    #   inputId = 'select_id_meta',
-    #   choices = colnames(r6$tables$imp_meta),
-    #   selected = colnames(r6$tables$imp_meta)[4]
-    # )
+    shiny::updateSelectInput(
+      session = session,
+      inputId = 'select_id_meta',
+      choices = colnames(r6$tables$imp_meta),
+      selected = colnames(r6$tables$imp_meta)[4]
+    )
 
     shiny::updateSelectInput(
       session = session,
@@ -528,38 +526,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
       choices = colnames(r6$tables$imp_meta),
       selected = colnames(r6$tables$imp_meta)[1]
     )
-
-    # This is a crappy solution
-    print("Rico: outside test")
-    if(input$select_group_col != "" & input$select_type_col != "" & input$select_batch_col != "") {
-      print("Rico: inside test")
-      if (length(r6$tables$imp_meta[, r6$indices$id_col_meta]) == length(unique(r6$tables$imp_meta[, r6$indices$id_col_meta]))) {
-        r6$set_raw_meta()
-        update_sample_filters(input = input, session = session, r6 = r6)
-
-        # Update metadata column input
-        shiny::updateSelectInput(
-          session = session,
-          inputId = "exclusion_meta_col",
-          choices = colnames(r6$tables$raw_meta)
-        )
-
-        shiny::updateSelectInput(
-          inputId = 'select_meta_table',
-          choices = c('Imported metadata table', 'Raw metadata table'),
-          selected = 'Raw metadata table'
-        )
-      } else {
-        print_tm(m, 'ERROR: Non-unique IDs in ID column')
-        r6$tables$raw_meta = NULL
-        shiny::updateSelectInput(
-          inputId = 'select_meta_table',
-          choices = c('Imported metadata table'),
-          selected = 'Imported metadata table'
-        )
-      }
-    }
-
   })
 
   # Preview all / subset switch
@@ -573,38 +539,39 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   })
 
   # Get ID
-  # session$userData[[id]]$id_select_meta = shiny::observeEvent(input$select_id_meta, {
-  #   shiny::req(r6$tables$imp_meta,
-  #              input$select_id_meta)
-  #   print_tm(m, 'Setting ID column')
-  #
-  #   if (length(r6$tables$imp_meta[, r6$indices$id_col_meta]) == length(unique(r6$tables$imp_meta[, r6$indices$id_col_meta]))) {
-  #     # r6$indices$id_col_meta = input$select_id_meta
-  #     r6$set_raw_meta()
-  #     update_sample_filters(input = input, session = session, r6 = r6)
-  #
-  #     # Update metadata column input
-  #     shiny::updateSelectInput(
-  #       session = session,
-  #       inputId = "exclusion_meta_col",
-  #       choices = colnames(r6$tables$raw_meta)
-  #     )
-  #
-  #     shiny::updateSelectInput(
-  #       inputId = 'select_meta_table',
-  #       choices = c('Imported metadata table', 'Raw metadata table'),
-  #       selected = 'Raw metadata table'
-  #     )
-  #   } else {
-  #     print_tm(m, 'ERROR: Non-unique IDs in ID column')
-  #     r6$tables$raw_meta = NULL
-  #     shiny::updateSelectInput(
-  #       inputId = 'select_meta_table',
-  #       choices = c('Imported metadata table'),
-  #       selected = 'Imported metadata table'
-  #     )
-  #   }
-  # })
+  session$userData[[id]]$id_select_meta = shiny::observeEvent(input$select_id_meta, {
+    shiny::req(r6$tables$imp_meta,
+               input$select_id_meta)
+    if (r6$preloaded_data) {return()}
+    print_tm(m, 'Setting ID column')
+
+    if (length(r6$tables$imp_meta[,input$select_id_meta]) == length(unique(r6$tables$imp_meta[,input$select_id_meta]))) {
+      r6$indices$id_col_meta = input$select_id_meta
+      r6$set_raw_meta()
+      update_sample_filters(input = input, session = session, r6 = r6)
+
+      # Update metadata column input
+      shiny::updateSelectInput(
+        session = session,
+        inputId = "exclusion_meta_col",
+        choices = colnames(r6$tables$raw_meta)
+      )
+
+      shiny::updateSelectInput(
+        inputId = 'select_meta_table',
+        choices = c('Imported metadata table', 'Raw metadata table'),
+        selected = 'Raw metadata table'
+      )
+    } else {
+      print_tm(m, 'ERROR: Non-unique IDs in ID column')
+      r6$tables$raw_meta = NULL
+      shiny::updateSelectInput(
+        inputId = 'select_meta_table',
+        choices = c('Imported metadata table'),
+        selected = 'Imported metadata table'
+      )
+    }
+  })
 
   # Group col selection
   session$userData[[id]]$select_group_col = shiny::observeEvent(c(input$select_group_col,
