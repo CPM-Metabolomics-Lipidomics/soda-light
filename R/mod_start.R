@@ -91,6 +91,18 @@ start_server = function(id, main_input, main_output, main_session, module_contro
       shiny::observe({
         req(db_data)
 
+        # # get the url parameter
+        query <- parseQueryString(session$clientData$url_search)
+        # simple sanity check
+        if (!is.null(query[["experimentId"]])) {
+          print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
+          if(!grepl(pattern = "^VDK_2[123][0-9]{4}_[0-9]{2}$",
+                x = query[["experimentId"]])) {
+            query[["experimentId"]] <- NULL
+          }
+        }
+
+
         # get the unique Experiment ID's
         # there is a NA present, remove it
         uniqExpId = unique(db_data$experimentId)
@@ -101,9 +113,16 @@ start_server = function(id, main_input, main_output, main_session, module_contro
         remove_exp_id = intersect(uniqBatchNumber, uniqExpId)
         uniqExpId = uniqExpId[!(uniqExpId %in% remove_exp_id)]
 
-        shiny::updateSelectInput(inputId = "exp_select",
-                                 choices = c("Select an experiment",
-                                             uniqExpId))
+        if (!is.null(query[["experimentId"]])) {
+          shiny::updateSelectInput(inputId = "exp_select",
+                                   choices = c("Select an experiment",
+                                               uniqExpId),
+                                   selected = query[["experimentId"]])
+        } else {
+          shiny::updateSelectInput(inputId = "exp_select",
+                                   choices = c("Select an experiment",
+                                               uniqExpId))
+        }
       })
 
       # show the study information

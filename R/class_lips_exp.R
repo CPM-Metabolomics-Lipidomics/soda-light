@@ -247,7 +247,7 @@ Lips_exp = R6::R6Class(
     set_raw_meta = function(){
       if (!is.na(self$indices$id_col_meta) & !is.null(self$tables$imp_meta)){
         data_table = self$tables$imp_meta
-        rownames(data_table) = data_table[,self$indices$id_col_meta]
+        rownames(data_table) = data_table[, self$indices$id_col_meta]
         data_table[,self$indices$id_col_meta] = NULL
         self$tables$raw_meta = data_table
       }
@@ -283,6 +283,7 @@ Lips_exp = R6::R6Class(
         data_table = remove_empty_cols(data_table)
         # Imputation and filtering
         if (apply_imputation & impute_before & apply_filtering) {
+          # impute and filter
           data_table = impute_na(method = imputation_function,
                                  data_table = data_table,
                                  meta_table = self$tables$raw_meta,
@@ -305,6 +306,7 @@ Lips_exp = R6::R6Class(
 
           data_table = drop_cols(data_table, del_cols)
         } else if (apply_imputation & !impute_before & apply_filtering) {
+          # impute (not before) and filter
           del_cols = lips_get_del_cols(data_table = data_table,
                                        blank_table = self$tables$blank_table,
                                        imp_meta = self$tables$imp_meta,
@@ -327,6 +329,7 @@ Lips_exp = R6::R6Class(
                                  sample_rownames = self$indices$rownames_samples,
                                  val_threshold = val_threshold)
         } else if (apply_imputation & !apply_filtering) {
+          # impute alone
           data_table = impute_na(method = imputation_function,
                                  data_table = data_table,
                                  meta_table = self$tables$raw_meta,
