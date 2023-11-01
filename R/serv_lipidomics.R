@@ -995,7 +995,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
               label = "Apply",
               onLabel = "Yes",
               offLabel = "No",
-              value = FALSE,
+              value = TRUE,
               labelWidth = "80px"
             )
           )
