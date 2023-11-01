@@ -868,11 +868,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
       ),
       shiny::column(
         width = 4,
-        shiny::tags$h3("Select columns"),
-        # Select ID column
-        shiny::selectInput(inputId = ns("select_id_data"), choices = NULL, label = "Sample IDs", multiple = F, width = "100%"),
-
-        shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
         shiny::fluidRow(
           shiny::column(
             width = 4,
@@ -1027,6 +1022,9 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     # this is probably not the best solution
     r6$tables$imp_data = data_table[data_table[, "ID"] %in% r6$tables$imp_meta[, "sampleId"], ]
 
+    # Set the sample ID column of the data
+    r6$indices$id_col_data = "ID"
+
     # Preview table
     output$data_preview_table = renderDataTable({
       DT::datatable(data_table, options = list(paging = TRUE))
@@ -1038,13 +1036,6 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     if (input$summary_box_data$collapsed) {
       bs4Dash::updateBox(id = 'summary_box_data', action = 'toggle')
     }
-
-    # Update select inputs
-    shiny::updateSelectInput(
-      inputId = 'select_id_data',
-      choices = colnames(r6$tables$imp_data),
-      selected = colnames(r6$tables$imp_data)[1]
-    )
 
     # Update normalise to column
     shiny::updateSelectInput(
@@ -1102,6 +1093,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     if (length(r6$tables$imp_data[,input$select_id_data]) == length(unique(r6$tables$imp_data[,input$select_id_data]))) {
       print("Rico: inside")
       r6$indices$id_col_data = input$select_id_data
+    # if (length(r6$tables$imp_data[, "ID"]) == length(unique(r6$tables$imp_data[, "ID"]))) {
       r6$get_blank_table()
       print(r6$tables$blank_table[, 1:10])
       print("Rico: set raw data")
@@ -1150,6 +1142,42 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
         selected = 'Imported metadata table'
       )
     }
+
+  })
+
+  # Preview all / subset switch
+  session$userData[[id]]$select_data_table = shiny::observeEvent(input$select_data_table, {
+    shiny::req(r6$tables$imp_data)
+
+    data_table = table_switch(table_name = input$select_data_table, r6 = r6)
+
+    if (input$select_data_table %in% c('Imported data table', 'Raw data table')) {
+
+
+      shinyWidgets::updateProgressBar(
+        session = session,
+        id = "col_count_bar",
+        value = ncol(data_table),
+        total = ncol(r6$tables$imp_data)
+      )
+
+      shinyWidgets::updateProgressBar(
+        session = session,
+        id = "row_count_bar_data",
+        value = nrow(data_table),
+        total = nrow(r6$tables$imp_data)
+      )
+
+      output$lipid_class_summary = shiny::renderPlot(
+        lipidomics_summary_plot(r6, data_table)
+      )
+
+    }
+
+    output$data_preview_table = renderDataTable({
+      DT::datatable(data_table, options = list(paging = TRUE))
+    })
+
   })
 
   # Feature filters
