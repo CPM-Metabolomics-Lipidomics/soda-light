@@ -232,8 +232,6 @@ lipidomics_ui = function(id) {
     type = "tabs",
     shiny::tabPanel(
       title = "Metadata",
-      # shiny::uiOutput(
-      #   outputId = ns('up_metadata_ui'),
       shiny::fluidRow(
 
         # First column with the table input and preview of the raw data
@@ -698,20 +696,38 @@ lipidomics_ui = function(id) {
     ),
     shiny::tabPanel(
       title = "Visualize data",
-      shiny::uiOutput(
-        outputId = ns('visualize_data_ui')
-      )
-    ),
-    shiny::tabPanel(
-      title = "Geneset enrichment",
-      shiny::uiOutput(
-        outputId = ns('geneset_enrichment_ui')
-      )
-    ),
-    shiny::tabPanel(
-      title = "Over-representation analysis",
-      shiny::uiOutput(
-        outputId = ns('over_representation_ui')
+      # shiny::uiOutput(
+      #   outputId = ns('visualize_data_ui')
+      shiny::fluidRow(
+        # First column with the table input and preview of the raw data
+        shiny::column(
+          width = 11,
+          shinyWidgets::checkboxGroupButtons(inputId = ns("showPlots"),
+                                             label = NULL,
+                                             status = "default",
+                                             choices = lipidomics_plot_list(),
+                                             checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
+                                             size = "normal",
+                                             justified = TRUE
+          )
+        ),
+        shiny::column(
+          width = 1,
+          shinyWidgets::actionBttn(inputId = ns("clear_plots"),
+                                   label = "Clear",
+                                   style = "material-flat",
+                                   color = "danger",
+                                   block = T,
+                                   icon = icon("x"))
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 12,
+          shiny::uiOutput(
+            outputId = ns("plotbox_field")
+          )
+        )
       )
     )
   )
@@ -750,7 +766,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
                                      data_table$experimentId %in% r6$data_file), 1:18]
 
         if (ncol(data_table) > 70) {
-          print_tm(m, 'ERROR: uploaded file has more than 70 columns, unlikely to be a metadata file')
+          print_tm(m, 'ERROR: Meta - uploaded file has more than 70 columns, unlikely to be a metadata file')
           return()
         }
         r6$tables$imp_meta = data_table
@@ -812,7 +828,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
         shiny::req(r6$tables$imp_meta,
                    input$select_id_meta)
         if (r6$preloaded_data) {return()}
-        print_tm(m, 'Setting ID column')
+        print_tm(m, 'Meta - Setting ID column')
 
         if (length(r6$tables$imp_meta[,input$select_id_meta]) == length(unique(r6$tables$imp_meta[,input$select_id_meta]))) {
 
@@ -841,7 +857,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
             selected = 'Imported metadata table'
           )
         }
-        print_tm(m, 'done')
       })
 
       # Group col selection
@@ -849,7 +864,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
         c(input$select_group_col), {
           shiny::req(r6$tables$raw_meta)
 
-          print_tm(m, 'Setting group column')
+          print_tm(m, 'Meta - Setting group column')
 
           data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
           r6$indices$group_col = input$select_group_col
@@ -873,7 +888,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
                 axis.text.y = element_text(size = 15)
               )
           )
-          print_tm(m, 'done')
         })
 
       session$userData[[id]]$select_group_col = shiny::observeEvent(
@@ -883,7 +897,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
           input$reset_meta), {
             shiny::req(r6$tables$raw_meta)
 
-            print_tm(m, 'Updating groups plot')
+            print_tm(m, 'Meta - Updating groups plot')
 
             data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
             r6$indices$group_col = input$select_group_col
@@ -907,7 +921,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
                   axis.text.y = element_text(size = 15)
                 )
             )
-            print_tm(m, 'done')
           })
 
       # Batch col selection
@@ -915,9 +928,8 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
         shiny::req(r6$tables$imp_meta,
                    input$select_batch_col)
 
-        print_tm(m, 'Setting batch column')
+        print_tm(m, 'Meta - Setting batch column')
         r6$indices$batch_col = input$select_batch_col
-        print_tm(m, 'done')
       })
 
       # Type col selection
@@ -932,7 +944,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
                          input$qc_pattern,
                          input$pool_pattern))
 
-            print_tm(m, 'Setting type column')
+            print_tm(m, 'Meta - Setting type column')
             if ((input$select_type_col != "") & (!is.null(input$blank_pattern)) & (!is.null(input$qc_pattern)) & (!is.null(input$pool_pattern))) {
               r6$indices$type_col = input$select_type_col
               type_vector = r6$tables$imp_meta[, input$select_type_col]
@@ -959,7 +971,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
               r6$indices$rownames_pools = r6$tables$imp_meta[pool_idx, input$select_id_meta]
               r6$indices$rownames_samples = r6$tables$imp_meta[sample_idx, input$select_id_meta]
             }
-            print_tm(m, 'done')
           })
 
 
@@ -978,7 +989,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
             shiny::req(r6$tables$raw_meta,
                        input$select_type_col)
 
-            print_tm(m, 'Updating type plot.')
+            print_tm(m, 'Meta - Updating type plot.')
 
             data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
             if (input$select_meta_table == 'Imported metadata table') {
@@ -1118,13 +1129,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
         dl_meta_table$table = table_switch(input$select_meta_table, r6)
       })
 
-      output$download_metatable = shiny::downloadHandler(
-        filename = shiny::reactive(dl_meta_table$name),
-        content = function(file_name) {
-          write.csv(dl_meta_table$table, file_name, na = "")
-        }
-      )
-
       #----------------------------------------------------- Data upload server ----
       # Upload data
       session$userData[[id]]$upload_data = shiny::observe({
@@ -1168,7 +1172,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
           selected = character(0)
         )
 
-        print_tm(m, 'Setting ID column')
+        print_tm(m, 'Data - Setting ID column')
         if (length(r6$tables$imp_data[, "ID"]) == length(unique(r6$tables$imp_data[, "ID"]))) {
           r6$get_blank_table()
           r6$set_raw_data(apply_imputation = input$apply_imputation,
@@ -1208,7 +1212,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
 
 
         } else {
-          print_tm(m, 'ERROR: Non-unique IDs in ID column')
+          print_tm(m, 'ERROR: Data - Non-unique IDs in ID column')
           r6$tables$raw_meta = NULL
           shiny::updateSelectInput(
             session = session,
@@ -1254,69 +1258,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
         })
 
       })
-
-      # Get ID
-      # session$userData[[id]]$id_select_data = shiny::observeEvent(input$select_id_data, {
-      #   shiny::req(r6$tables$imp_data,
-      #              input$select_id_data)
-      #
-      #   if (r6$preloaded_data) {return()}
-      #   print_tm(m, 'Setting ID column')
-      #   print("Rico: I'am here")
-      #   if (length(r6$tables$imp_data[,input$select_id_data]) == length(unique(r6$tables$imp_data[,input$select_id_data]))) {
-      #     print("Rico: inside")
-      #     r6$indices$id_col_data = input$select_id_data
-      #   # if (length(r6$tables$imp_data[, "ID"]) == length(unique(r6$tables$imp_data[, "ID"]))) {
-      #     r6$get_blank_table()
-      #     print(r6$tables$blank_table[, 1:10])
-      #     print("Rico: set raw data")
-      #     r6$set_raw_data(apply_imputation = input$apply_imputation,
-      #                     impute_before = input$impute_before,
-      #                     apply_filtering = input$apply_filtering,
-      #                     imputation_function = input$na_imputation,
-      #                     val_threshold = as.numeric(input$imputation_min_values),
-      #                     blank_multiplier = as.numeric(input$blank_multiplier),
-      #                     sample_threshold = as.numeric(input$sample_threshold),
-      #                     group_threshold = as.numeric(input$group_threshold),
-      #                     norm_col = input$normalise_to_col)
-      #     print("Rico: done ID")
-      #
-      #     r6$derive_data_tables()
-      #
-      #     shiny::updateSelectInput(
-      #       inputId = 'select_data_table',
-      #       choices = c('Imported data table', 'Raw data table', 'Feature table', 'Blank table', 'Class normalized table', 'Total normalized table', 'Z-scored table', 'Z-scored class normalized table', 'Z-scored total normalized table', 'Class table', 'Class table total normalized', 'Class table z-scored total normalized', 'Species summary table', 'Class summary table'),
-      #       selected = 'Raw data table'
-      #     )
-      #
-      #     # Update class selection
-      #     shiny::updateSelectizeInput(
-      #       session = session,
-      #       inputId = "class_selection",
-      #       choices = unique(r6$tables$feature_table$lipid_class),
-      #       selected = character(0)
-      #     )
-      #
-      #     # Update manual selection
-      #     shiny::updateSelectizeInput(
-      #       session = session,
-      #       inputId = "manual_selection",
-      #       choices = colnames(r6$tables$raw_data),
-      #       selected = character(0)
-      #     )
-      #
-      #
-      #   } else {
-      #     print_tm(m, 'ERROR: Non-unique IDs in ID column')
-      #     r6$tables$raw_meta = NULL
-      #     shiny::updateSelectInput(
-      #       inputId = 'select_meta_table',
-      #       choices = c('Imported metadata table'),
-      #       selected = 'Imported metadata table'
-      #     )
-      #   }
-      #
-      # })
 
       # Preview all / subset switch
       session$userData[[id]]$select_data_table = shiny::observeEvent(input$select_data_table, {
@@ -1371,7 +1312,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
 
             shiny::req(r6$tables$raw_data)
             if (r6$preloaded_data) {return()}
-            print_tm(m, 'Updating data tables')
+            print_tm(m, 'Data - Updating data tables')
             r6$set_raw_data(apply_imputation = input$apply_imputation,
                             impute_before = input$impute_before,
                             apply_filtering = input$apply_filtering,
@@ -1435,7 +1376,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
       # Drop features
       session$userData[[id]]$feature_drop = shiny::observeEvent(input$drop_cols,{
         shiny::req(r6$tables$feature_table)
-        print_tm(m, 'Dropping features')
+        print_tm(m, 'Data - Dropping features')
         selected_species = rownames(r6$tables$feature_table)[which(r6$tables$feature_table$lipid_class %in% input$class_selection)]
         selected_species = unique(c(selected_species, input$manual_selection))
         r6$tables$raw_data = drop_cols(data_table = r6$tables$raw_data, cols = selected_species)
@@ -1485,7 +1426,7 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
       # Keep features
       session$userData[[id]]$keep_cols = shiny::observeEvent(input$keep_cols,{
         shiny::req(r6$tables$feature_table)
-        print_tm(m, 'Keeping features')
+        print_tm(m, 'Data - Keeping features')
         selected_species = rownames(r6$tables$feature_table)[which(r6$tables$feature_table$lipid_class %in% input$class_selection)]
         selected_species = unique(c(selected_species, input$manual_selection))
         selected_species = colnames(r6$tables$raw_data)[!(colnames(r6$tables$raw_data) %in% selected_species)]
@@ -1567,51 +1508,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
         if (r6$preloaded_data) {return()}
         dl_data_table$name = timestamped_name(paste0(stringr::str_replace_all(input$select_data_table, " ", "_"), ".csv"))
         dl_data_table$table = table_switch(input$select_data_table, r6)
-      })
-
-      output$download_datatable = shiny::downloadHandler(
-        filename = shiny::reactive(dl_data_table$name),
-        content = function(file_name) {
-          write.csv(dl_data_table$table, file_name, na = "")
-        }
-      )
-
-
-      #----------------------------------------------- Visualize data rendering ----
-      output$visualize_data_ui = shiny::renderUI({
-        shiny::tagList(
-          shiny::fluidRow(
-            # First column with the table input and preview of the raw data
-            shiny::column(
-              width = 11,
-              shinyWidgets::checkboxGroupButtons(inputId = ns("showPlots"),
-                                                 label = NULL,
-                                                 status = "default",
-                                                 choices = lipidomics_plot_list(),
-                                                 checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
-                                                 size = "normal",
-                                                 justified = TRUE
-              )
-            ),
-            shiny::column(
-              width = 1,
-              shinyWidgets::actionBttn(inputId = ns("clear_plots"),
-                                       label = "Clear",
-                                       style = "material-flat",
-                                       color = "danger",
-                                       block = T,
-                                       icon = icon("x"))
-            )
-          ),
-          shiny::fluidRow(
-            shiny::column(
-              width = 12,
-              shiny::uiOutput(
-                outputId = ns("plotbox_field")
-              )
-            )
-          )
-        )
       })
 
       #-------------------------------------------------- Visualize data server ----
@@ -1725,15 +1621,6 @@ lipidomics_server = function(id, data_files, experiment_id, module_controler) {
         )
       })
 
-      #------------------------------------------- Geneset enrichment rendering ----
-      output$geneset_enrichment_ui = shiny::renderUI({
-        shiny::h2('Geneset enrichment unavailable for lipidomics')
-      })
-
-      #------------------------------------------ Over-representation rendering ----
-      output$over_representation_ui = shiny::renderUI({
-        shiny::h2('Over-representation analysis unavailable for lipidomics')
-      })
 
     })
 }
