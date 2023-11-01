@@ -72,29 +72,10 @@ sidebar_ui = function() {
   bs4Dash::dashboardSidebar(
     bs4Dash::sidebarMenu(
 
-      # Start menu
       bs4Dash::menuItem(
-        text = "Start",
-        tabName = "start",
-        icon = shiny::icon("list")),
-
-      bs4Dash::sidebarMenuOutput("exp_1"),
-      bs4Dash::sidebarMenuOutput("exp_2"),
-      bs4Dash::sidebarMenuOutput("exp_3"),
-      bs4Dash::sidebarMenuOutput("exp_4"),
-      bs4Dash::sidebarMenuOutput("exp_5"),
-      bs4Dash::sidebarMenuOutput("exp_6"),
-
-      bs4Dash::menuItem(
-        text = "MOFA",
-        tabName = "mofa_tab",
-        icon = shiny::icon("m")
-      ),
-
-      bs4Dash::menuItem(
-        text = "SNF",
-        tabName = "snf_tab",
-        icon = shiny::icon("s")
+        text = "Data",
+        tabName = "data",
+        icon = shiny::icon("l")
       ),
 
       bs4Dash::menuItem(
@@ -116,53 +97,10 @@ body_ui = function() {
     shinybrowser::detect(),
 
     bs4Dash::tabItems(
-
-      # Start page
       bs4Dash::tabItem(
-        tabName = "start",
-        start_ui(id = 'mod_start')
+        tabName = "data",
+        lipidomics_ui(id = 'mod_exp_1')
       ),
-
-      bs4Dash::tabItem(
-        tabName = "exp_1",
-        experiment_ui(id = 'mod_exp_1')
-      ),
-
-      bs4Dash::tabItem(
-        tabName = "exp_2",
-        experiment_ui(id = 'mod_exp_2')
-      ),
-
-      bs4Dash::tabItem(
-        tabName = "exp_3",
-        experiment_ui(id = 'mod_exp_3')
-      ),
-
-      bs4Dash::tabItem(
-        tabName = "exp_4",
-        experiment_ui(id = 'mod_exp_4')
-      ),
-
-      bs4Dash::tabItem(
-        tabName = "exp_5",
-        experiment_ui(id = 'mod_exp_5')
-      ),
-
-      bs4Dash::tabItem(
-        tabName = "exp_6",
-        experiment_ui(id = 'mod_exp_6')
-      ),
-
-      bs4Dash::tabItem(
-        tabName = "mofa_tab",
-        mofa_ui(id = "mofa")
-      ),
-
-      bs4Dash::tabItem(
-        tabName = "snf_tab",
-        snf_ui(id = "snf")
-      ),
-
       bs4Dash::tabItem(
         tabName = "about",
         about_ui(id = 'mod_about')
@@ -193,52 +131,6 @@ server = function(input, output, session) {
   options(shiny.maxRequestSize=300*1024^2)
 
   module_controler = shiny::reactiveValues(
-
-    slot_taken = list(
-      'exp_1' = FALSE,
-      'exp_2' = FALSE,
-      'exp_3' = FALSE,
-      'exp_4' = FALSE,
-      'exp_5' = FALSE,
-      'exp_6' = FALSE
-    ),
-
-    module_loaded = list(
-      'exp_1' = FALSE,
-      'exp_2' = FALSE,
-      'exp_3' = FALSE,
-      'exp_4' = FALSE,
-      'exp_5' = FALSE,
-      'exp_6' = FALSE
-    ),
-
-    exp_types = list(
-      'exp_1' = NULL,
-      'exp_2' = NULL,
-      'exp_3' = NULL,
-      'exp_4' = NULL,
-      'exp_5' = NULL,
-      'exp_6' = NULL
-    ),
-
-    exp_names = list(
-      'exp_1' = NULL,
-      'exp_2' = NULL,
-      'exp_3' = NULL,
-      'exp_4' = NULL,
-      'exp_5' = NULL,
-      'exp_6' = NULL
-    ),
-
-    exp_r6 = list(
-      'exp_1' = NULL,
-      'exp_2' = NULL,
-      'exp_3' = NULL,
-      'exp_4' = NULL,
-      'exp_5' = NULL,
-      'exp_6' = NULL
-    ),
-
     dims = list(
       x_box = 0.9,
       y_box = 0.75,
@@ -251,40 +143,46 @@ server = function(input, output, session) {
     )
   )
 
-  mofa_data = Mofa_data$new(
-    name = "mofa_1"
-  )
-
-  snf_data = Snf_data$new(
-    name = "snf_1"
-  )
-
-  start_server(id = 'mod_start', main_input = input, main_output = output, main_session = session, module_controler = module_controler)
+  # help
   about_server(id = 'mod_about', main_output = output)
 
+  # read the master database file
+  db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
+                                             sheet = 1))
   # Single omics modules
+  # this doesn't stop executing
   shiny::observe({
-    # this is executed twice, why??
+    query <- list("experimentId" = NULL)
+    print("Rico: app starting")
 
-    set_1 = names(which(module_controler$slot_taken == TRUE))
-    set_2 = names(which(module_controler$module_loaded == TRUE))
-    slot = base::setdiff(set_1, set_2)
-    if (length(slot) > 0) {
-      slot = slot[1]
-      exp_type = module_controler$exp_types[[slot]]
-      module_controler$module_loaded[[slot]] = TRUE
+    print("Rico: get URL parameter")
+    # get the url parameter
+    query <- parseQueryString(session$clientData$url_search)
+    # simple sanity check
+    if (!is.null(query[["experimentId"]])) {
+      print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
+      if(!grepl(pattern = "^VDK_2[123][0-9]{4}_[0-9]{2}$",
+                x = query[["experimentId"]])) {
+        query[["experimentId"]] <- NULL
+      }
+    } else {
+      query[["experimentId"]] <- "VDK_230228_02"
+    }
+    print(paste("Rico: experimentId", query[["experimentId"]]))
+
+    if(!is.null(query[["experimentId"]])) {
+      # get the batches for the samples belonging to the experiment
+      data_files = unique(db_data$batchNumber[db_data$experimentId == query[["experimentId"]]])
+      data_files = data_files[!is.na(data_files)]
+
       # server stuff is created here, should the data be passed here?
-      experiment_server(id = paste0(c('mod', slot), collapse = '_'),
-                        type = exp_type,
+      lipidomics_server(id = "mod_exp_1",
+                        data_files = data_files,
+                        experiment_id = query[["experimentId"]],
                         module_controler = module_controler)
     }
   })
 
-  # MOFA module
-  mofa_server("mofa", r6 = mofa_data, module_controler = module_controler)
-
-  # SNF module
-  snf_server("snf", r6 = snf_data, module_controler = module_controler)
 
 }
 
