@@ -264,6 +264,8 @@ server = function(input, output, session) {
 
   # Single omics modules
   shiny::observe({
+    # this is executed twice, why??
+
     set_1 = names(which(module_controler$slot_taken == TRUE))
     set_2 = names(which(module_controler$module_loaded == TRUE))
     slot = base::setdiff(set_1, set_2)

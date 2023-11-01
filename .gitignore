@@ -3,8 +3,23 @@
 .RData
 .Ruserdata
 
+
+
 # some files for fixing
 R/fix_*
 
 # data
 data/*
+#*/Dictionary/*
+#*/Fixed\ names\ Mzml/*
+#*/Tuning/*
+#*/Wiff\+Mzml/*
+!data/Database
+data/Database/*
+!data/Database/SampleMasterfile.xlsx
+!data/Database/*
+data/Database/*/*
+!data/Database/*/NLA*_output_merge.xlsx
+
+# no temporary files
+.~*
