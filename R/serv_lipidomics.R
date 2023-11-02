@@ -261,10 +261,10 @@ lipidomics_ui = function(id) {
             title = 'Table preview (switch table above)',
             width = 12,
             DT::dataTableOutput(ns("metadata_preview_table")),style = "height:400px; overflow-y: scroll;overflow-x: scroll;",
-            collapsible = T,
-            collapsed  = T,
-            maximizable = T,
-            headerBorder = T
+            collapsible = TRUE,
+            collapsed  = FALSE,
+            maximizable = TRUE,
+            headerBorder = TRUE
           ),
 
           # Summary box
@@ -302,10 +302,10 @@ lipidomics_ui = function(id) {
                 )
               )
             ),
-            collapsible = T,
-            collapsed  = T,
-            maximizable = F,
-            headerBorder = T
+            collapsible = TRUE,
+            collapsed  = FALSE,
+            maximizable = FALSE,
+            headerBorder = TRUE
           )
 
         ),
@@ -736,69 +736,25 @@ lipidomics_ui = function(id) {
 
 #-------------------------------------------------------- Lipidomics server ----
 
-lipidomics_server = function(id, data_files, experiment_id, module_controler) {
+lipidomics_server = function(id, module_controler) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
       ns = session$ns
 
-      # Create lipidomics r6 object
-      # r6 = Lips_exp$new(name = "Lips_1",
-      #                   id = id,
-      #                   slot = "exp_1",
-      #                   data_file = data_files,
-      #                   experiment_id = experiment_id)
-      r6 = example_lipidomics(name = "Lips_1",
-                              id = id,
-                              slot = "exp_1",
-                              data = file.path("data", "Database", "NLA_2023_001", "NLA_2023_001_output_merge.xlsx"),
-                              meta = file.path("data", "Database", "SampleMasterfile.xlsx"),
-                              experiment_id = experiment_id)
+      # Get lipidomics r6 object
+      r6 = module_controler$r6_exp
       m = r6$name
       slot = r6$slot
 
       #------------------------------------------------- Metadata upload server ----
 
-      # # Upload metadata
-      session$userData[[id]]$upload_meta = shiny::observe({
-        shiny::req(input$table_box_meta$collapsed,
-                   input$summary_box_meta$collapsed)
-
-        # if(r6$preloaded_data) { return() }
-
-        # # this is executed twice
-        # file_path = file.path("data", "Database", "SampleMasterfile.xlsx")
-        # data_table = soda_read_table(file_path = file_path)
-        # # clean up data_table, too much meta data in there
-        # data_table = data_table[data_table$batchNumber %in% r6$data_file &
-        #                           (data_table$experimentId %in% r6$experiment_id |
-        #                              data_table$experimentId %in% r6$data_file), 1:18]
-        #
-        # if (ncol(data_table) > 70) {
-        #   print_tm(m, 'ERROR: Meta - uploaded file has more than 70 columns, unlikely to be a metadata file')
-        #   return()
-        # }
-        # r6$tables$imp_meta = data_table
-
-        data_table = r6$tables$imp_meta
-
-        # Preview table
-        output$metadata_preview_table = renderDataTable({
-          DT::datatable(data_table, options = list(paging = TRUE))
-        })
-
-        if (input$table_box_meta$collapsed) {
-          bs4Dash::updateBox(id = 'table_box_meta', action = 'toggle')
-        }
-        if (input$summary_box_meta$collapsed) {
-          bs4Dash::updateBox(id = 'summary_box_meta', action = 'toggle')
-        }
-      })
-
       # Preview all / subset switch
       session$userData[[id]]$select_meta_table = shiny::observeEvent(input$select_meta_table, {
         shiny::req(r6$tables$imp_meta)
 
+        print("Rico: show meta data table")
+        print(input$select_meta_table, r6 = r6)
         data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
         output$metadata_preview_table = renderDataTable({
           DT::datatable(data_table, options = list(paging = TRUE))

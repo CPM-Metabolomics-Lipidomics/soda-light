@@ -122,6 +122,9 @@ server = function(input, output, session) {
   options(shiny.maxRequestSize=300*1024^2)
 
   module_controler = shiny::reactiveValues(
+
+    r6_exp = NULL,
+
     dims = list(
       x_box = 0.9,
       y_box = 0.75,
@@ -163,6 +166,8 @@ server = function(input, output, session) {
       # for easy development
       query[["experimentId"]] <- "VDK_230504_01"
     }
+    experiment_id = query[["experimentId"]]
+
     print(paste("Rico: experimentId:", query[["experimentId"]]))
 
     if(!is.null(query[["experimentId"]])) {
@@ -170,10 +175,16 @@ server = function(input, output, session) {
       data_files = unique(db_data$batchNumber[db_data$experimentId == query[["experimentId"]]])
       data_files = data_files[!is.na(data_files)]
 
+      # Create lipidomics r6 object
+      module_controler$r6_exp = example_lipidomics(name = "Lips_1",
+                                                   id = id,
+                                                   slot = "exp_1",
+                                                   data = file.path("data", "Database", "NLA_2023_001", "NLA_2023_001_output_merge.xlsx"),
+                                                   meta = file.path("data", "Database", "SampleMasterfile.xlsx"),
+                                                   experiment_id = experiment_id)
+
       # server stuff is created here, should the data be passed here?
       lipidomics_server(id = "mod_exp_1",
-                        data_files = data_files,
-                        experiment_id = query[["experimentId"]],
                         module_controler = module_controler)
     }
   })
