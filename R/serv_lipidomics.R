@@ -744,17 +744,13 @@ lipidomics_server = function(id, module_controler) {
 
       # Get lipidomics r6 object
       r6 = module_controler$r6_exp
-      m = r6$name
-      slot = r6$slot
+      m = "Lips_1"
 
       #------------------------------------------------- Metadata upload server ----
-
       # Preview all / subset switch
       session$userData[[id]]$select_meta_table = shiny::observeEvent(input$select_meta_table, {
         shiny::req(r6$tables$imp_meta)
 
-        print("Rico: show meta data table")
-        print(input$select_meta_table, r6 = r6)
         data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
         output$metadata_preview_table = renderDataTable({
           DT::datatable(data_table, options = list(paging = TRUE))
@@ -1036,102 +1032,6 @@ lipidomics_server = function(id, module_controler) {
       })
 
       #----------------------------------------------------- Data upload server ----
-      # # Upload data
-      # session$userData[[id]]$upload_data = shiny::observe({
-      #   shiny::req(r6$data_file,
-      #              input$table_box_data$collapsed,
-      #              input$summary_box_data$collapsed)
-      #
-      #   if(r6$preloaded_data) { return() }
-      #   # this is in preparation of one experiment over multiple batches, sample ID issue
-      #   data_tables <- vector("list", length = length(r6$data_file))
-      #   for(a in 1:length(r6$data_file)) {
-      #     file_path = file.path("data", "Database", r6$data_file[a], paste0(r6$data_file[a], "_output_merge.xlsx")) #input$file_data$datapath
-      #     data_tables[[a]] = soda_read_table(file_path = file_path)
-      #   }
-      #
-      #   data_table = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
-      #
-      #   # The imported data needs to be filtered because of sometimes a batch having multiple experiments
-      #   # this is probably not the best solution
-      #   r6$tables$imp_data = data_table[data_table[, "ID"] %in% r6$tables$imp_meta[, "analystId"], ]
-      #
-      #   # Set the sample ID column of the data
-      #   r6$indices$id_col_data = "ID"
-      #
-      #   # Preview table
-      #   output$data_preview_table = renderDataTable({
-      #     DT::datatable(data_table, options = list(paging = TRUE))
-      #   })
-      #
-      #   if (input$table_box_data$collapsed) {
-      #     bs4Dash::updateBox(id = 'table_box_data', action = 'toggle')
-      #   }
-      #   if (input$summary_box_data$collapsed) {
-      #     bs4Dash::updateBox(id = 'summary_box_data', action = 'toggle')
-      #   }
-      #
-      #   # Update normalise to column
-      #   shiny::updateSelectInput(
-      #     session = session,
-      #     inputId = 'normalise_to_col',
-      #     choices = colnames(r6$tables$raw_meta),
-      #     selected = character(0)
-      #   )
-      #
-      #   print_tm(m, 'Data - Setting ID column')
-      #   if (length(r6$tables$imp_data[, "ID"]) == length(unique(r6$tables$imp_data[, "ID"]))) {
-      #     r6$get_blank_table()
-      #     r6$set_raw_data(apply_imputation = input$apply_imputation,
-      #                     impute_before = input$impute_before,
-      #                     apply_filtering = input$apply_filtering,
-      #                     imputation_function = input$na_imputation,
-      #                     val_threshold = as.numeric(input$imputation_min_values),
-      #                     blank_multiplier = as.numeric(input$blank_multiplier),
-      #                     sample_threshold = as.numeric(input$sample_threshold),
-      #                     group_threshold = as.numeric(input$group_threshold),
-      #                     norm_col = input$normalise_to_col)
-      #
-      #     r6$derive_data_tables()
-      #
-      #     shiny::updateSelectInput(
-      #       session = session,
-      #       inputId = 'select_data_table',
-      #       choices = c('Imported data table', 'Raw data table', 'Feature table', 'Blank table', 'Class normalized table', 'Total normalized table', 'Z-scored table', 'Z-scored class normalized table', 'Z-scored total normalized table', 'Class table', 'Class table total normalized', 'Class table z-scored total normalized', 'Species summary table', 'Class summary table'),
-      #       selected = 'Raw data table'
-      #     )
-      #
-      #     # Update class selection
-      #     shiny::updateSelectizeInput(
-      #       session = session,
-      #       inputId = "class_selection",
-      #       choices = unique(r6$tables$feature_table$lipid_class),
-      #       selected = character(0)
-      #     )
-      #
-      #     # Update manual selection
-      #     shiny::updateSelectizeInput(
-      #       session = session,
-      #       inputId = "manual_selection",
-      #       choices = colnames(r6$tables$raw_data),
-      #       selected = character(0)
-      #     )
-      #
-      #
-      #   } else {
-      #     print_tm(m, 'ERROR: Data - Non-unique IDs in ID column')
-      #     r6$tables$raw_meta = NULL
-      #     shiny::updateSelectInput(
-      #       session = session,
-      #       inputId = 'select_meta_table',
-      #       choices = c('Imported metadata table'),
-      #       selected = 'Imported metadata table'
-      #     )
-      #   }
-      #
-      #
-      # })
-
       # Preview all / subset switch
       session$userData[[id]]$select_data_table = shiny::observeEvent(input$select_data_table, {
         shiny::req(r6$tables$imp_data)
