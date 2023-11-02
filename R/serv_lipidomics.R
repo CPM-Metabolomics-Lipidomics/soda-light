@@ -832,39 +832,6 @@ lipidomics_server = function(id, module_controler) {
           )
         })
 
-      # session$userData[[id]]$select_group_col = shiny::observeEvent(
-      #   c(input$selection_keep,
-      #     input$selection_drop,
-      #     input$selection_keep,
-      #     input$reset_meta), {
-      #       shiny::req(r6$tables$raw_meta)
-      #
-      #       print_tm(m, 'Meta - Updating groups plot')
-      #
-      #       data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
-      #       r6$indices$group_col = input$select_group_col
-      #       groups = unique_na_rm(r6$tables$imp_meta[, input$select_group_col])
-      #       freq = data.frame(table(base::factor(na.omit(data_table[, input$select_group_col]), levels = groups)))
-      #       names(freq) = c("value", "count")
-      #
-      #       output$group_distribution_preview = shiny::renderPlot(
-      #         ggplot2::ggplot(data = freq, aes(x = value, y = count)) +
-      #           geom_bar(stat = "identity", fill="blue")+
-      #           geom_text(aes(label=count), vjust=0.5, hjust = -0.5, size=6)+
-      #           xlab(NULL) +
-      #           ylab(NULL) +
-      #           ylim(0,max(freq$count)+10) +
-      #           theme_minimal() +
-      #           coord_flip() +
-      #           labs(title = 'Groups distribution')+
-      #           theme(
-      #             plot.title = element_text(size=17, hjust = 0.5),
-      #             axis.text.x = element_text(size = 15),
-      #             axis.text.y = element_text(size = 15)
-      #           )
-      #       )
-      #     })
-
       # Batch col selection
       session$userData[[id]]$select_batch_col = shiny::observeEvent(input$select_batch_col, {
         shiny::req(r6$tables$imp_meta,
@@ -914,8 +881,6 @@ lipidomics_server = function(id, module_controler) {
               r6$indices$rownames_samples = r6$tables$imp_meta[sample_idx, input$select_id_meta]
             }
           })
-
-
 
       # Type col selection
       session$userData[[id]]$select_type_col = shiny::observeEvent(
@@ -970,7 +935,6 @@ lipidomics_server = function(id, module_controler) {
                 )
             )
           })
-
 
       # Update the metadata value once a metadata column is selected
       session$userData[[id]]$exclusion_meta_col = shiny::observeEvent(c(input$exclusion_meta_col),{
