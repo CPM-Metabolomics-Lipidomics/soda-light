@@ -706,6 +706,7 @@ lipidomics_ui = function(id) {
                                              label = NULL,
                                              status = "default",
                                              choices = lipidomics_plot_list(),
+                                             selected = "select_class_distribution",
                                              checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
                                              size = "normal",
                                              justified = TRUE
@@ -1341,8 +1342,8 @@ lipidomics_server = function(id, module_controler) {
       heatmap_events(r6, dimensions_obj, color_palette, input, output, session)
       pca_events(r6, dimensions_obj, color_palette, input, output, session)
       db_plot_events(r6, dimensions_obj, color_palette, input, output, session)
-      session$userData[[id]]$showPlots = shiny::observeEvent(input$showPlots,{
 
+      session$userData[[id]]$showPlots = shiny::observeEvent(input$showPlots,{
         # Update x dimensions in px and bs, and y in px
         if (length(input$showPlots) < 2) {
           dimensions_obj$xbs = 12
