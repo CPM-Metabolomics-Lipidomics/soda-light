@@ -1131,9 +1131,6 @@ get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, 
 example_lipidomics = function(name,
                               id = NA,
                               slot = NA,
-                              data = './examples/multiomics/lipidomics.csv',
-                              meta = './examples/multiomics/lipidomics_metadata.csv',
-                              data_file = NULL,
                               experiment_id = NULL) {
   # get the meta data
   meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
@@ -1151,6 +1148,8 @@ example_lipidomics = function(name,
   }
 
   lips_data = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
+  # The imported data needs to be filtered because sometimes a batch consist out of multiple experiments
+  lips_data = lips_data[lips_data[, "ID"] %in% meta_data[, "analystId"], ]
 
   # create the r6 object
   r6 = Lips_exp$new(name = name,

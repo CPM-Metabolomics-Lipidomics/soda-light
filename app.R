@@ -179,8 +179,6 @@ server = function(input, output, session) {
       module_controler$r6_exp = example_lipidomics(name = "Lips_1",
                                                    id = id,
                                                    slot = "exp_1",
-                                                   data = file.path("data", "Database", "NLA_2023_001", "NLA_2023_001_output_merge.xlsx"),
-                                                   meta = file.path("data", "Database", "SampleMasterfile.xlsx"),
                                                    experiment_id = experiment_id)
 
       # server stuff is created here, should the data be passed here?
