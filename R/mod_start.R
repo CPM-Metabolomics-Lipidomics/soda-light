@@ -91,7 +91,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
       shiny::observe({
         req(db_data)
 
-        # # get the url parameter
+        # get the url parameter
         query <- parseQueryString(session$clientData$url_search)
         # simple sanity check
         if (!is.null(query[["experimentId"]])) {

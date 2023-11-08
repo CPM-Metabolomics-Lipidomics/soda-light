@@ -1128,24 +1128,48 @@ get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, 
 
 
 #--------------------------------------------------------- Example datasets ----
-example_lipidomics = function(name, id = NA, slot = NA, data = './examples/multiomics/lipidomics.csv', meta = './examples/multiomics/lipidomics_metadata.csv') {
+example_lipidomics = function(name,
+                              id = NA,
+                              slot = NA,
+                              experiment_id = NULL) {
+  # get the meta data
+  meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
+  data_files = unique(meta_data$batchNumber[meta_data$experimentId == experiment_id])
+  data_files = data_files[!is.na(data_files)]
+  meta_data = meta_data[meta_data$batchNumber %in% data_files &
+                          (meta_data$experimentId %in% experiment_id |
+                             meta_data$experimentId %in% data_files), 1:18]
 
-  lips_data = soda_read_table(data)
-  meta_data = soda_read_table(meta)
+  # get the lipid data
+  data_tables <- vector("list", length = length(data_files))
+  for(a in 1:length(data_files)) {
+    file_path = file.path("data", "Database",data_files[a], paste0(data_files[a], "_output_merge.xlsx"))
+    data_tables[[a]] = soda_read_table(file_path = file_path)
+  }
 
-  r6 = Lips_exp$new(name = name, id = id, slot = slot, preloaded = T)
+  lips_data = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
+  # The imported data needs to be filtered because sometimes a batch consist out of multiple experiments
+  lips_data = lips_data[lips_data[, "ID"] %in% meta_data[, "analystId"], ]
+
+  # create the r6 object
+  r6 = Lips_exp$new(name = name,
+                    id = id,
+                    slot = slot,
+                    preloaded = TRUE,
+                    data_file = data_files,
+                    experiment_id = experiment_id)
 
   r6$tables$imp_meta = meta_data
   r6$tables$imp_data = lips_data
 
-  r6$indices$id_col_meta = 'ID'
+  r6$indices$id_col_meta = 'analystId'
   r6$indices$id_col_data = 'ID'
 
-  r6$indices$group_col = 'Group_type'
-  r6$indices$batch_col = 'Batch'
+  r6$indices$group_col = 'genoType'
+  r6$indices$batch_col = 'batchNumber'
   r6$set_raw_meta()
 
-  type_vector = r6$tables$imp_meta[, 'Sample_type']
+  type_vector = r6$tables$imp_meta[, 'cellType']
   blank_idx = grep(pattern = 'blank',
                    x = type_vector,
                    ignore.case = TRUE)
@@ -1173,9 +1197,9 @@ example_lipidomics = function(name, id = NA, slot = NA, data = './examples/multi
 
   r6$get_blank_table()
 
-  r6$set_raw_data(apply_imputation = F,
-                  impute_before = F,
-                  apply_filtering = T,
+  r6$set_raw_data(apply_imputation = FALSE,
+                  impute_before = FALSE,
+                  apply_filtering = TRUE,
                   imputation_function = 'minimum',
                   val_threshold = 0.6,
                   blank_multiplier = 2,
