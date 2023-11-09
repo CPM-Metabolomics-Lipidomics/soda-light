@@ -615,52 +615,47 @@ Lips_exp = R6::R6Class(
                                        group_1 = self$params$db_plot$selected_groups[1],
                                        group_2 = self$params$db_plot$selected_groups[2]) {
 
-      # Get the rownames for each group
-      idx_group_1 = which(meta_table[, group_col] == group_1)
-      idx_group_2 = which(meta_table[, group_col] == group_2)
+      rownames_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, col_group] == group_1]
+      rownames_group_2 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, col_group] == group_2]
+      all_rownames = sort(unique(c(rownames_group_1, rownames_group_2)))
+
+      # Filter data to keep only the two groups
+      data_table = data_table[all_rownames,]
+
+      # Get the indices for each group
+      idx_group_1 = which(rownames(data_table) %in% rownames_group_1)
+      idx_group_2 = which(rownames(data_table) %in% rownames_group_2)
 
       # Get all row names from both groups
       idx_all = c(idx_group_1, idx_group_2)
       idx_all = sort(unique(idx_all))
-
       # Filter data to keep only the two groups
       data_table = data_table[idx_all,]
-
       # Remove empty columns
       dead_features = colnames(data_table)
       data_table = remove_empty_cols(table = data_table)
       dead_features = setdiff(dead_features, colnames(data_table))
-
       if (length(dead_features) > 0) {
         dead_features = which(rownames(dbplot_table) %in% dead_features)
         dbplot_table = dbplot_table[-dead_features,]
       }
-
-
       # Collect fold change and p-values
       dbplot_table$fold_change = get_fold_changes(data_table = data_table,
-                                                   idx_group_1 = idx_group_1,
-                                                   idx_group_2 = idx_group_2,
-                                                   used_function = used_function)
-
-
+                                                  idx_group_1 = idx_group_1,
+                                                  idx_group_2 = idx_group_2,
+                                                  used_function = used_function)
       dbplot_table$p_val = get_p_val(data_table = data_table,
-                                      idx_group_1 = idx_group_1,
-                                      idx_group_2 = idx_group_2,
-                                      used_function = test)
+                                     idx_group_1 = idx_group_1,
+                                     idx_group_2 = idx_group_2,
+                                     used_function = test)
       dbplot_table$q_val_bh = stats::p.adjust(dbplot_table$p_val, method = "BH")
-
       dbplot_table$minus_log10_p_value = -log10(dbplot_table$p_val)
       dbplot_table$log2_fold_change = log2(dbplot_table$fold_change)
       dbplot_table$minus_log10_p_value_bh_adj = -log10(dbplot_table$q_val_bh)
-
       lips = rownames(dbplot_table)
       fc = as.character(round(dbplot_table[,"log2_fold_change"],2))
       pval = as.character(round(dbplot_table[,"minus_log10_p_value_bh_adj"],2))
       dbplot_table$text = paste0(lips, " | log2(fc): ", fc, " | -log10(bh(pval)): ", pval)
-
-
-
       self$tables$dbplot_table = dbplot_table
     },
 
