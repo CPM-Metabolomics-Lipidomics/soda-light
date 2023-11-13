@@ -565,8 +565,9 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
   shiny::observeEvent(input$satindex_metacol, {
     print_tm(r6$name, "Saturation index: Updating params...")
 
-    r6$param_satindex_plot(dataset = "",
+    r6$param_satindex_plot(data_table = "",
                            feature_meta = r6$tables$feature_table,
+                           sample_meta = r6$tables$raw_meta,
                            group_col = input$satindex_metacol,
                            img_format = "png")
 
@@ -576,6 +577,7 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
     },
     error = function(e) {
       print_tm(r6$name, 'Saturation index error, missing data.')
+      print(e)
     },
     finally = {}
     )

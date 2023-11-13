@@ -616,7 +616,7 @@ lipidomics_ui = function(id) {
                 label = "Apply",
                 onLabel = "Yes",
                 offLabel = "No",
-                value = TRUE,
+                value = FALSE,
                 labelWidth = "80px"
               )
             )
