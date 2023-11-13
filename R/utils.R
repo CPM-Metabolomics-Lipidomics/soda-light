@@ -84,7 +84,8 @@ lipidomics_plot_list = function() {
                 "Volcano plot" = "select_volcano_plot",
                 "Heatmap" = "select_heatmap",
                 "PCA" = "select_pca",
-                "Double bond plot" = "select_double_bond_plot"
+                "Double bond plot" = "select_double_bond_plot",
+                "Saturation index" = "select_satindex_plot"
   )
   return(plot_list)
 }
@@ -316,7 +317,8 @@ print_tm = function(m, in_print) {
 get_plotly_box = function(id, label, dimensions_obj, session) {
 
   ns = session$ns
-
+  print("Rico: get_plotly_box")
+  print(id)
   bs4Dash::box(
     id = ns(paste0(id, "_plotbox")),
     title = label,

@@ -43,10 +43,9 @@ class_distribution_ui = function(dimensions_obj, session) {
 
 
 class_distribution_server = function(r6, output, session) {
-
   ns = session$ns
-
   print_tm(r6$name, "Class distribution : START.")
+
   # Generate UI
   output$class_distribution_sidebar_ui = shiny::renderUI({
     shiny::tagList(
@@ -80,9 +79,6 @@ class_distribution_server = function(r6, output, session) {
 }
 
 class_distribution_events = function(r6, dimensions_obj, color_palette, input, output, session) {
-
-
-
   # Generate the plot
   shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_img_format), {
     print_tm(r6$name, "Class distribution: Updating params...")
@@ -495,6 +491,117 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
 }
 
+#----------------------------------------------------------------- SI index ----
+satindex_generate = function(r6, colour_list, dimensions_obj, input) {
+  print_tm(r6$name, "SI index plot: generating plot.")
+
+  if (input$satindex_plotbox$maximized){
+    width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
+    height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+  } else {
+    width = dimensions_obj$xpx * dimensions_obj$x_plot
+    height = dimensions_obj$ypx * dimensions_obj$y_plot
+  }
+
+  r6$plot_satindex(#data_table = table_switch(input$class_comparison_dataset, r6),
+    #group_col = input$class_comparison_metacol,
+    #colour_list = colour_list,
+    width = width,
+    height = height)
+}
+
+satindex_spawn = function(r6, format, output) {
+  print_tm(r6$name, "SI index: spawning plot.")
+
+  output$satindex_plot = plotly::renderPlotly({
+    r6$plots$satindex_plot
+    plotly::config(r6$plots$satindex_plot, toImageButtonOptions = list(format = format,
+                                                                       filename = timestamped_name('si_index'),
+                                                                       height = NULL,
+                                                                       width = NULL,
+                                                                       scale = 1))
+  })
+}
+
+satindex_ui = function(dimensions_obj, session) {
+  # add function to show bs4dash with plotting function
+  get_plotly_box(id = "satindex",
+                 label = "Saturation index",
+                 dimensions_obj = dimensions_obj,
+                 session = session)
+}
+
+satindex_server = function(r6, output, session) {
+  ns = session$ns
+  print_tm(r6$name, "SI index: START.")
+
+  # set some UI
+  output$satindex_sidebar_ui = shiny::renderUI({
+    shiny::tagList(
+      shiny::selectInput(
+        inputId = ns("satindex_metacol"),
+        label = "Select group column",
+        choices = colnames(r6$tables$raw_meta),
+        selected = r6$params$satindex_plot$group_col
+      ),
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectInput(
+        inputId = ns("satindex_img_format"),
+        label = "Image format",
+        choices = c("png", "svg", "jpeg", "webp"),
+        selected = r6$params$satindex_plot$img_format,
+        width = "100%"),
+      shiny::downloadButton(
+        outputId = ns("download_satindex_table"),
+        label = "Download unavailable for now",
+        style = "width:100%;"
+      )
+    )
+  })
+}
+
+satindex_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # Generate the plot
+  shiny::observeEvent(input$satindex_metacol, {
+    print_tm(r6$name, "Saturation index: Updating params...")
+
+    r6$param_satindex_plot(dataset = "",
+                           feature_meta = r6$tables$feature_table,
+                           group_col = input$satindex_metacol,
+                           img_format = "png")
+
+    base::tryCatch({
+      satindex_generate(r6, color_palette, dimensions_obj, input)
+      satindex_spawn(r6, input$satindex_img_format, output)
+    },
+    error = function(e) {
+      print_tm(r6$name, 'Saturation index error, missing data.')
+    },
+    finally = {}
+    )
+  })
+
+  # Expanded boxes
+  satindex_proxy = plotly::plotlyProxy(outputId = "satindex_plot",
+                                       session = session)
+
+  shiny::observeEvent(input$satindex_plotbox,{
+    if (input$satindex_plotbox$maximized) {
+      plotly::plotlyProxyInvoke(p = satindex_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full,
+                                     height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+                                ))
+    } else {
+      plotly::plotlyProxyInvoke(p = satindex_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx * dimensions_obj$x_plot,
+                                     height = dimensions_obj$ypx * dimensions_obj$y_plot
+                                ))
+    }
+  })
+}
+
 #----------------------------------------------------------------- Heat map ----
 
 heatmap_generate = function(r6, colour_list, dimensions_obj, input) {
@@ -579,7 +686,7 @@ heatmap_server = function(r6, output, session) {
                                     onLabel = 'YES',
                                     offLabel = 'NO',
                                     labelWidth = '150px'
-                                    )
+          )
         ),
         shiny::column(
           width = 4,

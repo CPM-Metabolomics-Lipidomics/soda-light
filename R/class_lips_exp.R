@@ -153,7 +153,8 @@ Lips_exp = R6::R6Class(
       heatmap_table = NULL,
       pca_scores_table = NULL,
       pca_loadings_table = NULL,
-      dbplot_table = NULL
+      dbplot_table = NULL,
+      satindex_table = NULL
 
 
     ),
@@ -165,7 +166,8 @@ Lips_exp = R6::R6Class(
       volcano_plot = NULL,
       heatmap = NULL,
       pca_plot = NULL,
-      double_bond_plot = NULL
+      double_bond_plot = NULL,
+      satindex_plot = NULL
     ),
 
     #---------------------------------------------------- Parameter methods ----
@@ -239,8 +241,12 @@ Lips_exp = R6::R6Class(
 
     },
 
-
-
+    param_satindex_plot = function(dataset, feature_meta, group_column, img_format) {
+      self$params$satindex_plot$dataset = dataset
+      self$params$satindex_plot$feature_meta = feature_meta
+      self$params$satindex_plot$group_col = group_column
+      self$params$satindex_plot$img_format = img_format
+    },
 
     #-------------------------------------------------------- Table methods ----
 
@@ -502,12 +508,10 @@ Lips_exp = R6::R6Class(
                          pval_values = c(1, 5),
                          img_format = "png")
 
-
-
-
-
-
-
+      self$param_satindex_plot(dataset = "",
+                               feature_meta = self$tables$feature_table,
+                               group_column = self$indices$group_col,
+                               img_format = "png")
 
     },
 
@@ -667,7 +671,6 @@ Lips_exp = R6::R6Class(
                                        colour_list,
                                        width = NULL,
                                        height = NULL){
-
       # Produce the class x group table
       samp_list = rownames(table)
       class_list = colnames(table)
@@ -1086,7 +1089,6 @@ Lips_exp = R6::R6Class(
                                        group_2 = self$params$db_plot$selected_groups[2],
                                        width = NULL,
                                        height = NULL){
-
       x_label = carbon_selection
       y_label = unsat_selection
       carbon_selection = feature_table_cols_switch(carbon_selection)
@@ -1142,10 +1144,25 @@ Lips_exp = R6::R6Class(
         )
       )
       self$plots$double_bond_plot = fig
+    },
+
+
+    plot_satindex = function(data_table = "Raw data table",
+                             feature_table = self$tables$feature_table,
+                             group_col = self$indices$group_col,
+                             width = NULL,
+                             height = NULL) {
+      # need the raw data table
+      # need the feature ID table with carbon and saturation info per lipid, should be generated for the db plot
+      fig = plotly::plot_ly(x = 1:10,
+                            y = 11:20,
+                            type = "scatter",
+                            mode = "markers",
+                            width = width,
+                            height = height)
+
+      self$plots$satindex_plot = fig
     }
-
-
-
 
 
 
