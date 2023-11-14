@@ -718,7 +718,6 @@ Lips_exp = R6::R6Class(
                                      colour_list,
                                      width = NULL,
                                      height = NULL){
-
       # Get sample groups and the list of classes
       groups = sort(unique(meta_table[,group_col]))
       class_list = colnames(data_table)
@@ -1163,7 +1162,7 @@ Lips_exp = R6::R6Class(
       ## At the moment this function is using the raw data table!
 
       # calculations
-      res_long <- switch(
+      res <- switch(
         method,
         "ratio" = satindex_calc_ratio(data_table = data_table,
                                       feature_table = feature_table,
@@ -1173,23 +1172,105 @@ Lips_exp = R6::R6Class(
                                   sample_meta = sample_meta)
       )
 
-      # plotting
-      fig <- res_long |>
-        ggplot2::ggplot(ggplot2::aes(x = .data[[group_col]],
-                            y = SI,
-                            fill = .data[[group_col]])) +
-        ggplot2::geom_bar(stat = "summary",
-                          fun = "mean") +
-        ggplot2::geom_jitter(ggplot2::aes(shape = .data[["genoType"]]),
-                             size = 3,
-                             width = 0.1) +
-        ggplot2::facet_wrap(. ~ lipid_class,
-                            scales = "free_y") +
-        ggplot2::theme_minimal()
+      # remove some Inf and replace by NaN
+      res <- apply(res, 2, function(x) {
+        x[is.infinite(x)] <- NaN
+        return(x)
+      })
 
-      fig <- plotly::ggplotly(p = fig,
-                              width = width,
-                              height = height)
+      # get rid of empty columns
+      res_clean <- res[, !apply(apply(res, 2, is.na), 2, all)]
+
+      # plotting
+      # Get sample groups and the list of classes
+      groups = sort(unique(sample_meta[, group_col]))
+      class_list = colnames(res_clean)
+
+      x_dim = ceiling(sqrt(length(class_list)))
+      y_dim = floor(sqrt(length(class_list)))
+      # this is sometimes needed
+      if((x_dim * y_dim) < length(class_list)) {
+        x_dim <- x_dim + 1
+      }
+
+      x_step = 1/x_dim
+      y_step = 1/y_dim
+
+      x = x_step/2
+      y = 0.97 - y_step
+      i = 1
+
+      annotations = vector(mode = "list",
+                           length = length(class_list) + 1)
+      for (c in class_list) {
+        tmp_ann = list(
+          x = x,
+          y = y,
+          text = c,
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE)
+        annotations[[i]] = tmp_ann
+        i = i + 1
+        x = x + x_step
+        if (x >= 1) {
+          x = x_step/2
+          y = y - y_step}
+      }
+      annotations[[i]] = list(x = -0.08, y = 0.5, text = "Saturation index",
+                              font = list(size = 12),
+                              textangle = 270, showarrow = FALSE, xref = 'paper',
+                              yref = 'paper')
+
+      # Plot list will be the list of subplots
+      plot_list = vector(mode = "list",
+                         length = length(class_list))
+
+      # Cleared groups is created for the legends
+      cleared_groups = c()
+      j = 1
+      for (c in class_list) {
+        i = 1
+        subplot = plot_ly(colors = colour_list, width = width, height = height)
+        for (g in groups){
+          if (g %in% cleared_groups) {
+            first_bool = FALSE
+          } else {
+            first_bool = TRUE
+            cleared_groups = c(cleared_groups, g)
+          }
+
+          # For each class, each group
+          s = rownames(sample_meta)[sample_meta[, group_col] == g] # Get the samples for the current group
+          d = res_clean[s, c] # Get the concentrations for all s samples in the current class c
+          m = mean(d, na.rm = TRUE) # Get the mean concentration for samples s for class c
+
+          # Subplot for the bar chart displaying the mean concentration
+          subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
+                                          color = colour_list[i], alpha = 0.75,
+                                          legendgroup = i, showlegend = first_bool)
+
+          # Subplot for boxplots displaying the median and all datapoints
+          subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
+                                          pointpos = 0, name = g, color = colour_list[i],
+                                          line = list(color = 'rgb(100,100,100)'),
+                                          marker = list(color = 'rgb(100,100,100)'), alpha = 0.75,
+                                          legendgroup = i, showlegend = FALSE,
+                                          text = s,
+                                          hoverinfo = "text")
+          subplot = subplot %>% layout(xaxis= list(showticklabels = FALSE),
+                                       yaxis = list(tickfont = list(size = 8)))
+          i = i + 1
+        }
+        plot_list[[j]] = plotly_build(subplot)
+        j = j + 1
+      }
+
+      fig = subplot(plot_list, nrows = y_dim, margin = 0.035, titleX = TRUE)
+      fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
+                           annotations = annotations)
 
       self$plots$satindex_plot = fig
     }
