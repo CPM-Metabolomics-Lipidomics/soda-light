@@ -1159,6 +1159,9 @@ Lips_exp = R6::R6Class(
       ## At the moment this function is using the raw data table!
       ## calculations according to cell paper!
 
+      print("Rico: group column")
+      print(group_col)
+
       ## Initialize some stuff
       # the feature table doesn't contain a column lipids fix here
       feature_table$lipid <- rownames(feature_table)

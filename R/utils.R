@@ -315,10 +315,8 @@ print_tm = function(m, in_print) {
 #---------------------------------------------------------------- Plotboxes ----
 # Plotly plotbox
 get_plotly_box = function(id, label, dimensions_obj, session) {
-
   ns = session$ns
-  print("Rico: get_plotly_box")
-  print(id)
+
   bs4Dash::box(
     id = ns(paste0(id, "_plotbox")),
     title = label,

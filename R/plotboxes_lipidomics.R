@@ -493,7 +493,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
 #----------------------------------------------------------------- SI index ----
 satindex_generate = function(r6, colour_list, dimensions_obj, input) {
-  print_tm(r6$name, "SI index plot: generating plot.")
+  print_tm(r6$name, "Saturation index plot: generating plot.")
 
   if (input$satindex_plotbox$maximized){
     width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
@@ -503,15 +503,15 @@ satindex_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$plot_satindex(#data_table = table_switch(input$class_comparison_dataset, r6),
-    #group_col = input$class_comparison_metacol,
-    #colour_list = colour_list,
-    width = width,
-    height = height)
+  r6$plot_satindex(data_table = r6$tables$raw_data, #table_switch(input$class_comparison_dataset, r6),
+                   group_col = input$satindex_metacol,
+                   # colour_list = colour_list,
+                   width = width,
+                   height = height)
 }
 
 satindex_spawn = function(r6, format, output) {
-  print_tm(r6$name, "SI index: spawning plot.")
+  print_tm(r6$name, "Saturation index: spawning plot.")
 
   output$satindex_plot = plotly::renderPlotly({
     r6$plots$satindex_plot
@@ -533,7 +533,7 @@ satindex_ui = function(dimensions_obj, session) {
 
 satindex_server = function(r6, output, session) {
   ns = session$ns
-  print_tm(r6$name, "SI index: START.")
+  print_tm(r6$name, "Saturation index: START.")
 
   # set some UI
   output$satindex_sidebar_ui = shiny::renderUI({
@@ -562,14 +562,16 @@ satindex_server = function(r6, output, session) {
 
 satindex_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # Generate the plot
-  shiny::observeEvent(input$satindex_metacol, {
+  shiny::observeEvent(c(input$satindex_metacol, input$satindex_img_format), {
     print_tm(r6$name, "Saturation index: Updating params...")
+    print("Rico: group column")
+    print(input$satindex_metacol)
 
-    r6$param_satindex_plot(data_table = "",
+    r6$param_satindex_plot(data_table = r6$tables$raw_data,
                            feature_meta = r6$tables$feature_table,
                            sample_meta = r6$tables$raw_meta,
                            group_col = input$satindex_metacol,
-                           img_format = "png")
+                           img_format = input$satindex_img_format)
 
     base::tryCatch({
       satindex_generate(r6, color_palette, dimensions_obj, input)
