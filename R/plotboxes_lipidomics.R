@@ -505,7 +505,8 @@ satindex_generate = function(r6, colour_list, dimensions_obj, input) {
 
   r6$plot_satindex(data_table = r6$tables$raw_data, #table_switch(input$class_comparison_dataset, r6),
                    group_col = input$satindex_metacol,
-                   # colour_list = colour_list,
+                   colour_list = colour_list,
+                   method = input$satindex_select_method,
                    width = width,
                    height = height)
 }
@@ -539,6 +540,13 @@ satindex_server = function(r6, output, session) {
   output$satindex_sidebar_ui = shiny::renderUI({
     shiny::tagList(
       shiny::selectInput(
+        inputId = ns("satindex_select_method"),
+        label = "Select a method",
+        choices = c("(palmitate+stearate) / oleate ratio" = "ratio",
+                    "use all lipids" = "all"),
+        selected = "ratio"
+      ),
+      shiny::selectInput(
         inputId = ns("satindex_metacol"),
         label = "Select group column",
         choices = colnames(r6$tables$raw_meta),
@@ -562,15 +570,14 @@ satindex_server = function(r6, output, session) {
 
 satindex_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # Generate the plot
-  shiny::observeEvent(c(input$satindex_metacol, input$satindex_img_format), {
+  shiny::observeEvent(c(input$satindex_metacol, input$satindex_img_format, input$satindex_select_method), {
     print_tm(r6$name, "Saturation index: Updating params...")
-    print("Rico: group column")
-    print(input$satindex_metacol)
 
     r6$param_satindex_plot(data_table = r6$tables$raw_data,
                            feature_meta = r6$tables$feature_table,
                            sample_meta = r6$tables$raw_meta,
                            group_col = input$satindex_metacol,
+                           method = input$satindex_select_method,
                            img_format = input$satindex_img_format)
 
     base::tryCatch({

@@ -241,11 +241,12 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, img_format) {
+    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, method, img_format) {
       self$params$satindex_plot$data_table = data_table
       self$params$satindex_plot$feature_meta = feature_meta
       self$params$satindex_plot$sample_meta = sample_meta
       self$params$satindex_plot$group_col = group_column
+      self$params$satindex_plot$method = method
       self$params$satindex_plot$img_format = img_format
     },
 
@@ -513,6 +514,7 @@ Lips_exp = R6::R6Class(
                                feature_meta = self$tables$feature_table,
                                sample_meta = self$tables$raw_meta,
                                group_column = self$indices$group_col,
+                               method = "ratio",
                                img_format = "png")
 
     },
@@ -1153,82 +1155,26 @@ Lips_exp = R6::R6Class(
                              feature_table = self$tables$feature_table,
                              sample_meta = self$tables$raw_meta,
                              group_col = self$indices$group_col,
+                             method = self$params$satindex_plot$method,
+                             colour_list,
                              width = NULL,
                              height = NULL) {
 
       ## At the moment this function is using the raw data table!
-      ## calculations according to cell paper!
 
-      print("Rico: group column")
-      print(group_col)
-
-      ## Initialize some stuff
-      # the feature table doesn't contain a column lipids fix here
-      feature_table$lipid <- rownames(feature_table)
-      # get the unique lipid classes
-      lipid_classes <- unique(feature_table$lipid_class)
-
-      # define list with which FA tails to search for
-      lipids <- list(
-        palmitate = c("carbon" = 16,
-                      "db" = 0),
-        stearate = c("carbon" = 18,
-                     "db" = 0),
-        oleate = c("carbon" = 18,
-                   "db" = 1)
+      # calculations
+      res_long <- switch(
+        method,
+        "ratio" = satindex_calc_ratio(data_table = data_table,
+                                      feature_table = feature_table,
+                                      sample_meta = sample_meta),
+        "all" = satindex_calc_all(data_table = data_table,
+                                  feature_table = feature_table,
+                                  sample_meta = sample_meta)
       )
-      # get the names of the FA tails
-      lipid_names <- names(lipids)
 
-      # initialize result list
-      tot_lipids <- vector(mode = "list",
-                           length = length(lipid_classes))
-      names(tot_lipids) <- lipid_classes
-      tot_lipids <- lapply(tot_lipids, function(x) {
-        setNames(vector(mode = "list",
-                        length = length(lipid_names) + 1),
-                 c(lipid_names, "SI"))
-      })
-
-      for(a in lipid_classes) {
-        for(b in lipid_names) {
-          # select the lipids with the correct FA tails
-          lipid_all <- feature_table$lipid[feature_table$lipid_class == a &
-                                            ((feature_table$carbons_1 == lipids[[b]]["carbon"] & feature_table$unsat_1 == lipids[[b]]["db"]) |
-                                               (feature_table$carbons_2 == lipids[[b]]["carbon"] & feature_table$unsat_2 == lipids[[b]]["db"]))]
-          lipid_dbl <- feature_table$lipid[feature_table$lipid_class == a &
-                                            (feature_table$carbons_1 == lipids[[b]]["carbon"] & feature_table$unsat_1 == lipids[[b]]["db"] &
-                                               feature_table$carbons_2 == lipids[[b]]["carbon"] & feature_table$unsat_2 == lipids[[b]]["db"])]
-          # get all data
-          lipid_data <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a]]
-          # If doesn't contain any of the FA tail multiply by zero
-          lipid_data[, !(colnames(lipid_data) %in% lipid_all)] <- lipid_data[, !(colnames(lipid_data) %in% lipid_all)] * 0
-          # if contains 2x FA tail multiply by 2
-          lipid_data[, colnames(lipid_data) %in% lipid_dbl] <- lipid_data[, colnames(lipid_data) %in% lipid_dbl] * 2
-
-          # get the total
-          tot_lipids[[a]][[b]] <- rowSums(lipid_data, na.rm = TRUE)
-        }
-        tot_lipids[[a]][["SI"]] <- (tot_lipids[[a]][["palmitate"]] + tot_lipids[[a]][["stearate"]]) / tot_lipids[[a]][["oleate"]]
-      }
-
-      # make data.frame
-      tot_lipids <- do.call("cbind.data.frame", lapply(tot_lipids, function(x) {
-        x["SI"]
-      }))
-      names(tot_lipids) <- lipid_classes
-
-      # combine with meta data
-      tot_lipids <- cbind.data.frame(sample_meta,
-                                     tot_lipids)
-
-      # make long
-      tot_lipids_long <- tot_lipids |>
-        tidyr::pivot_longer(cols = all_of(lipid_classes),
-                            names_to = "lipid_class",
-                            values_to = "SI")
-
-      fig <- tot_lipids_long |>
+      # plotting
+      fig <- res_long |>
         ggplot2::ggplot(ggplot2::aes(x = .data[[group_col]],
                             y = SI,
                             fill = .data[[group_col]])) +
@@ -1244,14 +1190,6 @@ Lips_exp = R6::R6Class(
       fig <- plotly::ggplotly(p = fig,
                               width = width,
                               height = height)
-
-      # plotting
-      # fig = plotly::plot_ly(x = 1:10,
-      #                       y = 11:20,
-      #                       type = "scatter",
-      #                       mode = "markers",
-      #                       width = width,
-      #                       height = height)
 
       self$plots$satindex_plot = fig
     }
