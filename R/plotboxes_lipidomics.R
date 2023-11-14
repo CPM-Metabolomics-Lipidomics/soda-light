@@ -546,6 +546,7 @@ satindex_server = function(r6, output, session) {
                     "use all lipids" = "all"),
         selected = "ratio"
       ),
+      shiny::textOutput(outputId = ns("satindex_note")),
       shiny::selectInput(
         inputId = ns("satindex_metacol"),
         label = "Select group column",
@@ -572,6 +573,16 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
   # Generate the plot
   shiny::observeEvent(c(input$satindex_metacol, input$satindex_img_format, input$satindex_select_method), {
     print_tm(r6$name, "Saturation index: Updating params...")
+
+    if(input$satindex_select_method == "ratio") {
+      output$satindex_note <- shiny::renderText({
+        "Ref:  Cell Rep. 2018 Sep 4;24(10):2596-2605"
+      })
+    } else {
+      output$satindex_note <- shiny::renderText({
+        ""
+      })
+    }
 
     r6$param_satindex_plot(data_table = r6$tables$raw_data,
                            feature_meta = r6$tables$feature_table,

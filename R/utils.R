@@ -1188,16 +1188,6 @@ satindex_calc_ratio <- function(data_table = NULL,
   }))
   names(tot_lipids) <- lipid_classes
 
-  # # combine with meta data
-  # tot_lipids <- cbind.data.frame(sample_meta,
-  #                                tot_lipids)
-  #
-  # # make long
-  # tot_lipids_long <- tot_lipids |>
-  #   tidyr::pivot_longer(cols = all_of(lipid_classes),
-  #                       names_to = "lipid_class",
-  #                       values_to = "SI")
-
   return(tot_lipids)
 }
 
@@ -1274,16 +1264,6 @@ satindex_calc_all <- function(data_table = NULL,
     x["SI"]
   }))
   names(tot_lipids) <- lipid_classes
-
-  # # combine with meta data
-  # tot_lipids <- cbind.data.frame(sample_meta[1:30, ],
-  #                                tot_lipids)
-  #
-  # # make long
-  # tot_lipids_long <- tot_lipids |>
-  #   tidyr::pivot_longer(cols = all_of(lipid_classes),
-  #                       names_to = "lipid_class",
-  #                       values_to = "SI")
 
   return(tot_lipids)
 }
