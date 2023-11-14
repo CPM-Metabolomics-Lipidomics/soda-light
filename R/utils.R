@@ -1168,8 +1168,9 @@ satindex_calc_ratio <- function(data_table = NULL,
       lipid_dbl <- feature_table$lipid[feature_table$lipid_class == a &
                                          (feature_table$carbons_1 == lipids[[b]]["carbon"] & feature_table$unsat_1 == lipids[[b]]["db"] &
                                             feature_table$carbons_2 == lipids[[b]]["carbon"] & feature_table$unsat_2 == lipids[[b]]["db"])]
+
       # get all data
-      lipid_data <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a]]
+      lipid_data <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a], drop = FALSE]
       # If doesn't contain any of the FA tail multiply by zero
       lipid_data[, !(colnames(lipid_data) %in% lipid_all)] <- lipid_data[, !(colnames(lipid_data) %in% lipid_all)] * 0
       # if contains 2x FA tail multiply by 2
@@ -1253,12 +1254,12 @@ satindex_calc_all <- function(data_table = NULL,
     }
 
     # get data per lipid class
-    lipid_data <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a]]
+    lipid_data <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a], drop = FALSE]
     # saturated
-    lipid_data_sat <- lipid_data[, colnames(lipid_data) %in% c(sat_lipid, sat_lipid_dbl)]
+    lipid_data_sat <- lipid_data[, colnames(lipid_data) %in% c(sat_lipid, sat_lipid_dbl), drop = FALSE]
     lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] <- lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] * 2
     # # if contains 2x FA tail multiply by 2
-    lipid_data_unsat <- lipid_data[, colnames(lipid_data) %in% c(unsat_lipid, unsat_lipid_dbl)]
+    lipid_data_unsat <- lipid_data[, colnames(lipid_data) %in% c(unsat_lipid, unsat_lipid_dbl), drop = FALSE]
     lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] <- lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] * 2
 
     # calculate the SI index
