@@ -113,7 +113,7 @@ body_ui = function() {
 header = header_ui()
 sidebar = sidebar_ui()
 body = body_ui()
-ui = bs4Dash::dashboardPage(header, sidebar, body)
+ui = bs4Dash::dashboardPage(header, sidebar, body, freshTheme = "custom.css")
 # ui = shinymanager::secure_app(bs4Dash::dashboardPage(header, sidebar, body))
 #------------------------------------------------------------------- Server ----
 
