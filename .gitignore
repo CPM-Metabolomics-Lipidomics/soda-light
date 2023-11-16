@@ -23,3 +23,6 @@ data/Database/*/*
 
 # no temporary files
 .~*
+
+# ignore sass cache key file
+.sass_cache_keys
