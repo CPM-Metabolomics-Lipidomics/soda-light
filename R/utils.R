@@ -1160,6 +1160,8 @@ get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, 
 #------------------------------------------------------- Saturation index ------
 # Here are some functions to calculate the saturation index in several different
 # ways.
+
+# use palmitate, stearate and oleate tails for the calculation of the SI index per lipid class
 satindex_calc_ratio <- function(data_table = NULL,
                     feature_table = NULL,
                     sample_meta = NULL) {
@@ -1223,6 +1225,7 @@ satindex_calc_ratio <- function(data_table = NULL,
   return(tot_lipids)
 }
 
+# use all FA tails for the calculation of the SI index per lipid class
 satindex_calc_all <- function(data_table = NULL,
                   feature_table = NULL,
                   sample_meta = NULL) {
@@ -1299,6 +1302,52 @@ satindex_calc_all <- function(data_table = NULL,
 
   return(tot_lipids)
 }
+
+# use all FA tails for the calculation of the overall SI index
+satindex_calc_overall <- function(data_table = NULL,
+                                  feature_table = NULL,
+                                  sample_meta = NULL) {
+  # the feature table doesn't contain a column lipids fix here
+  feature_table$lipid <- rownames(feature_table)
+
+  # leave TG's out
+  sat_lipid <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
+                                     (feature_table$unsat_1 == 0 |
+                                        feature_table$unsat_2 == 0)]
+  unsat_lipid <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
+                                       (feature_table$unsat_1 != 0 |
+                                          feature_table$unsat_2 != 0)]
+  sat_lipid_dbl <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
+                                         feature_table$unsat_1 == 0 &
+                                         feature_table$unsat_2 == 0]
+  unsat_lipid_dbl <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
+                                           feature_table$unsat_1 != 0 &
+                                           feature_table$unsat_2 != 0]
+  # with TG's
+  sat_lipid_TG <- feature_table$lipid[feature_table$lipid_class == "TG" &
+                                        feature_table$unsat_2 == 0]
+  unsat_lipid_TG <- feature_table$lipid[feature_table$lipid_class == "TG" &
+                                          feature_table$unsat_2 != 0]
+
+  # saturated
+  lipid_data_sat <- data_table[, colnames(data_table) %in% Reduce("union", list(sat_lipid, sat_lipid_dbl, sat_lipid_TG)), drop = FALSE]
+  if(length(sat_lipid_dbl) > 0 ) {
+    lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] <- lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl, drop = FALSE] * 2
+  }
+
+  # unsaturated
+  lipid_data_unsat <- data_table[, colnames(data_table) %in% Reduce("union", list(unsat_lipid, unsat_lipid_dbl, unsat_lipid_TG)), drop = FALSE]
+  if(length(unsat_lipid_dbl) > 0 ) {
+    lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] <- lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl, drop = FALSE] * 2
+  }
+
+  SI_index_overall <- rowSums(lipid_data_sat, na.rm = TRUE) / rowSums(lipid_data_unsat, na.rm = TRUE)
+
+  tot_lipids <- data.frame(SI = SI_index_overall)
+
+  return(tot_lipids)
+}
+
 
 #--------------------------------------------------------- Example datasets ----
 example_lipidomics = function(name,
