@@ -1237,7 +1237,10 @@ Lips_exp = R6::R6Class(
                                       sample_meta = sample_meta),
         "all" = satindex_calc_all(data_table = data_table,
                                   feature_table = feature_table,
-                                  sample_meta = sample_meta)
+                                  sample_meta = sample_meta),
+        "overall" = satindex_calc_overall(data_table = data_table,
+                                          feature_table = feature_table,
+                                          sample_meta = sample_meta)
       )
 
       # remove some Inf and replace by NaN
@@ -1247,7 +1250,7 @@ Lips_exp = R6::R6Class(
       })
 
       # get rid of empty columns
-      res_clean <- res[, !apply(apply(res, 2, is.na), 2, all)]
+      res_clean <- res[, !apply(apply(res, 2, is.na), 2, all), drop = FALSE]
 
       # plotting
       # Get sample groups and the list of classes
@@ -1342,10 +1345,6 @@ Lips_exp = R6::R6Class(
 
       self$plots$satindex_plot = fig
     }
-
-
-
-
 
   )
 )
