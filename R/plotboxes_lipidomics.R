@@ -654,7 +654,8 @@ satindex_server = function(r6, output, session) {
         label = "Select a method",
         choices = c("(palmitate+stearate) / oleate ratio" = "ratio",
                     "use all FA tails" = "all",
-                    "overall" = "overall"),
+                    "overall" = "overall",
+                    "double bond" = "db"),
         selected = "ratio"
       ),
       shiny::textOutput(outputId = ns("satindex_note")),
@@ -663,6 +664,20 @@ satindex_server = function(r6, output, session) {
         label = "Select group column",
         choices = colnames(r6$tables$raw_meta),
         selected = r6$params$satindex_plot$group_col
+      ),
+      shiny::selectizeInput(
+        inputId = ns("satindex_metagroup"),
+        label = "Select two groups to compare",
+        choices = unique(r6$tables$raw_meta[,r6$params$satindex_plot$group_col]),
+        selected = c(r6$params$satindex_plot$group_1, r6$params$satindex_plot$group_2),
+        multiple = TRUE
+      ),
+      shiny::selectizeInput(
+        inputId = ns("satindex_lipidclass"),
+        label = "Select lipid class",
+        choices = unique(r6$tables$feature_table$lipid_class),
+        selected = r6$params$satindex_plot$selected_lipid_class,
+        multiple = FALSE
       ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
@@ -695,10 +710,22 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
       })
     }
 
+    # show / hide the group selection
+    if(input$satindex_select_method == "db") {
+      shinyjs::show(id = "satindex_metagroup")
+      shinyjs::show(id = "satindex_lipidclass")
+    } else {
+      shinyjs::hide(id = "satindex_metagroup")
+      shinyjs::hide(id = "satindex_lipidclass")
+    }
+
     r6$param_satindex_plot(data_table = r6$tables$raw_data,
                            feature_meta = r6$tables$feature_table,
                            sample_meta = r6$tables$raw_meta,
                            group_col = input$satindex_metacol,
+                           group_1 = input$satindex__metagroup[1],
+                           group_2 = input$satindex__metagroup[2],
+                           selected_lipid_class = NULL,
                            method = input$satindex_select_method,
                            img_format = input$satindex_img_format)
 

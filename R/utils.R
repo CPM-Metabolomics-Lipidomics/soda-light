@@ -1310,7 +1310,7 @@ satindex_calc_overall <- function(data_table = NULL,
   # the feature table doesn't contain a column lipids fix here
   feature_table$lipid <- rownames(feature_table)
 
-  # leave TG's out
+  # leave TG's and PA's out
   sat_lipid <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
                                      (feature_table$unsat_1 == 0 |
                                         feature_table$unsat_2 == 0)]
@@ -1329,14 +1329,19 @@ satindex_calc_overall <- function(data_table = NULL,
   unsat_lipid_TG <- feature_table$lipid[feature_table$lipid_class == "TG" &
                                           feature_table$unsat_2 != 0]
 
+  # with PA's
+  sat_lipid_PA <- feature_table$lipid[feature_table$lipid_class == "PA" &
+                                        feature_table$unsat_2 == 0]
+  unsat_lipid_PA <- feature_table$lipid[feature_table$lipid_class == "PA" &
+                                          feature_table$unsat_2 != 0]
   # saturated
-  lipid_data_sat <- data_table[, colnames(data_table) %in% Reduce("union", list(sat_lipid, sat_lipid_dbl, sat_lipid_TG)), drop = FALSE]
+  lipid_data_sat <- data_table[, colnames(data_table) %in% Reduce("union", list(sat_lipid, sat_lipid_dbl, sat_lipid_TG, sat_lipid_PA)), drop = FALSE]
   if(length(sat_lipid_dbl) > 0 ) {
     lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] <- lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl, drop = FALSE] * 2
   }
 
   # unsaturated
-  lipid_data_unsat <- data_table[, colnames(data_table) %in% Reduce("union", list(unsat_lipid, unsat_lipid_dbl, unsat_lipid_TG)), drop = FALSE]
+  lipid_data_unsat <- data_table[, colnames(data_table) %in% Reduce("union", list(unsat_lipid, unsat_lipid_dbl, unsat_lipid_TG, unsat_lipid_PA)), drop = FALSE]
   if(length(unsat_lipid_dbl) > 0 ) {
     lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] <- lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl, drop = FALSE] * 2
   }
@@ -1346,6 +1351,17 @@ satindex_calc_overall <- function(data_table = NULL,
   tot_lipids <- data.frame(SI = SI_index_overall)
 
   return(tot_lipids)
+}
+
+satindex_calc_db <- function(data_table = NULL,
+                             feature_table = NULL,
+                             sample_meta = NULL,
+                             group_1 = NULL,
+                             group_2 = NULL,
+                             selected_lipid_class = NULL) {
+  print("nothing to plot yet")
+
+  return(NULL)
 }
 
 
