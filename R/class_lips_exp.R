@@ -1368,7 +1368,10 @@ Lips_exp = R6::R6Class(
         fig <- res |>
           plot_ly(x = ~doubleBond,
                   y = ~foldChange) |>
-          add_bars()
+          add_bars() |>
+          layout(title = selected_lipid_class,
+                 xaxis = list(title = "# double bonds"),
+                 yaxis = list(title = paste0("Fold change (", group_1, " / ", group_2, ")")))
 
         self$plots$satindex_plot <- fig
       }
