@@ -723,9 +723,9 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                            feature_meta = r6$tables$feature_table,
                            sample_meta = r6$tables$raw_meta,
                            group_col = input$satindex_metacol,
-                           group_1 = input$satindex__metagroup[1],
-                           group_2 = input$satindex__metagroup[2],
-                           selected_lipid_class = NULL,
+                           group_1 = input$satindex_metagroup[1],
+                           group_2 = input$satindex_metagroup[2],
+                           selected_lipid_class = input$satindex_lipidclass,
                            method = input$satindex_select_method,
                            img_format = input$satindex_img_format)
 

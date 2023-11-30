@@ -1255,6 +1255,7 @@ Lips_exp = R6::R6Class(
         "db" = satindex_calc_db(data_table = data_table,
                                 feature_table = feature_table,
                                 sample_meta = sample_meta,
+                                group_col = group_col,
                                 group_1 = group_1,
                                 group_2 = group_2,
                                 selected_lipid_class = selected_lipid_class)
