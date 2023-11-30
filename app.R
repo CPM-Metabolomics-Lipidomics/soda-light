@@ -165,7 +165,7 @@ server = function(input, output, session) {
       }
     } else {
       # for easy development
-      query[["experimentId"]] <- "VDK_230504_01"
+      query[["experimentId"]] <- "VDK_220223_01"
     }
     experiment_id = query[["experimentId"]]
 

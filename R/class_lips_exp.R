@@ -103,6 +103,8 @@ Lips_exp = R6::R6Class(
         pval_values = c(1, 5),
         img_format = "png"
       )
+
+
     ),
 
 
@@ -274,11 +276,14 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, method, img_format) {
+    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, group_1, group_2, selected_lipid_class, method, img_format) {
       self$params$satindex_plot$data_table = data_table
       self$params$satindex_plot$feature_meta = feature_meta
       self$params$satindex_plot$sample_meta = sample_meta
       self$params$satindex_plot$group_col = group_column
+      self$params$satindex_plot$group_1 = group_1
+      self$params$satindex_plot$group_2 = group_2
+      self$params$satindex_plot$selected_lipid_class = selected_lipid_class
       self$params$satindex_plot$method = method
       self$params$satindex_plot$img_format = img_format
     },
@@ -466,8 +471,8 @@ Lips_exp = R6::R6Class(
 
     get_group_summary_species = function() {
       self$tables$summary_species_table = get_group_median_table(data_table = self$tables$raw_data,
-                                                         meta_table = self$tables$raw_meta,
-                                                         group_col = self$indices$group_col)
+                                                                 meta_table = self$tables$raw_meta,
+                                                                 group_col = self$indices$group_col)
     },
 
     get_group_summary_classes = function() {
@@ -554,6 +559,9 @@ Lips_exp = R6::R6Class(
                                feature_meta = self$tables$feature_table,
                                sample_meta = self$tables$raw_meta,
                                group_column = self$indices$group_col,
+                               group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
+                               group_2 = unique(self$tables$raw_meta[,self$indices$group_col])[2],
+                               selected_lipid_class = NULL,
                                method = "ratio",
                                img_format = "png")
 
@@ -789,7 +797,7 @@ Lips_exp = R6::R6Class(
         if (x >= 1) {
           x = x_step/2
           y = y - y_step}
-        }
+      }
       annotations[[i]] = list(x = -0.08, y = 0.5, text = "Concentration",
                               font = list(size = 10),
                               textangle = 270, showarrow = FALSE, xref='paper',
@@ -1222,6 +1230,9 @@ Lips_exp = R6::R6Class(
                              feature_table = self$tables$feature_table,
                              sample_meta = self$tables$raw_meta,
                              group_col = self$indices$group_col,
+                             group_1 = self$params$satindex_plot$group_1,
+                             group_2 = self$params$satindex_plot$group_2,
+                             selected_lipid_class = self$params$satindex_plot$selected_lipid_class,
                              method = self$params$satindex_plot$method,
                              colour_list,
                              width = NULL,
@@ -1240,110 +1251,130 @@ Lips_exp = R6::R6Class(
                                   sample_meta = sample_meta),
         "overall" = satindex_calc_overall(data_table = data_table,
                                           feature_table = feature_table,
-                                          sample_meta = sample_meta)
+                                          sample_meta = sample_meta),
+        "db" = satindex_calc_db(data_table = data_table,
+                                feature_table = feature_table,
+                                sample_meta = sample_meta,
+                                group_col = group_col,
+                                group_1 = group_1,
+                                group_2 = group_2,
+                                selected_lipid_class = selected_lipid_class)
       )
 
-      # remove some Inf and replace by NaN
-      res <- apply(res, 2, function(x) {
-        x[is.infinite(x)] <- NaN
-        return(x)
-      })
+      if(method != "db") {
+        # remove some Inf and replace by NaN
+        res <- apply(res, 2, function(x) {
+          x[is.infinite(x)] <- NaN
+          return(x)
+        })
 
-      # get rid of empty columns
-      res_clean <- res[, !apply(apply(res, 2, is.na), 2, all), drop = FALSE]
+        # get rid of empty columns
+        res_clean <- res[, !apply(apply(res, 2, is.na), 2, all), drop = FALSE]
 
-      # plotting
-      # Get sample groups and the list of classes
-      groups = sort(unique(sample_meta[, group_col]))
-      class_list = colnames(res_clean)
+        # plotting
+        # Get sample groups and the list of classes
+        groups = sort(unique(sample_meta[, group_col]))
+        class_list = colnames(res_clean)
 
-      x_dim = ceiling(sqrt(length(class_list)))
-      y_dim = floor(sqrt(length(class_list)))
-      # this is sometimes needed
-      if((x_dim * y_dim) < length(class_list)) {
-        x_dim <- x_dim + 1
-      }
-
-      x_step = 1/x_dim
-      y_step = 1/y_dim
-
-      x = x_step/2
-      y = 0.97 - y_step
-      i = 1
-
-      annotations = vector(mode = "list",
-                           length = length(class_list) + 1)
-      for (c in class_list) {
-        tmp_ann = list(
-          x = x,
-          y = y,
-          text = c,
-          xref = "paper",
-          yref = "paper",
-          xanchor = "center",
-          yanchor = "bottom",
-          showarrow = FALSE)
-        annotations[[i]] = tmp_ann
-        i = i + 1
-        x = x + x_step
-        if (x >= 1) {
-          x = x_step/2
-          y = y - y_step}
-      }
-      annotations[[i]] = list(x = -0.08, y = 0.5, text = "Saturation index",
-                              font = list(size = 12),
-                              textangle = 270, showarrow = FALSE, xref = 'paper',
-                              yref = 'paper')
-
-      # Plot list will be the list of subplots
-      plot_list = vector(mode = "list",
-                         length = length(class_list))
-
-      # Cleared groups is created for the legends
-      cleared_groups = c()
-      j = 1
-      for (c in class_list) {
-        i = 1
-        subplot = plot_ly(colors = colour_list, width = width, height = height)
-        for (g in groups){
-          if (g %in% cleared_groups) {
-            first_bool = FALSE
-          } else {
-            first_bool = TRUE
-            cleared_groups = c(cleared_groups, g)
-          }
-
-          # For each class, each group
-          s = rownames(sample_meta)[sample_meta[, group_col] == g] # Get the samples for the current group
-          d = res_clean[s, c] # Get the concentrations for all s samples in the current class c
-          m = mean(d, na.rm = TRUE) # Get the mean concentration for samples s for class c
-
-          # Subplot for the bar chart displaying the mean concentration
-          subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
-                                          color = colour_list[i], alpha = 0.75,
-                                          legendgroup = i, showlegend = first_bool)
-
-          # Subplot for boxplots displaying the median and all datapoints
-          subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
-                                          pointpos = 0, name = g, color = colour_list[i],
-                                          line = list(color = 'rgb(100,100,100)'),
-                                          marker = list(color = 'rgb(100,100,100)'), alpha = 0.75,
-                                          legendgroup = i, showlegend = FALSE,
-                                          text = s,
-                                          hoverinfo = "text")
-          subplot = subplot %>% layout(xaxis= list(showticklabels = FALSE),
-                                       yaxis = list(tickfont = list(size = 8)))
-          i = i + 1
+        x_dim = ceiling(sqrt(length(class_list)))
+        y_dim = floor(sqrt(length(class_list)))
+        # this is sometimes needed
+        if((x_dim * y_dim) < length(class_list)) {
+          x_dim <- x_dim + 1
         }
-        plot_list[[j]] = plotly_build(subplot)
-        j = j + 1
+
+        x_step = 1/x_dim
+        y_step = 1/y_dim
+
+        x = x_step/2
+        y = 0.97 - y_step
+        i = 1
+
+        annotations = vector(mode = "list",
+                             length = length(class_list) + 1)
+        for (c in class_list) {
+          tmp_ann = list(
+            x = x,
+            y = y,
+            text = c,
+            xref = "paper",
+            yref = "paper",
+            xanchor = "center",
+            yanchor = "bottom",
+            showarrow = FALSE)
+          annotations[[i]] = tmp_ann
+          i = i + 1
+          x = x + x_step
+          if (x >= 1) {
+            x = x_step/2
+            y = y - y_step}
+        }
+        annotations[[i]] = list(x = -0.08, y = 0.5, text = "Saturation index",
+                                font = list(size = 12),
+                                textangle = 270, showarrow = FALSE, xref = 'paper',
+                                yref = 'paper')
+
+        # Plot list will be the list of subplots
+        plot_list = vector(mode = "list",
+                           length = length(class_list))
+
+        # Cleared groups is created for the legends
+        cleared_groups = c()
+        j = 1
+        for (c in class_list) {
+          i = 1
+          subplot = plot_ly(colors = colour_list, width = width, height = height)
+          for (g in groups){
+            if (g %in% cleared_groups) {
+              first_bool = FALSE
+            } else {
+              first_bool = TRUE
+              cleared_groups = c(cleared_groups, g)
+            }
+
+            # For each class, each group
+            s = rownames(sample_meta)[sample_meta[, group_col] == g] # Get the samples for the current group
+            d = res_clean[s, c] # Get the concentrations for all s samples in the current class c
+            m = mean(d, na.rm = TRUE) # Get the mean concentration for samples s for class c
+
+            # Subplot for the bar chart displaying the mean concentration
+            subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
+                                            color = colour_list[i], alpha = 0.75,
+                                            legendgroup = i, showlegend = first_bool)
+
+            # Subplot for boxplots displaying the median and all datapoints
+            subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
+                                            pointpos = 0, name = g, color = colour_list[i],
+                                            line = list(color = 'rgb(100,100,100)'),
+                                            marker = list(color = 'rgb(100,100,100)'), alpha = 0.75,
+                                            legendgroup = i, showlegend = FALSE,
+                                            text = s,
+                                            hoverinfo = "text")
+            subplot = subplot %>% layout(xaxis= list(showticklabels = FALSE),
+                                         yaxis = list(tickfont = list(size = 8)))
+            i = i + 1
+          }
+          plot_list[[j]] = plotly_build(subplot)
+          j = j + 1
+        }
+
+        fig = subplot(plot_list, nrows = y_dim, margin = 0.035, titleX = TRUE)
+        fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
+                             annotations = annotations)
+
+        self$plots$satindex_plot = fig
+      } else {
+
+        fig <- res |>
+          plot_ly(x = ~doubleBond,
+                  y = ~foldChange) |>
+          add_bars() |>
+          layout(title = selected_lipid_class,
+                 xaxis = list(title = "# double bonds"),
+                 yaxis = list(title = paste0("Fold change (", group_1, " / ", group_2, ")")))
+
+        self$plots$satindex_plot <- fig
       }
-
-      fig = subplot(plot_list, nrows = y_dim, margin = 0.035, titleX = TRUE)
-      fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                           annotations = annotations)
-
-      self$plots$satindex_plot = fig
     }
 
   )
