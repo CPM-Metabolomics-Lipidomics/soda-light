@@ -1364,7 +1364,13 @@ Lips_exp = R6::R6Class(
 
         self$plots$satindex_plot = fig
       } else {
-        self$plots$satindex_plot <- NULL
+
+        fig <- res |>
+          plot_ly(x = ~doubleBond,
+                  y = ~foldChange) |>
+          add_bars()
+
+        self$plots$satindex_plot <- fig
       }
     }
 

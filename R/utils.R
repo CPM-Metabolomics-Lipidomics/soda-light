@@ -1360,8 +1360,6 @@ satindex_calc_db <- function(data_table = NULL,
                              group_1 = NULL,
                              group_2 = NULL,
                              selected_lipid_class = NULL) {
-  print("nothing to plot yet")
-
   # get only the selected lipid class
   class_data <- feature_table[feature_table$lipid_class == selected_lipid_class, ]
 
@@ -1386,10 +1384,11 @@ satindex_calc_db <- function(data_table = NULL,
   # do the calculations
   for(a in saturation) {
     for(b in groups) {
+      # get the correct lipids
       sel_lipids <- rownames(class_data)[class_data$unsat_sum == a]
-      print(sel_lipids)
+      # get the correct samples
       sel_samples <- rownames(sample_meta)[sample_meta[, group_col] == b]
-      print(sel_samples)
+      # calculate the average over the samples after summing the lipid species
       db_data[[as.character(a)]][[b]] <- mean(rowSums(data_table[rownames(data_table) %in% sel_samples,
                                                                  colnames(data_table) %in% sel_lipids,
                                                                  drop = FALSE],
@@ -1400,10 +1399,9 @@ satindex_calc_db <- function(data_table = NULL,
     db_data[[as.character(a)]][["doubleBond"]] <- a
   }
 
+  # make one nice data.frame
   db_data <- do.call(rbind.data.frame, db_data)
   db_data$doubleBond <- as.factor(db_data$doubleBond)
-
-  print(db_data)
 
   return(db_data)
 }

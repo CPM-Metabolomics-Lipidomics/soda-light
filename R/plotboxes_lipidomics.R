@@ -697,7 +697,11 @@ satindex_server = function(r6, output, session) {
 
 satindex_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # Generate the plot
-  shiny::observeEvent(c(input$satindex_metacol, input$satindex_img_format, input$satindex_select_method), {
+  shiny::observeEvent(c(input$satindex_metacol,
+                        input$satindex_img_format,
+                        input$satindex_select_method,
+                        input$satindex_metagroup,
+                        input$satindex_lipidclass), {
     print_tm(r6$name, "Saturation index: Updating params...")
 
     if(input$satindex_select_method == "ratio") {
