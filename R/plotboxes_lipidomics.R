@@ -653,7 +653,7 @@ satindex_server = function(r6, output, session) {
         inputId = ns("satindex_select_method"),
         label = "Select a method",
         choices = c("(palmitate+stearate) / oleate ratio" = "ratio",
-                    "use all lipids" = "all",
+                    "use all FA tails" = "all",
                     "overall" = "overall"),
         selected = "ratio"
       ),
