@@ -7,7 +7,6 @@ Authors@R: c(
     person("Rico", "Derks", , "r.j.e.derks@lumc.nl", role = "aut",
            comment = c(ORCID = "0000-0002-8920-7133")),
     person("Damien", "Olivier", , "d.olivier@lumc.nl", role = c("cre", "aut"),
-           comment = c(ORCID = "0000-0002-6363-0857"))
-)
+           comment = c(ORCID = "0000-0002-6363-0857")))
 Maintainer: Rico Derks <r.j.e.derks@lumc.nl>
 License: GPL (>= 3)
