@@ -135,10 +135,14 @@ Lips_exp = R6::R6Class(
 
     tables = list(
 
+      # imported meta
       imp_meta = NULL,
+      # raw meta, but filtered
       raw_meta = NULL,
 
+      # imported data
       imp_data = NULL,
+      # raw data, but filtered
       raw_data = NULL,
 
       blank_table = NULL,
@@ -408,6 +412,12 @@ Lips_exp = R6::R6Class(
             print('Warning: Normalization skipped, selected column contains either non numeric or missing data.')
           }
         }
+        write.csv(x = data_table,
+                  file = "raw_data.csv")
+        write.csv(x = self$tables$imp_data,
+                  file = "imported_data.csv")
+        print(paste("Raw data:", dim(data_table)))
+        print(paste("Imported data:", dim(self$tables$imp_data)))
         self$tables$raw_data = data_table
       }
     },
