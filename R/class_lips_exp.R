@@ -1238,6 +1238,8 @@ Lips_exp = R6::R6Class(
                              width = NULL,
                              height = NULL) {
 
+      write.csv(x = feature_table,
+                file = "./features.csv")
       ## At the moment this function is using the raw data table!
 
       # calculations
