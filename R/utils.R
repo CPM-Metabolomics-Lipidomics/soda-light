@@ -111,7 +111,8 @@ lipidomics_plot_list = function() {
                 "Heatmap" = "select_heatmap",
                 "PCA" = "select_pca",
                 "Double bond plot" = "select_double_bond_plot",
-                "Saturation index" = "select_satindex_plot"
+                "Saturation index" = "select_satindex_plot",
+                "Fatty acid analysis" = "select_fa_analysis_plot"
   )
   return(plot_list)
 }

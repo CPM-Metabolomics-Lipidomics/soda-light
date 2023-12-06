@@ -766,6 +766,130 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
   })
 }
 
+#-----------------------------------------------------------FA analysis index ----
+fa_analysis_generate = function(r6, colour_list, dimensions_obj, input) {
+  print_tm(r6$name, "Fatty acid analysis index plot: generating plot.")
+
+  if (input$fa_analysis_plotbox$maximized){
+    width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
+    height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+  } else {
+    width = dimensions_obj$xpx * dimensions_obj$x_plot
+    height = dimensions_obj$ypx * dimensions_obj$y_plot
+  }
+
+  r6$plot_satindex(data_table = r6$tables$raw_data, #table_switch(input$class_comparison_dataset, r6),
+                   group_col = input$satindex_metacol,
+                   colour_list = colour_list,
+                   method = input$satindex_select_method,
+                   width = width,
+                   height = height)
+}
+
+fa_analysis_spawn = function(r6, format, output) {
+  print_tm(r6$name, "Saturation index: spawning plot.")
+
+  output$fa_analysis_plot = plotly::renderPlotly({
+    r6$plots$fa_analysis_plot
+    plotly::config(r6$plots$fa_analysis_plot, toImageButtonOptions = list(format = format,
+                                                                       filename = timestamped_name('fa_analysis'),
+                                                                       height = NULL,
+                                                                       width = NULL,
+                                                                       scale = 1))
+  })
+}
+
+fa_analysis_ui = function(dimensions_obj, session) {
+  # add function to show bs4dash with plotting function
+  get_plotly_box(id = "fa_analysis",
+                 label = "Fatty acid analysis",
+                 dimensions_obj = dimensions_obj,
+                 session = session)
+}
+
+fa_analysis_server = function(r6, output, session) {
+  ns = session$ns
+  print_tm(r6$name, "Fatty acid analysis index: START.")
+
+  # set some UI
+  output$fa_analysis_sidebar_ui = shiny::renderUI({
+    shiny::tagList(
+      shiny::HTML("Nothing to show yet!")
+    )
+  })
+}
+
+fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # Generate the plot
+  # shiny::observeEvent(c(input$satindex_metacol,
+  #                       input$satindex_img_format,
+  #                       input$satindex_select_method,
+  #                       input$satindex_metagroup,
+  #                       input$satindex_lipidclass), {
+  #                         print_tm(r6$name, "Saturation index: Updating params...")
+  #
+  #                         if(input$satindex_select_method == "ratio") {
+  #                           output$satindex_note <- shiny::renderText({
+  #                             "Ref:  Cell Rep. 2018 Sep 4;24(10):2596-2605"
+  #                           })
+  #                         } else {
+  #                           output$satindex_note <- shiny::renderText({
+  #                             ""
+  #                           })
+  #                         }
+  #
+  #                         # show / hide the group selection
+  #                         if(input$satindex_select_method == "db") {
+  #                           shinyjs::show(id = "satindex_metagroup")
+  #                           shinyjs::show(id = "satindex_lipidclass")
+  #                         } else {
+  #                           shinyjs::hide(id = "satindex_metagroup")
+  #                           shinyjs::hide(id = "satindex_lipidclass")
+  #                         }
+  #
+  #                         r6$param_satindex_plot(data_table = r6$tables$raw_data,
+  #                                                feature_meta = r6$tables$feature_table,
+  #                                                sample_meta = r6$tables$raw_meta,
+  #                                                group_col = input$satindex_metacol,
+  #                                                group_1 = input$satindex_metagroup[1],
+  #                                                group_2 = input$satindex_metagroup[2],
+  #                                                selected_lipid_class = input$satindex_lipidclass,
+  #                                                method = input$satindex_select_method,
+  #                                                img_format = input$satindex_img_format)
+  #
+  #                         base::tryCatch({
+  #                           satindex_generate(r6, color_palette, dimensions_obj, input)
+  #                           satindex_spawn(r6, input$satindex_img_format, output)
+  #                         },
+  #                         error = function(e) {
+  #                           print_tm(r6$name, 'Saturation index error, missing data.')
+  #                           print(e)
+  #                         },
+  #                         finally = {}
+  #                         )
+  #                       })
+
+  # Expanded boxes
+  fa_analysis_proxy = plotly::plotlyProxy(outputId = "fa_analysis_plot",
+                                          session = session)
+
+  shiny::observeEvent(input$fa_analysis_plotbox,{
+    if (input$fa_analysis_plotbox$maximized) {
+      plotly::plotlyProxyInvoke(p = fa_analysis_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full,
+                                     height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+                                ))
+    } else {
+      plotly::plotlyProxyInvoke(p = fa_analysis_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx * dimensions_obj$x_plot,
+                                     height = dimensions_obj$ypx * dimensions_obj$y_plot
+                                ))
+    }
+  })
+}
+
 #----------------------------------------------------------------- Heat map ----
 
 heatmap_generate = function(r6, colour_list, dimensions_obj, input) {

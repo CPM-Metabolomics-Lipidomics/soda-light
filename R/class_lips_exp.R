@@ -171,7 +171,8 @@ Lips_exp = R6::R6Class(
       pca_scores_table = NULL,
       pca_loadings_table = NULL,
       dbplot_table = NULL,
-      satindex_table = NULL
+      satindex_table = NULL,
+      fa_analysis_table = NULL
 
 
     ),
@@ -184,7 +185,8 @@ Lips_exp = R6::R6Class(
       heatmap = NULL,
       pca_plot = NULL,
       double_bond_plot = NULL,
-      satindex_plot = NULL
+      satindex_plot = NULL,
+      fa_analysis_plot = NULL
     ),
 
     #---------------------------------------------------- Parameter methods ----
@@ -286,6 +288,13 @@ Lips_exp = R6::R6Class(
       self$params$satindex_plot$selected_lipid_class = selected_lipid_class
       self$params$satindex_plot$method = method
       self$params$satindex_plot$img_format = img_format
+    },
+
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, img_format) {
+      self$params$fa_analysis_plot$data_table = data_table
+      self$params$fa_analysis_plot$feature_meta = feature_meta
+      self$params$fa_analysis_plot$sample_meta = sample_meta
+      self$params$fa_analysis_plot$img_format = img_format
     },
 
     #-------------------------------------------------------- Table methods ----
@@ -1375,7 +1384,21 @@ Lips_exp = R6::R6Class(
 
         self$plots$satindex_plot <- fig
       }
-    }
+    },
 
+
+    plot_fa_analysis = function(data_table = self$tables$raw_data,
+                                feature_table = self$tables$feature_table,
+                                sample_meta = self$tables$raw_meta,
+                                colour_list,
+                                width = NULL,
+                                height = NULL) {
+
+      ## At the moment this function is using the raw data table!
+
+
+
+        self$plots$fa_analysis_plot <- NULL
+    }
   )
 )
