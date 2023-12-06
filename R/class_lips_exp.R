@@ -104,7 +104,6 @@ Lips_exp = R6::R6Class(
         img_format = "png"
       )
 
-
     ),
 
 
@@ -171,7 +170,8 @@ Lips_exp = R6::R6Class(
       pca_scores_table = NULL,
       pca_loadings_table = NULL,
       dbplot_table = NULL,
-      satindex_table = NULL
+      satindex_table = NULL,
+      fa_analysis_table = NULL
 
 
     ),
@@ -184,7 +184,8 @@ Lips_exp = R6::R6Class(
       heatmap = NULL,
       pca_plot = NULL,
       double_bond_plot = NULL,
-      satindex_plot = NULL
+      satindex_plot = NULL,
+      fa_analysis_plot = NULL
     ),
 
     #---------------------------------------------------- Parameter methods ----
@@ -286,6 +287,14 @@ Lips_exp = R6::R6Class(
       self$params$satindex_plot$selected_lipid_class = selected_lipid_class
       self$params$satindex_plot$method = method
       self$params$satindex_plot$img_format = img_format
+    },
+
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, img_format) {
+      self$params$fa_analysis_plot$data_table = data_table
+      self$params$fa_analysis_plot$feature_meta = feature_meta
+      self$params$fa_analysis_plot$sample_meta = sample_meta
+      self$params$fa_analysis_plot$group_col = group_column
+      self$params$fa_analysis_plot$img_format = img_format
     },
 
     #-------------------------------------------------------- Table methods ----
@@ -564,6 +573,12 @@ Lips_exp = R6::R6Class(
                                selected_lipid_class = NULL,
                                method = "ratio",
                                img_format = "png")
+
+      self$param_fa_analysis_plot(data_table = self$tables$raw_data,
+                                  feature_meta = self$tables$feature_table,
+                                  sample_meta = self$tables$raw_meta,
+                                  group_column = self$indices$group_col,
+                                  img_format = "png")
 
     },
 
@@ -1374,7 +1389,73 @@ Lips_exp = R6::R6Class(
 
         self$plots$satindex_plot <- fig
       }
-    }
+    },
 
+
+    plot_fa_analysis = function(data_table = self$tables$raw_data,
+                                feature_table = self$tables$feature_table,
+                                sample_meta = self$tables$raw_meta,
+                                group_col = self$indices$group_col,
+                                colour_list,
+                                width = NULL,
+                                height = NULL) {
+
+      ## At the moment this function is using the raw data table!
+      # do the calculations
+      res <- fa_analysis_calc(data_table = data_table,
+                              feature_table = feature_table,
+                              sample_meta = sample_meta)
+
+
+      # Produce the class x group table
+      # add ID's, group's and make long
+      res$ID <- rownames(res)
+      res$group <- sample_meta[res$ID, group_col]
+      res_long <- res |>
+        tidyr::pivot_longer(cols = -c(ID, group),
+                            names_to = "fa_chain",
+                            values_to = "value")
+
+      # calculate mean and stdev per group
+      plot_table <- tapply(as.data.frame(res_long), list(res_long$group, res_long$fa_chain), function(x) {
+        avg <- mean(x[, "value"], na.rm = TRUE)
+        stdev <- sd(x[, "value"], na.rm = TRUE)
+
+        return(list(avg = avg,
+                    stdev = stdev,
+                    fa_chain = x[1, "fa_chain"],
+                    group = x[1, "group"]))
+        # print(x)
+      })
+
+      plot_table <- do.call(rbind.data.frame, plot_table)
+
+      # Store the plot_table
+      self$tables$fa_analysis_table <- plot_table
+
+      i <- 1
+      fig <- plotly::plot_ly(colors = colour_list, width = width, height = height)
+      for (grp in unique(plot_table$group)) {
+        fig <- fig |>
+          plotly::add_trace(data = plot_table[plot_table$group == grp, ],
+                            x = ~fa_chain,
+                            y = ~avg,
+                            color = colour_list[i],
+                            type = "bar",
+                            name = grp,
+                            error_y = ~ list(array = stdev,
+                                             color = "#000000"))
+        fig <- fig |>
+          layout(legend = list(orientation = 'h',
+                               xanchor = "center",
+                               x = 0.5),
+                 xaxis = list(title = "Fatty acid chain"),
+                 yaxis = list(title = "Concentration"))
+        i <- i + 1
+      }
+      fig
+
+      self$plots$fa_analysis_plot <- fig
+    }
   )
 )
