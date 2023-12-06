@@ -813,7 +813,6 @@ fa_analysis_server = function(r6, output, session) {
   # set some UI
   output$fa_analysis_sidebar_ui = shiny::renderUI({
     shiny::tagList(
-      shiny::HTML("Nothing to show yet!"),
       shiny::selectInput(
         inputId = ns("fa_analysis_metacol"),
         label = "Select group column",
@@ -832,8 +831,8 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
     r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
                               feature_meta = r6$tables$feature_table,
                               sample_meta = r6$tables$raw_meta,
-                              group_col = input$satindex_metacol,
-                              img_format = input$satindex_img_format)
+                              group_col = input$fa_analysis_metacol,
+                              img_format = input$fa_analysis_img_format)
 
     base::tryCatch({
       fa_analysis_generate(r6, color_palette, dimensions_obj, input)

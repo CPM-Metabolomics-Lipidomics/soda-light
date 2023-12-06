@@ -1403,7 +1403,7 @@ Lips_exp = R6::R6Class(
                                 height = NULL) {
 
       ## At the moment this function is using the raw data table!
-
+      # do the calculations
       res <- fa_analysis_calc(data_table = data_table,
                               feature_table = feature_table,
                               sample_meta = sample_meta)
@@ -1415,12 +1415,10 @@ Lips_exp = R6::R6Class(
       group_list <- sort(unique(sample_meta[, group_col]))
 
       plot_table <- data.frame(matrix(data = 0.0,
-                                     nrow = length(fa_list),
-                                     ncol = length(group_list)))
+                                      nrow = length(fa_list),
+                                      ncol = length(group_list)))
       rownames(plot_table) <- fa_list
       colnames(plot_table) <- group_list
-
-      print(sample_meta[, group_col])
 
       for (c in fa_list) {
         for (g in group_list){
@@ -1438,9 +1436,10 @@ Lips_exp = R6::R6Class(
       fig = plotly::plot_ly(colors = colour_list, width = width, height = height)
       for (col in colnames(plot_table)) {
         fig = fig |> add_trace(x = rownames(plot_table), y = plot_table[,col],
-                                name = col, color = colour_list[i], type  = "bar")
+                               name = col, color = colour_list[i], type  = "bar")
         fig = fig |> layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                             yaxis = list(title = "Concentration"))
+                            xaxis = list(title = "Fatty acid chain"),
+                            yaxis = list(title = "Concentration"))
         i = i + 1
       }
 
