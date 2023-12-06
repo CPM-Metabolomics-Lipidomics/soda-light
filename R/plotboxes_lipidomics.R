@@ -226,7 +226,7 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
 
   # Download associated table
   output$download_class_comparison_table = shiny::downloadHandler(
-    filename = function(){"class_comparison_table.csv"},
+    filename = function(){timestamped_name("class_comparison_table.csv")},
     content = function(file_name){
       write.csv(r6$tables$class_distribution_table, file_name)
     }
