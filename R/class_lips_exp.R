@@ -1409,8 +1409,6 @@ Lips_exp = R6::R6Class(
                                 height = NULL) {
 
       ## At the moment this function is using the raw data table
-      print("Rico plot:")
-      print(pathway)
       # do the calculations
       res <- fa_analysis_calc(data_table = data_table,
                               feature_table = feature_table,
@@ -1473,13 +1471,27 @@ Lips_exp = R6::R6Class(
                             error_y = ~ list(array = stdev,
                                              color = "#000000"))
         fig <- fig |>
-          layout(legend = list(orientation = 'h',
-                               xanchor = "center",
-                               x = 0.5),
-                 xaxis = list(title = "Fatty acid chain"),
-                 yaxis = list(title = "Concentration"))
+          plotly::layout(legend = list(orientation = 'h',
+                                       xanchor = "center",
+                                       x = 0.5),
+                         xaxis = list(title = "Fatty acid chain"),
+                         yaxis = list(title = "Concentration"))
         i <- i + 1
       }
+      fig <- fig |>
+        plotly::layout(annotations =
+                         list(x = 1,
+                              y = -0.175,
+                              text = "NOTE: error bars are standard deviation",
+                              showarrow = FALSE,
+                              xref = "paper",
+                              yref = "paper",
+                              xanchor = "right",
+                              yanchor = "auto",
+                              xshift = 0,
+                              yshift = 0,
+                              font = list(size = 10))
+        )
       fig
 
       self$plots$fa_analysis_plot <- fig

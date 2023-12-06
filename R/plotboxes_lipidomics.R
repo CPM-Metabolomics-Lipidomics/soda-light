@@ -862,8 +862,6 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                         input$fa_analysis_pathway,
                         input$fa_analysis_img_format), {
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
-    print("Rico events:")
-    print(input$fa_analysis_pathway)
 
     r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
                               feature_meta = r6$tables$feature_table,
