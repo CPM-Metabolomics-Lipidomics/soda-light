@@ -688,7 +688,7 @@ satindex_server = function(r6, output, session) {
         width = "100%"),
       shiny::downloadButton(
         outputId = ns("download_satindex_table"),
-        label = "Download unavailable for now",
+        label = "Download associated table",
         style = "width:100%;"
       )
     )
@@ -744,6 +744,20 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                           finally = {}
                           )
                         })
+
+  # Download associated table
+  output$download_satindex_table = shiny::downloadHandler(
+    filename = function() {
+      if(input$satindex_select_method == "db") {
+        timestamped_name(paste(input$satindex_select_method, input$satindex_lipidclass, "si_table.csv", sep = "_"))
+      } else {
+        timestamped_name(paste(input$satindex_select_method, "si_table.csv", sep = "_"))
+      }
+    },
+    content = function(file_name){
+      write.csv(r6$tables$satindex_table, file_name)
+    }
+  )
 
   # Expanded boxes
   satindex_proxy = plotly::plotlyProxy(outputId = "satindex_plot",
