@@ -1285,6 +1285,9 @@ Lips_exp = R6::R6Class(
         # get rid of empty columns
         res_clean <- res[, !apply(apply(res, 2, is.na), 2, all), drop = FALSE]
 
+        # Store the plot_table
+        self$tables$satindex_table <- res_clean
+
         # plotting
         # Get sample groups and the list of classes
         groups = sort(unique(sample_meta[, group_col]))
@@ -1378,6 +1381,8 @@ Lips_exp = R6::R6Class(
 
         self$plots$satindex_plot = fig
       } else {
+        # Store the plot_table
+        self$tables$satindex_table <- res
 
         fig <- res |>
           plot_ly(x = ~doubleBond,

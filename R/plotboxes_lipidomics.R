@@ -196,7 +196,7 @@ class_comparison_server = function(r6, output, session) {
         width = "100%"),
       shiny::downloadButton(
         outputId = ns("download_class_comparison_table"),
-        label = "Download unavailable for now",
+        label = "Download associated table",
         style = "width:100%;"
       )
     )
@@ -224,13 +224,13 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
   })
 
 
-  # # Download associated table
-  # output$download_class_comparison_table = shiny::downloadHandler(
-  #   filename = function(){"class_comparison_table.csv"},
-  #   content = function(file_name){
-  #     write.csv(r6$tables$class_distribution_table, file_name)
-  #   }
-  # )
+  # Download associated table
+  output$download_class_comparison_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("class_comparison_table.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$class_distribution_table, file_name)
+    }
+  )
 
 
   # Expanded boxes
@@ -688,7 +688,7 @@ satindex_server = function(r6, output, session) {
         width = "100%"),
       shiny::downloadButton(
         outputId = ns("download_satindex_table"),
-        label = "Download unavailable for now",
+        label = "Download associated table",
         style = "width:100%;"
       )
     )
@@ -744,6 +744,20 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                           finally = {}
                           )
                         })
+
+  # Download associated table
+  output$download_satindex_table = shiny::downloadHandler(
+    filename = function() {
+      if(input$satindex_select_method == "db") {
+        timestamped_name(paste(input$satindex_select_method, input$satindex_lipidclass, "si_table.csv", sep = "_"))
+      } else {
+        timestamped_name(paste(input$satindex_select_method, "si_table.csv", sep = "_"))
+      }
+    },
+    content = function(file_name){
+      write.csv(r6$tables$satindex_table, file_name)
+    }
+  )
 
   # Expanded boxes
   satindex_proxy = plotly::plotlyProxy(outputId = "satindex_plot",
@@ -828,7 +842,7 @@ fa_analysis_server = function(r6, output, session) {
         width = "100%"),
       shiny::downloadButton(
         outputId = ns("download_fa_analysis_table"),
-        label = "Download unavailable for now",
+        label = "Download associated table",
         style = "width:100%;"
       )
     )
@@ -837,7 +851,8 @@ fa_analysis_server = function(r6, output, session) {
 
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # Generate the plot
-  shiny::observeEvent(c(input$fa_analysis_metacol), {
+  shiny::observeEvent(c(input$fa_analysis_metacol,
+                        input$fa_analysis_img_format), {
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
     r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
@@ -857,6 +872,14 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
     finally = {}
     )
   })
+
+  # Download associated table
+  output$download_fa_analysis_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("fa_analysis_table.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$fa_analysis_table, file_name)
+    }
+  )
 
   # Expanded boxes
   fa_analysis_proxy = plotly::plotlyProxy(outputId = "fa_analysis_plot",
@@ -1059,7 +1082,9 @@ heatmap_server = function(r6, output, session) {
 
 heatmap_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
-  shiny::observeEvent(input$heatmap_run,{
+  shiny::observeEvent(c(input$heatmap_run,
+                        input$heatmap_img_format), {
+    req(input$heatmap_run)
     shinyjs::disable("heatmap_run")
     print_tm(r6$name, "Heatmap: Updating params...")
 
