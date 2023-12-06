@@ -290,10 +290,11 @@ Lips_exp = R6::R6Class(
       self$params$satindex_plot$img_format = img_format
     },
 
-    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, img_format) {
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, img_format) {
       self$params$fa_analysis_plot$data_table = data_table
       self$params$fa_analysis_plot$feature_meta = feature_meta
       self$params$fa_analysis_plot$sample_meta = sample_meta
+      self$params$fa_analysis_plot$group_col = group_column
       self$params$fa_analysis_plot$img_format = img_format
     },
 
@@ -573,6 +574,12 @@ Lips_exp = R6::R6Class(
                                selected_lipid_class = NULL,
                                method = "ratio",
                                img_format = "png")
+
+      self$param_fa_analysis_plot(data_table = self$tables$raw_data,
+                                  feature_meta = self$tables$feature_table,
+                                  sample_meta = self$tables$raw_meta,
+                                  group_column = self$indices$group_col,
+                                  img_format = "png")
 
     },
 
@@ -1390,15 +1397,54 @@ Lips_exp = R6::R6Class(
     plot_fa_analysis = function(data_table = self$tables$raw_data,
                                 feature_table = self$tables$feature_table,
                                 sample_meta = self$tables$raw_meta,
+                                group_col = self$indices$group_col,
                                 colour_list,
                                 width = NULL,
                                 height = NULL) {
 
       ## At the moment this function is using the raw data table!
 
+      res <- fa_analysis_calc(data_table = data_table,
+                              feature_table = feature_table,
+                              sample_meta = sample_meta)
 
 
-        self$plots$fa_analysis_plot <- NULL
+      # Produce the class x group table
+      samp_list <- rownames(res)
+      fa_list <- colnames(res)
+      group_list <- sort(unique(sample_meta[, group_col]))
+
+      plot_table <- data.frame(matrix(data = 0.0,
+                                     nrow = length(fa_list),
+                                     ncol = length(group_list)))
+      rownames(plot_table) <- fa_list
+      colnames(plot_table) <- group_list
+
+      print(sample_meta[, group_col])
+
+      for (c in fa_list) {
+        for (g in group_list){
+          s <- rownames(sample_meta)[sample_meta[, group_col] == g]
+          m <- mean(as.matrix(res[s, c]), na.rm = TRUE)
+          plot_table[c, g] <- m
+        }
+      }
+
+      # Store the plot_table
+      self$tables$fa_analysis_table <- plot_table
+
+      # Produce the plot
+      i = 1
+      fig = plotly::plot_ly(colors = colour_list, width = width, height = height)
+      for (col in colnames(plot_table)) {
+        fig = fig |> add_trace(x = rownames(plot_table), y = plot_table[,col],
+                                name = col, color = colour_list[i], type  = "bar")
+        fig = fig |> layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
+                             yaxis = list(title = "Concentration"))
+        i = i + 1
+      }
+
+      self$plots$fa_analysis_plot <- fig
     }
   )
 )

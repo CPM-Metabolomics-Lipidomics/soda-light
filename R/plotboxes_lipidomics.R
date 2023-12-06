@@ -778,16 +778,15 @@ fa_analysis_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$plot_satindex(data_table = r6$tables$raw_data, #table_switch(input$class_comparison_dataset, r6),
-                   group_col = input$satindex_metacol,
-                   colour_list = colour_list,
-                   method = input$satindex_select_method,
-                   width = width,
-                   height = height)
+  r6$plot_fa_analysis(data_table = r6$tables$raw_data, #table_switch(input$class_comparison_dataset, r6),
+                      group_col = input$fa_analysis_metacol,
+                      colour_list = colour_list,
+                      width = width,
+                      height = height)
 }
 
 fa_analysis_spawn = function(r6, format, output) {
-  print_tm(r6$name, "Saturation index: spawning plot.")
+  print_tm(r6$name, "Fatty acid analysis index: spawning plot.")
 
   output$fa_analysis_plot = plotly::renderPlotly({
     r6$plots$fa_analysis_plot
@@ -814,60 +813,39 @@ fa_analysis_server = function(r6, output, session) {
   # set some UI
   output$fa_analysis_sidebar_ui = shiny::renderUI({
     shiny::tagList(
-      shiny::HTML("Nothing to show yet!")
+      shiny::HTML("Nothing to show yet!"),
+      shiny::selectInput(
+        inputId = ns("fa_analysis_metacol"),
+        label = "Select group column",
+        choices = colnames(r6$tables$raw_meta),
+        selected = r6$params$fa_analysis_plot$group_col
+      )
     )
   })
 }
 
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # Generate the plot
-  # shiny::observeEvent(c(input$satindex_metacol,
-  #                       input$satindex_img_format,
-  #                       input$satindex_select_method,
-  #                       input$satindex_metagroup,
-  #                       input$satindex_lipidclass), {
-  #                         print_tm(r6$name, "Saturation index: Updating params...")
-  #
-  #                         if(input$satindex_select_method == "ratio") {
-  #                           output$satindex_note <- shiny::renderText({
-  #                             "Ref:  Cell Rep. 2018 Sep 4;24(10):2596-2605"
-  #                           })
-  #                         } else {
-  #                           output$satindex_note <- shiny::renderText({
-  #                             ""
-  #                           })
-  #                         }
-  #
-  #                         # show / hide the group selection
-  #                         if(input$satindex_select_method == "db") {
-  #                           shinyjs::show(id = "satindex_metagroup")
-  #                           shinyjs::show(id = "satindex_lipidclass")
-  #                         } else {
-  #                           shinyjs::hide(id = "satindex_metagroup")
-  #                           shinyjs::hide(id = "satindex_lipidclass")
-  #                         }
-  #
-  #                         r6$param_satindex_plot(data_table = r6$tables$raw_data,
-  #                                                feature_meta = r6$tables$feature_table,
-  #                                                sample_meta = r6$tables$raw_meta,
-  #                                                group_col = input$satindex_metacol,
-  #                                                group_1 = input$satindex_metagroup[1],
-  #                                                group_2 = input$satindex_metagroup[2],
-  #                                                selected_lipid_class = input$satindex_lipidclass,
-  #                                                method = input$satindex_select_method,
-  #                                                img_format = input$satindex_img_format)
-  #
-  #                         base::tryCatch({
-  #                           satindex_generate(r6, color_palette, dimensions_obj, input)
-  #                           satindex_spawn(r6, input$satindex_img_format, output)
-  #                         },
-  #                         error = function(e) {
-  #                           print_tm(r6$name, 'Saturation index error, missing data.')
-  #                           print(e)
-  #                         },
-  #                         finally = {}
-  #                         )
-  #                       })
+  shiny::observeEvent(c(input$fa_analysis_metacol), {
+    print_tm(r6$name, "Fatty acid analysis: Updating params...")
+
+    r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
+                              feature_meta = r6$tables$feature_table,
+                              sample_meta = r6$tables$raw_meta,
+                              group_col = input$satindex_metacol,
+                              img_format = input$satindex_img_format)
+
+    base::tryCatch({
+      fa_analysis_generate(r6, color_palette, dimensions_obj, input)
+      fa_analysis_spawn(r6, input$fa_analysis_img_format, output)
+    },
+    error = function(e) {
+      print_tm(r6$name, 'Fatty acid analysis error, missing data.')
+      print(e)
+    },
+    finally = {}
+    )
+  })
 
   # Expanded boxes
   fa_analysis_proxy = plotly::plotlyProxy(outputId = "fa_analysis_plot",
