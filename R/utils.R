@@ -612,12 +612,15 @@ get_feature_metadata = function(data_table) {
     }
   }
 
+  idx_tg <- feature_table$lipid_class == "TG"
   feature_table$carbons_1 = as.numeric(c_count_1)
   feature_table$carbons_2 = as.numeric(c_count_2)
-  feature_table$carbons_sum = feature_table$carbons_1 + feature_table$carbons_2
+  feature_table$carbons_sum[idx_tg] = feature_table$carbons_1[idx_tg]
+  feature_table$carbons_sum[!idx_tg] = feature_table$carbons_1[!idx_tg] + feature_table$carbons_2[!idx_tg]
   feature_table$unsat_1 = as.numeric(s_count_1)
   feature_table$unsat_2 = as.numeric(s_count_2)
-  feature_table$unsat_sum = feature_table$unsat_1 + feature_table$unsat_2
+  feature_table$unsat_sum[idx_tg] = feature_table$unsat_1[idx_tg]
+  feature_table$unsat_sum[!idx_tg] = feature_table$unsat_1[!idx_tg] + feature_table$unsat_2[!idx_tg]
   return(feature_table)
 }
 

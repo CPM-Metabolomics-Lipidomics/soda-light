@@ -1237,7 +1237,6 @@ Lips_exp = R6::R6Class(
                              colour_list,
                              width = NULL,
                              height = NULL) {
-
       ## At the moment this function is using the raw data table!
 
       # calculations
