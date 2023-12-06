@@ -842,7 +842,7 @@ fa_analysis_server = function(r6, output, session) {
         width = "100%"),
       shiny::downloadButton(
         outputId = ns("download_fa_analysis_table"),
-        label = "Download unavailable for now",
+        label = "Download associated table",
         style = "width:100%;"
       )
     )
@@ -851,7 +851,8 @@ fa_analysis_server = function(r6, output, session) {
 
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # Generate the plot
-  shiny::observeEvent(c(input$fa_analysis_metacol), {
+  shiny::observeEvent(c(input$fa_analysis_metacol,
+                        input$fa_analysis_img_format), {
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
     r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
@@ -871,6 +872,14 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
     finally = {}
     )
   })
+
+  # Download associated table
+  output$download_fa_analysis_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("fa_analysis_table.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$fa_analysis_table, file_name)
+    }
+  )
 
   # Expanded boxes
   fa_analysis_proxy = plotly::plotlyProxy(outputId = "fa_analysis_plot",
