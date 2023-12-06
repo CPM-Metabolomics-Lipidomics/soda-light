@@ -1410,38 +1410,86 @@ Lips_exp = R6::R6Class(
 
 
       # Produce the class x group table
-      samp_list <- rownames(res)
-      fa_list <- colnames(res)
-      group_list <- sort(unique(sample_meta[, group_col]))
+      # add ID's, group's and make long
+      res$ID <- rownames(res)
+      res$group <- sample_meta[res$ID, group_col]
+      res_long <- res |>
+        tidyr::pivot_longer(cols = -c(ID, group),
+                            names_to = "fa_chain",
+                            values_to = "value")
 
-      plot_table <- data.frame(matrix(data = 0.0,
-                                      nrow = length(fa_list),
-                                      ncol = length(group_list)))
-      rownames(plot_table) <- fa_list
-      colnames(plot_table) <- group_list
+      # calculate mean and stdev per group
+      plot_table <- tapply(as.data.frame(res_long), list(res_long$group, res_long$fa_chain), function(x) {
+        avg <- mean(x[, "value"], na.rm = TRUE)
+        stdev <- sd(x[, "value"], na.rm = TRUE)
 
-      for (c in fa_list) {
-        for (g in group_list){
-          s <- rownames(sample_meta)[sample_meta[, group_col] == g]
-          m <- mean(as.matrix(res[s, c]), na.rm = TRUE)
-          plot_table[c, g] <- m
-        }
-      }
+        return(list(avg = avg,
+                    stdev = stdev,
+                    fa_chain = x[1, "fa_chain"],
+                    group = x[1, "group"]))
+        # print(x)
+      })
+
+      plot_table <- do.call(rbind.data.frame, plot_table)
 
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
 
-      # Produce the plot
-      i = 1
-      fig = plotly::plot_ly(colors = colour_list, width = width, height = height)
-      for (col in colnames(plot_table)) {
-        fig = fig |> add_trace(x = rownames(plot_table), y = plot_table[,col],
-                               name = col, color = colour_list[i], type  = "bar")
-        fig = fig |> layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                            xaxis = list(title = "Fatty acid chain"),
-                            yaxis = list(title = "Concentration"))
-        i = i + 1
+      i <- 1
+      fig <- plotly::plot_ly(colors = colour_list, width = width, height = height)
+      for (grp in unique(plot_table$group)) {
+        fig <- fig |>
+          plotly::add_trace(data = plot_table[plot_table$group == grp, ],
+                            x = ~fa_chain,
+                            y = ~avg,
+                            color = colour_list[i],
+                            type = "bar",
+                            name = grp,
+                            error_y = ~ list(array = stdev,
+                                             color = "#000000"))
+        fig <- fig |>
+          layout(legend = list(orientation = 'h',
+                               xanchor = "center",
+                               x = 0.5),
+                 xaxis = list(title = "Fatty acid chain"),
+                 yaxis = list(title = "Concentration"))
+        i <- i + 1
       }
+      fig
+
+      # # Produce the plot
+      # i <- 1
+      # fig <- plotly::plot_ly(colors = colour_list, width = width, height = height)
+      # for (col in colnames(plot_table)) {
+      #   fig <- fig |>
+      #     add_trace(x = rownames(plot_table),
+      #               y = plot_table[, col],
+      #               name = col,
+      #               color = colour_list[i],
+      #               type  = "bar")
+      #   # fig <- fig |>
+      #   #   add_trace(x = rownames(plot_table),
+      #   #             y = res[rownames(sample_meta)[sample_meta[, group_col] == col], ],
+      #   #             type  = "box",
+      #   #             boxpoints = "all",
+      #   #             pointpos = 0,
+      #   #             name = rownames(plot_table),
+      #   #             color = colour_list[i],
+      #   #             line = list(color = 'rgb(100,100,100)'),
+      #   #             marker = list(color = 'rgb(100,100,100)'),
+      #   #             alpha = 0.75,
+      #   #             # legendgroup = i,
+      #   #             showlegend = FALSE,
+      #   #             # text = s,
+      #   #             hoverinfo = "text")
+      #   fig <- fig |>
+      #     layout(legend = list(orientation = 'h',
+      #                          xanchor = "center",
+      #                          x = 0.5),
+      #            xaxis = list(title = "Fatty acid chain"),
+      #            yaxis = list(title = "Concentration"))
+      #   i <- i + 1
+      # }
 
       self$plots$fa_analysis_plot <- fig
     }
