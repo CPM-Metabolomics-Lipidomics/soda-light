@@ -104,7 +104,6 @@ Lips_exp = R6::R6Class(
         img_format = "png"
       )
 
-
     ),
 
 
@@ -1456,40 +1455,6 @@ Lips_exp = R6::R6Class(
         i <- i + 1
       }
       fig
-
-      # # Produce the plot
-      # i <- 1
-      # fig <- plotly::plot_ly(colors = colour_list, width = width, height = height)
-      # for (col in colnames(plot_table)) {
-      #   fig <- fig |>
-      #     add_trace(x = rownames(plot_table),
-      #               y = plot_table[, col],
-      #               name = col,
-      #               color = colour_list[i],
-      #               type  = "bar")
-      #   # fig <- fig |>
-      #   #   add_trace(x = rownames(plot_table),
-      #   #             y = res[rownames(sample_meta)[sample_meta[, group_col] == col], ],
-      #   #             type  = "box",
-      #   #             boxpoints = "all",
-      #   #             pointpos = 0,
-      #   #             name = rownames(plot_table),
-      #   #             color = colour_list[i],
-      #   #             line = list(color = 'rgb(100,100,100)'),
-      #   #             marker = list(color = 'rgb(100,100,100)'),
-      #   #             alpha = 0.75,
-      #   #             # legendgroup = i,
-      #   #             showlegend = FALSE,
-      #   #             # text = s,
-      #   #             hoverinfo = "text")
-      #   fig <- fig |>
-      #     layout(legend = list(orientation = 'h',
-      #                          xanchor = "center",
-      #                          x = 0.5),
-      #            xaxis = list(title = "Fatty acid chain"),
-      #            yaxis = list(title = "Concentration"))
-      #   i <- i + 1
-      # }
 
       self$plots$fa_analysis_plot <- fig
     }

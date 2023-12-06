@@ -791,10 +791,10 @@ fa_analysis_spawn = function(r6, format, output) {
   output$fa_analysis_plot = plotly::renderPlotly({
     r6$plots$fa_analysis_plot
     plotly::config(r6$plots$fa_analysis_plot, toImageButtonOptions = list(format = format,
-                                                                       filename = timestamped_name('fa_analysis'),
-                                                                       height = NULL,
-                                                                       width = NULL,
-                                                                       scale = 1))
+                                                                          filename = timestamped_name('fa_analysis'),
+                                                                          height = NULL,
+                                                                          width = NULL,
+                                                                          scale = 1))
   })
 }
 
@@ -818,6 +818,18 @@ fa_analysis_server = function(r6, output, session) {
         label = "Select group column",
         choices = colnames(r6$tables$raw_meta),
         selected = r6$params$fa_analysis_plot$group_col
+      ),
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectInput(
+        inputId = ns("fa_analysis_img_format"),
+        label = "Image format",
+        choices = c("png", "svg", "jpeg", "webp"),
+        selected = r6$params$fa_analysis_plot$img_format,
+        width = "100%"),
+      shiny::downloadButton(
+        outputId = ns("download_fa_analysis_table"),
+        label = "Download unavailable for now",
+        style = "width:100%;"
       )
     )
   })
