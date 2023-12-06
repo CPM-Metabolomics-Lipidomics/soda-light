@@ -1059,7 +1059,9 @@ heatmap_server = function(r6, output, session) {
 
 heatmap_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
-  shiny::observeEvent(input$heatmap_run,{
+  shiny::observeEvent(c(input$heatmap_run,
+                        input$heatmap_img_format), {
+    req(input$heatmap_run)
     shinyjs::disable("heatmap_run")
     print_tm(r6$name, "Heatmap: Updating params...")
 
