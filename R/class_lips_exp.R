@@ -102,7 +102,40 @@ Lips_exp = R6::R6Class(
         pval_range = c(0, 5),
         pval_values = c(1, 5),
         img_format = "png"
-      )
+      ),
+
+     # Saturation index parameters self$params$satindex_plot$
+     satindex_plot = list(
+        data_table = "Raw data table",
+        feature_meta = NULL,
+        sample_meta = "Raw meta table",
+        group_col = NULL,
+        group_1 = NULL,
+        group_2 = NULL,
+        selected_lipid_class = "CE",
+        method = "ratio",
+        img_format = "png"
+      ),
+
+     # Fatty acid analysis parameters self$params$fa_analysis_plot$
+     fa_analysis_plot = list(
+       data_table = "Raw data table",
+       feature_meta = NULL,
+       sample_meta = "Raw meta table",
+       group_col = NULL,
+       pathway = NULL,
+       img_format = "png"
+     )
+
+     # param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, pathway, img_format) {
+     #   self$params$fa_analysis_plot$data_table = data_table
+     #   self$params$fa_analysis_plot$feature_meta = feature_meta
+     #   self$params$fa_analysis_plot$sample_meta = sample_meta
+     #   self$params$fa_analysis_plot$group_col = group_column
+     #   self$params$fa_analysis_plot$pathway = pathway
+     #   self$params$fa_analysis_plot$img_format = img_format
+     # },
+
 
     ),
 
