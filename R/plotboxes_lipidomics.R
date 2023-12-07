@@ -836,7 +836,10 @@ fa_analysis_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("fa_analysis_pathway"),
         label = "Select pathway",
-        choices = c("SFA", "MUFA", "PUFA"),
+        choices = c("SFA" = "SFA",
+                    "MUFA" = "MUFA",
+                    "PUFA(n-6)" = "PUFA6",
+                    "PUFA(n-3)" = "PUFA3"),
         selected = "",
         multiple = TRUE,
         width = "100%"),

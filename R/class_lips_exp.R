@@ -1442,15 +1442,18 @@ Lips_exp = R6::R6Class(
       pathway_fa <- c(
         paste(seq(16, 26, 2), 0, sep = ":"),
         paste(seq(16, 24, 2), 1, sep = ":"),
-        c("18:2", "18:3", "18:4", "20:2", "20:3", "20:4", "20:5",
-          "22:4", "22:5", "22:6", "24:4", "24:5", "24:6")
+        c("18:2", "18:3", "20:2", "20:3", "20:4",
+          "22:4", "22:5","24:4", "24:5"),
+        c("18:3", "18:4", "20:3", "20:4", "20:5",
+           "22:5", "22:6", "24:5", "24:6")
       )
       names(pathway_fa) <- c(rep("SFA", 6),
                              rep("MUFA", 5),
-                             rep("PUFA", 13))
+                             rep("PUFA6", 9),
+                             rep("PUFA3", 9))
 
       if(!is.null(pathway)) {
-        selected_pathway_fa <- pathway_fa[names(pathway_fa) %in% pathway]
+        selected_pathway_fa <- unique(pathway_fa[names(pathway_fa) %in% pathway])
         plot_table <- plot_table[plot_table$fa_chain %in% selected_pathway_fa, ]
       }
 
