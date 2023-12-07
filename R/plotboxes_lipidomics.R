@@ -833,6 +833,16 @@ fa_analysis_server = function(r6, output, session) {
         choices = colnames(r6$tables$raw_meta),
         selected = r6$params$fa_analysis_plot$group_col
       ),
+      shiny::selectInput(
+        inputId = ns("fa_analysis_pathway"),
+        label = "Select pathway",
+        choices = c("SFA" = "SFA",
+                    "MUFA" = "MUFA",
+                    "PUFA(n-6)" = "PUFA6",
+                    "PUFA(n-3)" = "PUFA3"),
+        selected = "",
+        multiple = TRUE,
+        width = "100%"),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
         inputId = ns("fa_analysis_img_format"),
@@ -852,6 +862,7 @@ fa_analysis_server = function(r6, output, session) {
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # Generate the plot
   shiny::observeEvent(c(input$fa_analysis_metacol,
+                        input$fa_analysis_pathway,
                         input$fa_analysis_img_format), {
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
@@ -859,6 +870,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                               feature_meta = r6$tables$feature_table,
                               sample_meta = r6$tables$raw_meta,
                               group_col = input$fa_analysis_metacol,
+                              pathway = input$fa_analysis_pathway,
                               img_format = input$fa_analysis_img_format)
 
     base::tryCatch({
