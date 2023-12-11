@@ -25,6 +25,7 @@ Lips_exp = R6::R6Class(
       class_distribution = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
+        color_palette = 'Spectral',
         img_format = "png"
       ),
 
@@ -223,9 +224,10 @@ Lips_exp = R6::R6Class(
 
     #---------------------------------------------------- Parameter methods ----
 
-    param_class_distribution = function(dataset, group_col, img_format) {
+    param_class_distribution = function(dataset, group_col, color_palette, img_format) {
       self$params$class_distribution$dataset = dataset
       self$params$class_distribution$group_col = group_col
+      self$params$class_distribution$color_palette = color_palette
       self$params$class_distribution$img_format = img_format
     },
 
@@ -543,6 +545,7 @@ Lips_exp = R6::R6Class(
       # Set plotting parameters
       self$param_class_distribution(dataset = 'Class table total normalized',
                                     group_col = self$indices$group_col,
+                                    color_palette = 'Spectral',
                                     img_format = "png")
 
       self$param_class_comparison(dataset = 'Class table total normalized',
@@ -769,13 +772,13 @@ Lips_exp = R6::R6Class(
     plot_class_distribution = function(table = self$tables$class_table_total_norm,
                                        meta_table = self$tables$raw_meta,
                                        group_col = self$indices$group_col,
-                                       colour_list,
+                                       color_palette = self$params$class_distribution$color_palette,
                                        width = NULL,
                                        height = NULL){
       # Produce the class x group table
       samp_list = rownames(table)
       class_list = colnames(table)
-      group_list = sort(unique(meta_table[,group_col]))
+      group_list = sort(unique(meta_table[, group_col]))
 
       plot_table = data.frame(matrix(data = 0.0,
                                      nrow = length(class_list),
@@ -794,12 +797,16 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$class_distribution_table = plot_table
 
+      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+      colors = colorRampPalette(colors)(length(group_list))
+      colors = setNames(colors, group_list)
+
       # Produce the plot
       i = 1
-      fig = plotly::plot_ly(colors = colour_list, width = width, height = height)
+      fig = plotly::plot_ly(colors = unname(colors), width = width, height = height)
       for (col in colnames(plot_table)) {
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
-                                name = col, color = colour_list[i], type  = "bar")
+                                name = col, color = colors[col], type  = "bar")
         fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
                              yaxis = list(title = "Concentration"))
         i = i + 1
