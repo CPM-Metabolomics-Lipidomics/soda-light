@@ -460,9 +460,9 @@ Lips_exp = R6::R6Class(
     },
 
     get_blank_table = function() {
-      blank_table = self$tables$imp_data[self$indices$idx_blanks,]
-      rownames(blank_table) = blank_table[,self$indices$id_col_data]
-      blank_table[,self$indices$id_col_data] = NULL
+      blank_table = self$tables$imp_data[self$tables$imp_data[, self$indices$id_col_data] %in% self$indices$rownames_blanks, ]
+      rownames(blank_table) = blank_table[, self$indices$id_col_data]
+      blank_table[, self$indices$id_col_data] = NULL
       self$tables$blank_table = as.matrix(blank_table)
     },
 
