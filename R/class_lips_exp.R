@@ -231,9 +231,10 @@ Lips_exp = R6::R6Class(
       self$params$class_distribution$img_format = img_format
     },
 
-    param_class_comparison = function(dataset, group_col, img_format) {
+    param_class_comparison = function(dataset, group_col, color_palette, img_format) {
       self$params$class_comparison$dataset = dataset
       self$params$class_comparison$group_col = group_col
+      self$params$class_comparison$color_palette = color_palette
       self$params$class_comparison$img_format = img_format
     },
 
@@ -550,6 +551,7 @@ Lips_exp = R6::R6Class(
 
       self$param_class_comparison(dataset = 'Class table total normalized',
                                   group_col = self$indices$group_col,
+                                  color_palette = 'Spectral',
                                   img_format = "png")
 
       self$param_volcano_plot(data_table = 'Total normalized table',
@@ -819,7 +821,7 @@ Lips_exp = R6::R6Class(
     plot_class_comparison = function(data_table = self$tables$class_table_total_norm,
                                      meta_table = self$tables$raw_meta,
                                      group_col = self$indices$group_col,
-                                     colour_list,
+                                     color_palette = self$params$class_comparison$color_palette,
                                      width = NULL,
                                      height = NULL){
       # Get sample groups and the list of classes
@@ -860,6 +862,10 @@ Lips_exp = R6::R6Class(
                               textangle = 270, showarrow = FALSE, xref='paper',
                               yref='paper')
 
+      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+      colors = colorRampPalette(colors)(length(groups))
+      colors = setNames(colors, groups)
+
       # Plot list will be the list of subplots
       plot_list = c()
 
@@ -868,7 +874,7 @@ Lips_exp = R6::R6Class(
       j = 1
       for (c in class_list) {
         i = 1
-        subplot = plot_ly(colors = colour_list, width = width, height = height)
+        subplot = plot_ly(colors = unname(colors), width = width, height = height)
         for (g in groups){
           if (g %in% cleared_groups) {
             first_bool = FALSE
@@ -884,12 +890,12 @@ Lips_exp = R6::R6Class(
 
           # Subplot for the bar chart displaying the mean concentration
           subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
-                                          color = colour_list[i], alpha = 1,
+                                          color = colors[g], alpha = 1,
                                           legendgroup=i, showlegend = first_bool)
 
           # Subplot for boxplots displaying the median and all datapoints
           subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
-                                          pointpos = 0, name = g, color = colour_list[i],
+                                          pointpos = 0, name = g, color = colors[g],
                                           line = list(color = 'rgb(100,100,100)'),
                                           marker = list(color = 'rgb(100,100,100)'), alpha = 1,
                                           legendgroup=i, showlegend = FALSE,
