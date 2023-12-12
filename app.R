@@ -1,3 +1,5 @@
+library(rmarkdown)
+library(markdown)
 # shiny app
 library(shiny)
 library(shinyjs)
@@ -47,6 +49,7 @@ library(SNFtool)
 library(reshape2)
 library(dplyr)
 library(tidyr)
+
 
 # reticulate::use_condaenv(condaenv = 'mofa_1')
 
