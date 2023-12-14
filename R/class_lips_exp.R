@@ -313,7 +313,7 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, group_1, group_2, selected_lipid_class, method, img_format) {
+    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, group_1, group_2, selected_lipid_class, color_palette, method, img_format) {
       self$params$satindex_plot$data_table = data_table
       self$params$satindex_plot$feature_meta = feature_meta
       self$params$satindex_plot$sample_meta = sample_meta
@@ -321,6 +321,7 @@ Lips_exp = R6::R6Class(
       self$params$satindex_plot$group_1 = group_1
       self$params$satindex_plot$group_2 = group_2
       self$params$satindex_plot$selected_lipid_class = selected_lipid_class
+      self$params$satindex_plot$color_palette = color_palette
       self$params$satindex_plot$method = method
       self$params$satindex_plot$img_format = img_format
     },
@@ -610,6 +611,7 @@ Lips_exp = R6::R6Class(
                                group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
                                group_2 = unique(self$tables$raw_meta[,self$indices$group_col])[2],
                                selected_lipid_class = NULL,
+                               color_palette = 'Spectral',
                                method = "ratio",
                                img_format = "png")
 
@@ -1297,7 +1299,7 @@ Lips_exp = R6::R6Class(
                              group_2 = self$params$satindex_plot$group_2,
                              selected_lipid_class = self$params$satindex_plot$selected_lipid_class,
                              method = self$params$satindex_plot$method,
-                             colour_list,
+                             color_palette = self$params$satindex_plot$color_palette,
                              width = NULL,
                              height = NULL) {
       ## At the moment this function is using the raw data table!
@@ -1340,6 +1342,11 @@ Lips_exp = R6::R6Class(
         # Get sample groups and the list of classes
         groups = sort(unique(sample_meta[, group_col]))
         class_list = colnames(res_clean)
+        group_list = sort(unique(sample_meta[,group_col]))
+
+        colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+        colors = colorRampPalette(colors)(length(group_list))
+        colors = setNames(colors, group_list)
 
         x_dim = ceiling(sqrt(length(class_list)))
         y_dim = floor(sqrt(length(class_list)))
@@ -1388,7 +1395,7 @@ Lips_exp = R6::R6Class(
         j = 1
         for (c in class_list) {
           i = 1
-          subplot = plot_ly(colors = colour_list, width = width, height = height)
+          subplot = plot_ly(colors = unname(colors), width = width, height = height)
           for (g in groups){
             if (g %in% cleared_groups) {
               first_bool = FALSE
@@ -1404,12 +1411,12 @@ Lips_exp = R6::R6Class(
 
             # Subplot for the bar chart displaying the mean concentration
             subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
-                                            color = colour_list[i], alpha = 0.75,
+                                            color = colors[i], alpha = 0.75,
                                             legendgroup = i, showlegend = first_bool)
 
             # Subplot for boxplots displaying the median and all datapoints
             subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
-                                            pointpos = 0, name = g, color = colour_list[i],
+                                            pointpos = 0, name = g, color = colors[i],
                                             line = list(color = 'rgb(100,100,100)'),
                                             marker = list(color = 'rgb(100,100,100)'), alpha = 0.75,
                                             legendgroup = i, showlegend = FALSE,

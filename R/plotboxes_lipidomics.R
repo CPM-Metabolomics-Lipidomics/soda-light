@@ -631,11 +631,7 @@ satindex_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$plot_satindex(data_table = r6$tables$raw_data, #table_switch(input$class_comparison_dataset, r6),
-                   group_col = input$satindex_metacol,
-                   colour_list = colour_list,
-                   method = input$satindex_select_method,
-                   width = width,
+  r6$plot_satindex(width = width,
                    height = height)
 }
 
@@ -697,6 +693,17 @@ satindex_server = function(r6, output, session) {
         selected = r6$params$satindex_plot$selected_lipid_class,
         multiple = FALSE
       )),
+      shiny::selectizeInput(
+        inputId = ns('satindex_color_palette'),
+        label = "Color palette",
+        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        selected = r6$params$satindex_plot$color_palette,
+        multiple = FALSE
+      ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
         inputId = ns("satindex_img_format"),
@@ -719,6 +726,7 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                         input$satindex_img_format,
                         input$satindex_select_method,
                         input$satindex_metagroup,
+                        input$satindex_color_palette,
                         input$satindex_lipidclass), {
                           print_tm(r6$name, "Saturation index: Updating params...")
 
@@ -736,9 +744,11 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                           if(input$satindex_select_method == "db") {
                             shinyjs::show(id = "satindex_metagroup")
                             shinyjs::show(id = "satindex_lipidclass")
+                            shinyjs::hide(id = "satindex_color_palette")
                           } else {
                             shinyjs::hide(id = "satindex_metagroup")
                             shinyjs::hide(id = "satindex_lipidclass")
+                            shinyjs::show(id = "satindex_color_palette")
                           }
 
                           r6$param_satindex_plot(data_table = r6$tables$raw_data,
@@ -748,6 +758,7 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                                                  group_1 = input$satindex_metagroup[1],
                                                  group_2 = input$satindex_metagroup[2],
                                                  selected_lipid_class = input$satindex_lipidclass,
+                                                 color_palette = input$satindex_color_palette,
                                                  method = input$satindex_select_method,
                                                  img_format = input$satindex_img_format)
 
