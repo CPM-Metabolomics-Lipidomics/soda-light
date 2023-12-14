@@ -115,6 +115,7 @@ Lips_exp = R6::R6Class(
         group_2 = NULL,
         selected_lipid_class = "CE",
         method = "ratio",
+        color_palette = 'Spectral',
         img_format = "png"
       ),
 
@@ -125,19 +126,9 @@ Lips_exp = R6::R6Class(
        sample_meta = "Raw meta table",
        group_col = NULL,
        pathway = NULL,
+       color_palette = 'Spectral',
        img_format = "png"
      )
-
-     # param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, pathway, img_format) {
-     #   self$params$fa_analysis_plot$data_table = data_table
-     #   self$params$fa_analysis_plot$feature_meta = feature_meta
-     #   self$params$fa_analysis_plot$sample_meta = sample_meta
-     #   self$params$fa_analysis_plot$group_col = group_column
-     #   self$params$fa_analysis_plot$pathway = pathway
-     #   self$params$fa_analysis_plot$img_format = img_format
-     # },
-
-
     ),
 
 
@@ -326,12 +317,13 @@ Lips_exp = R6::R6Class(
       self$params$satindex_plot$img_format = img_format
     },
 
-    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, pathway, img_format) {
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, pathway, color_palette, img_format) {
       self$params$fa_analysis_plot$data_table = data_table
       self$params$fa_analysis_plot$feature_meta = feature_meta
       self$params$fa_analysis_plot$sample_meta = sample_meta
       self$params$fa_analysis_plot$group_col = group_column
       self$params$fa_analysis_plot$pathway = pathway
+      self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
     },
 
@@ -620,6 +612,7 @@ Lips_exp = R6::R6Class(
                                   sample_meta = self$tables$raw_meta,
                                   group_column = self$indices$group_col,
                                   pathway = NULL,
+                                  color_palette = 'Spectral',
                                   img_format = "png")
 
     },
@@ -1457,7 +1450,7 @@ Lips_exp = R6::R6Class(
                                 sample_meta = self$tables$raw_meta,
                                 group_col = self$indices$group_col,
                                 pathway = self$params$fa_analysis_plot$pathway,
-                                colour_list,
+                                color_palette = self$params$fa_analysis_plot$color_palette,
                                 width = NULL,
                                 height = NULL) {
 
@@ -1513,15 +1506,20 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
 
+      group_list = sort(unique(plot_table$group))
+      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+      colors = colorRampPalette(colors)(length(group_list))
+      colors = setNames(colors, group_list)
+
       # plotting
       i <- 1
-      fig <- plotly::plot_ly(colors = colour_list, width = width, height = height)
+      fig <- plotly::plot_ly(colors = unname(colors), width = width, height = height)
       for (grp in unique(plot_table$group)) {
         fig <- fig |>
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
                             x = ~fa_chain,
                             y = ~avg,
-                            color = colour_list[i],
+                            color = colors[i],
                             type = "bar",
                             name = grp,
                             error_y = ~ list(array = stdev,
