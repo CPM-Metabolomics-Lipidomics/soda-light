@@ -229,9 +229,10 @@ Lips_exp = R6::R6Class(
       self$params$class_comparison$img_format = img_format
     },
 
-    param_volcano_plot = function(data_table, adjustment, group_col, group_1, group_2, feature_metadata, keep_significant, displayed_plot,
+    param_volcano_plot = function(auto_refresh, data_table, adjustment, group_col, group_1, group_2, feature_metadata, keep_significant, displayed_plot,
                                   p_val_threshold, fc_threshold, marker_size, opacity, color_palette, selected_function, selected_test, img_format) {
 
+      self$params$volcano_plot$auto_refresh = auto_refresh
       self$params$volcano_plot$data_table = data_table
       self$params$volcano_plot$adjustment = adjustment
       self$params$volcano_plot$group_col = group_col
@@ -547,7 +548,8 @@ Lips_exp = R6::R6Class(
                                   color_palette = 'Spectral',
                                   img_format = "png")
 
-      self$param_volcano_plot(data_table = 'Total normalized table',
+      self$param_volcano_plot(auto_refresh = TRUE,
+                              data_table = 'Total normalized table',
                               adjustment = "BH",
                               group_col = self$indices$group_col,
                               group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
