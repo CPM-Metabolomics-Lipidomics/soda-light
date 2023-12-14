@@ -1,3 +1,5 @@
+library(rmarkdown)
+library(markdown)
 # shiny app
 library(shiny)
 library(shinyjs)
@@ -47,6 +49,7 @@ library(SNFtool)
 library(reshape2)
 library(dplyr)
 library(tidyr)
+
 
 # reticulate::use_condaenv(condaenv = 'mofa_1')
 
@@ -160,7 +163,7 @@ server = function(input, output, session) {
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
       print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
-      if(!grepl(pattern = "^VDK_2[123][0-9]{4}_[0-9]{2}$",
+      if(!grepl(pattern = "^.{3}_2[123][0-9]{4}_[0-9]{2}$",
                 x = query[["experimentId"]])) {
         query[["experimentId"]] <- NULL
       }
