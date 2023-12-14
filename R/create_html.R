@@ -39,21 +39,21 @@ for(experiment in experiments) {
   cellLine <- cellLine[!is.na(cellLine)]
   cellLine <- cellLine[cellLine != "NA"]
   cellLine <- paste(cellLine, collapse = " | ")
-
-  tmp <- paste('<tr><td><a href="https://ricoderks.shinyapps.io/soda-light/?experimentId=',
+  print(experiment)
+  tmp <- paste("<tr><td><a href=\"https://ricoderks.shinyapps.io/soda-light/?experimentId=",
                experiment,
-               '" target="_blank">',
+               "\" target=\"_blank\">",
                experiment,
-               '</a></td><td>',
+               "</a></td><td>",
                genoType,
-               '</td><td>',
+               "</td><td>",
                cellType,
-               '</td><td>',
+               "</td><td>",
                parentCellLine,
-               '</td><td>',
+               "</td><td>",
                cellLine,
-               '</td></tr>\n',
-               collapse = "")
+               "</td></tr>\n",
+               sep = "")
   line_exp <- c(line_exp, tmp)
 }
 line_exp <- c(line_exp, '</table>')
