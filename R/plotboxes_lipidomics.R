@@ -1122,7 +1122,25 @@ heatmap_server = function(r6, output, session) {
                              value = r6$params$heatmap$alpha_da,
                              step = 0.01,
                              width = "100%")
-        )
+        ),
+        shiny::selectInput(
+          inputId = ns('heatmap_colors_palette'),
+          label = 'Color palette',
+          choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                      'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                      'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                      'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                      'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+          selected = r6$params$heatmap$color_palette,
+          width = '100%'
+        ),
+        shinyWidgets::materialSwitch(
+          inputId = ns('heatmap_reverse_palette'),
+          label = 'Reverse palette',
+          value = r6$params$heatmap$reverse_palette,
+          right = TRUE,
+          status = "primary"
+        ),
       ),
 
       shiny::actionButton(
@@ -1164,6 +1182,8 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                      group_column_da = input$heatmap_group_col_da,
                      apply_da = input$heatmap_apply_da,
                      alpha_da = input$heatmap_alpha_da,
+                     color_palette = input$heatmap_colors_palette,
+                     reverse_palette = input$heatmap_reverse_palette,
                      img_format = input$heatmap_img_format)
 
     base::tryCatch({

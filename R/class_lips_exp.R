@@ -252,7 +252,7 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, img_format) {
+    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, img_format) {
       self$params$heatmap$dataset = dataset
       self$params$heatmap$impute = impute
       self$params$heatmap$cluster_samples = cluster_samples
@@ -262,6 +262,8 @@ Lips_exp = R6::R6Class(
       self$params$heatmap$group_column_da = group_column_da
       self$params$heatmap$apply_da = apply_da
       self$params$heatmap$alpha_da = alpha_da
+      self$params$heatmap$color_palette = color_palette
+      self$params$heatmap$reverse_palette = reverse_palette
       self$params$heatmap$img_format = img_format
     },
 
@@ -575,6 +577,8 @@ Lips_exp = R6::R6Class(
                          group_column_da = self$indices$group_col,
                          apply_da = FALSE,
                          alpha_da = 0.8,
+                         color_palette = 'RdYlBu',
+                         reverse_palette = FALSE,
                          img_format = "png")
 
       self$param_pca(auto_refresh = TRUE,
@@ -1001,6 +1005,8 @@ Lips_exp = R6::R6Class(
                             apply_da = self$params$heatmap$apply_da,
                             group_column_da = self$params$heatmap$group_column_da,
                             alpha_da = self$params$heatmap$alpha_da,
+                            color_palette = self$params$heatmap$color_palette,
+                            reverse_palette = self$params$heatmap$reverse_palette,
                             width = NULL,
                             height = NULL) {
 
@@ -1078,21 +1084,23 @@ Lips_exp = R6::R6Class(
         data_table[is.na(data_table)] = zmin
       }
 
+      # Get the color palette
+      color_count = colors_switch(color_palette)
+      color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+      color_palette = c(color_palette[1], color_palette[round(color_count/2)] , color_palette[color_count])
+      if (reverse_palette) {
+        color_palette = base::rev(color_palette)
+      }
+
       # Plot the data
       self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
                                                 scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
-                                                  low = "blue",
-                                                  mid = "#faf4af",
-                                                  high = "red",
+                                                  low = color_palette[3],
+                                                  mid = color_palette[2],
+                                                  high = color_palette[1],
                                                   midpoint = 0,
-                                                  # limits = c(-col_lim, col_lim)
                                                   limits = c(zmin, zmax)
                                                 ),
-                                                # scale_fill_gradient_fun = ggplot2::scale_fill_gradient(
-                                                #   low = "blue4",
-                                                #   high = "red",
-                                                #   # limits = c(-col_lim, col_lim)
-                                                # ),
                                                 width = width,
                                                 height = height,
                                                 limits = c(zmin, zmax),
