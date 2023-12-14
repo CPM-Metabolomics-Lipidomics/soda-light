@@ -265,8 +265,8 @@ Lips_exp = R6::R6Class(
       self$params$heatmap$img_format = img_format
     },
 
-    param_pca = function(data_table, sample_groups_col, feature_groups_col, apply_da, alpha_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, img_format) {
-
+    param_pca = function(auto_refresh, data_table, sample_groups_col, feature_groups_col, apply_da, alpha_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, img_format) {
+      self$params$pca$auto_refresh = auto_refresh
       self$params$pca$data_table = data_table
       self$params$pca$sample_groups_col = sample_groups_col
       self$params$pca$feature_groups_col = feature_groups_col
@@ -577,11 +577,20 @@ Lips_exp = R6::R6Class(
                          alpha_da = 0.8,
                          img_format = "png")
 
-      # self$param_pca(dataset = 'Z-scored total normalized table',
-      #                group_column = self$indices$group_col,
-      #                apply_da = FALSE,
-      #                alpha_da = 0.8,
-      #                img_format = "png")
+      self$param_pca(auto_refresh = TRUE,
+                     data_table = 'z_scored_total_norm_data',
+                     sample_groups_col = self$indices$group_col,
+                     feature_groups_col = NULL,
+                     apply_da = FALSE,
+                     alpha_da = 0.8,
+                     pca_method = 'svd',
+                     nPcs = 10,
+                     displayed_pc_1 = 1,
+                     displayed_pc_2 = 2,
+                     completeObs = F,
+                     displayed_plots = 'both',
+                     colors_palette = 'Spectral',
+                     img_format = "png")
 
       self$param_db_plot(dataset = "Total normalized table",
                          adjustment = "Benjamini-Hochberg",

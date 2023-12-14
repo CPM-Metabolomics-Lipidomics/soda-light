@@ -1257,6 +1257,13 @@ pca_server = function(r6, output, session) {
 
   output$pca_sidebar_ui = shiny::renderUI({
     shiny::tagList(
+      shinyWidgets::materialSwitch(
+        inputId = ns('pca_auto_refresh'),
+        label = 'Auto-refresh',
+        value = r6$params$pca$auto_refresh,
+        right = TRUE,
+        status = "success"
+      ),
       shiny::selectInput(
         inputId = ns("pca_data_table"),
         label = "Select dataset",
@@ -1370,11 +1377,29 @@ pca_server = function(r6, output, session) {
 
 pca_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
-  shiny::observeEvent(c(input$pca_data_table, input$pca_sample_groups_col, input$pca_feature_group, input$pca_apply_da, input$pca_alpha_da, input$pca_method, input$pca_npcs, input$pca_displayed_pc_1, input$pca_displayed_pc_2, input$pca_completeObs, input$pca_displayed_plots, input$pca_colors_palette, input$pca_img_format),{
+  shiny::observeEvent(c(input$pca_auto_refresh,
+                        input$pca_data_table,
+                        input$pca_sample_groups_col,
+                        input$pca_feature_group,
+                        input$pca_apply_da,
+                        input$pca_alpha_da,
+                        input$pca_method, input$pca_npcs,
+                        input$pca_displayed_pc_1,
+                        input$pca_displayed_pc_2,
+                        input$pca_completeObs,
+                        input$pca_displayed_plots,
+                        input$pca_colors_palette,
+                        input$pca_img_format), {
+    if (!input$pca_auto_refresh) {
+      r6$params$pca$auto_refresh = input$pca_auto_refresh
+      return()
+    }
+
     print_tm(r6$name, "PCA: Updating params...")
 
     print(input$pca_data_table)
-    r6$param_pca(data_table = table_name_switch(input$pca_data_table),
+    r6$param_pca(auto_refresh = input$pca_auto_refresh,
+                 data_table = table_name_switch(input$pca_data_table),
                  sample_groups_col = input$pca_sample_groups_col,
                  feature_groups_col = input$pca_feature_group,
                  apply_da = input$pca_apply_da,
