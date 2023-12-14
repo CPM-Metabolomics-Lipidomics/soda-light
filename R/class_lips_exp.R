@@ -25,6 +25,7 @@ Lips_exp = R6::R6Class(
       class_distribution = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
+        color_palette = 'Spectral',
         img_format = "png"
       ),
 
@@ -114,6 +115,7 @@ Lips_exp = R6::R6Class(
         group_2 = NULL,
         selected_lipid_class = "CE",
         method = "ratio",
+        color_palette = 'Spectral',
         img_format = "png"
       ),
 
@@ -124,19 +126,9 @@ Lips_exp = R6::R6Class(
        sample_meta = "Raw meta table",
        group_col = NULL,
        pathway = NULL,
+       color_palette = 'Spectral',
        img_format = "png"
      )
-
-     # param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, pathway, img_format) {
-     #   self$params$fa_analysis_plot$data_table = data_table
-     #   self$params$fa_analysis_plot$feature_meta = feature_meta
-     #   self$params$fa_analysis_plot$sample_meta = sample_meta
-     #   self$params$fa_analysis_plot$group_col = group_column
-     #   self$params$fa_analysis_plot$pathway = pathway
-     #   self$params$fa_analysis_plot$img_format = img_format
-     # },
-
-
     ),
 
 
@@ -223,21 +215,24 @@ Lips_exp = R6::R6Class(
 
     #---------------------------------------------------- Parameter methods ----
 
-    param_class_distribution = function(dataset, group_col, img_format) {
+    param_class_distribution = function(dataset, group_col, color_palette, img_format) {
       self$params$class_distribution$dataset = dataset
       self$params$class_distribution$group_col = group_col
+      self$params$class_distribution$color_palette = color_palette
       self$params$class_distribution$img_format = img_format
     },
 
-    param_class_comparison = function(dataset, group_col, img_format) {
+    param_class_comparison = function(dataset, group_col, color_palette, img_format) {
       self$params$class_comparison$dataset = dataset
       self$params$class_comparison$group_col = group_col
+      self$params$class_comparison$color_palette = color_palette
       self$params$class_comparison$img_format = img_format
     },
 
-    param_volcano_plot = function(data_table, adjustment, group_col, group_1, group_2, feature_metadata, keep_significant, displayed_plot,
+    param_volcano_plot = function(auto_refresh, data_table, adjustment, group_col, group_1, group_2, feature_metadata, keep_significant, displayed_plot,
                                   p_val_threshold, fc_threshold, marker_size, opacity, color_palette, selected_function, selected_test, img_format) {
 
+      self$params$volcano_plot$auto_refresh = auto_refresh
       self$params$volcano_plot$data_table = data_table
       self$params$volcano_plot$adjustment = adjustment
       self$params$volcano_plot$group_col = group_col
@@ -257,7 +252,7 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, img_format) {
+    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, img_format) {
       self$params$heatmap$dataset = dataset
       self$params$heatmap$impute = impute
       self$params$heatmap$cluster_samples = cluster_samples
@@ -267,11 +262,13 @@ Lips_exp = R6::R6Class(
       self$params$heatmap$group_column_da = group_column_da
       self$params$heatmap$apply_da = apply_da
       self$params$heatmap$alpha_da = alpha_da
+      self$params$heatmap$color_palette = color_palette
+      self$params$heatmap$reverse_palette = reverse_palette
       self$params$heatmap$img_format = img_format
     },
 
-    param_pca = function(data_table, sample_groups_col, feature_groups_col, apply_da, alpha_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, img_format) {
-
+    param_pca = function(auto_refresh, data_table, sample_groups_col, feature_groups_col, apply_da, alpha_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, img_format) {
+      self$params$pca$auto_refresh = auto_refresh
       self$params$pca$data_table = data_table
       self$params$pca$sample_groups_col = sample_groups_col
       self$params$pca$feature_groups_col = feature_groups_col
@@ -310,7 +307,7 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, group_1, group_2, selected_lipid_class, method, img_format) {
+    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, group_1, group_2, selected_lipid_class, color_palette, method, img_format) {
       self$params$satindex_plot$data_table = data_table
       self$params$satindex_plot$feature_meta = feature_meta
       self$params$satindex_plot$sample_meta = sample_meta
@@ -318,16 +315,18 @@ Lips_exp = R6::R6Class(
       self$params$satindex_plot$group_1 = group_1
       self$params$satindex_plot$group_2 = group_2
       self$params$satindex_plot$selected_lipid_class = selected_lipid_class
+      self$params$satindex_plot$color_palette = color_palette
       self$params$satindex_plot$method = method
       self$params$satindex_plot$img_format = img_format
     },
 
-    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, pathway, img_format) {
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, pathway, color_palette, img_format) {
       self$params$fa_analysis_plot$data_table = data_table
       self$params$fa_analysis_plot$feature_meta = feature_meta
       self$params$fa_analysis_plot$sample_meta = sample_meta
       self$params$fa_analysis_plot$group_col = group_column
       self$params$fa_analysis_plot$pathway = pathway
+      self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
     },
 
@@ -542,13 +541,16 @@ Lips_exp = R6::R6Class(
       # Set plotting parameters
       self$param_class_distribution(dataset = 'Class table total normalized',
                                     group_col = self$indices$group_col,
+                                    color_palette = 'Spectral',
                                     img_format = "png")
 
       self$param_class_comparison(dataset = 'Class table total normalized',
                                   group_col = self$indices$group_col,
+                                  color_palette = 'Spectral',
                                   img_format = "png")
 
-      self$param_volcano_plot(data_table = 'Total normalized table',
+      self$param_volcano_plot(auto_refresh = TRUE,
+                              data_table = 'Total normalized table',
                               adjustment = "BH",
                               group_col = self$indices$group_col,
                               group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
@@ -574,13 +576,24 @@ Lips_exp = R6::R6Class(
                          group_column_da = self$indices$group_col,
                          apply_da = FALSE,
                          alpha_da = 0.8,
+                         color_palette = 'RdYlBu',
+                         reverse_palette = FALSE,
                          img_format = "png")
 
-      # self$param_pca(dataset = 'Z-scored total normalized table',
-      #                group_column = self$indices$group_col,
-      #                apply_da = FALSE,
-      #                alpha_da = 0.8,
-      #                img_format = "png")
+      self$param_pca(auto_refresh = TRUE,
+                     data_table = 'z_scored_total_norm_data',
+                     sample_groups_col = self$indices$group_col,
+                     feature_groups_col = NULL,
+                     apply_da = FALSE,
+                     alpha_da = 0.8,
+                     pca_method = 'svd',
+                     nPcs = 10,
+                     displayed_pc_1 = 1,
+                     displayed_pc_2 = 2,
+                     completeObs = F,
+                     displayed_plots = 'both',
+                     colors_palette = 'Spectral',
+                     img_format = "png")
 
       self$param_db_plot(dataset = "Total normalized table",
                          adjustment = "Benjamini-Hochberg",
@@ -604,6 +617,7 @@ Lips_exp = R6::R6Class(
                                group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
                                group_2 = unique(self$tables$raw_meta[,self$indices$group_col])[2],
                                selected_lipid_class = NULL,
+                               color_palette = 'Spectral',
                                method = "ratio",
                                img_format = "png")
 
@@ -612,6 +626,7 @@ Lips_exp = R6::R6Class(
                                   sample_meta = self$tables$raw_meta,
                                   group_column = self$indices$group_col,
                                   pathway = NULL,
+                                  color_palette = 'Spectral',
                                   img_format = "png")
 
     },
@@ -768,13 +783,13 @@ Lips_exp = R6::R6Class(
     plot_class_distribution = function(table = self$tables$class_table_total_norm,
                                        meta_table = self$tables$raw_meta,
                                        group_col = self$indices$group_col,
-                                       colour_list,
+                                       color_palette = self$params$class_distribution$color_palette,
                                        width = NULL,
                                        height = NULL){
       # Produce the class x group table
       samp_list = rownames(table)
       class_list = colnames(table)
-      group_list = sort(unique(meta_table[,group_col]))
+      group_list = sort(unique(meta_table[, group_col]))
 
       plot_table = data.frame(matrix(data = 0.0,
                                      nrow = length(class_list),
@@ -793,12 +808,16 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$class_distribution_table = plot_table
 
+      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+      colors = colorRampPalette(colors)(length(group_list))
+      colors = setNames(colors, group_list)
+
       # Produce the plot
       i = 1
-      fig = plotly::plot_ly(colors = colour_list, width = width, height = height)
+      fig = plotly::plot_ly(colors = unname(colors), width = width, height = height)
       for (col in colnames(plot_table)) {
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
-                                name = col, color = colour_list[i], type  = "bar")
+                                name = col, color = colors[col], type  = "bar")
         fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
                              yaxis = list(title = "Concentration"))
         i = i + 1
@@ -811,7 +830,7 @@ Lips_exp = R6::R6Class(
     plot_class_comparison = function(data_table = self$tables$class_table_total_norm,
                                      meta_table = self$tables$raw_meta,
                                      group_col = self$indices$group_col,
-                                     colour_list,
+                                     color_palette = self$params$class_comparison$color_palette,
                                      width = NULL,
                                      height = NULL){
       # Get sample groups and the list of classes
@@ -852,6 +871,10 @@ Lips_exp = R6::R6Class(
                               textangle = 270, showarrow = FALSE, xref='paper',
                               yref='paper')
 
+      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+      colors = colorRampPalette(colors)(length(groups))
+      colors = setNames(colors, groups)
+
       # Plot list will be the list of subplots
       plot_list = c()
 
@@ -860,7 +883,7 @@ Lips_exp = R6::R6Class(
       j = 1
       for (c in class_list) {
         i = 1
-        subplot = plot_ly(colors = colour_list, width = width, height = height)
+        subplot = plot_ly(colors = unname(colors), width = width, height = height)
         for (g in groups){
           if (g %in% cleared_groups) {
             first_bool = FALSE
@@ -876,12 +899,12 @@ Lips_exp = R6::R6Class(
 
           # Subplot for the bar chart displaying the mean concentration
           subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
-                                          color = colour_list[i], alpha = 1,
+                                          color = colors[g], alpha = 1,
                                           legendgroup=i, showlegend = first_bool)
 
           # Subplot for boxplots displaying the median and all datapoints
           subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
-                                          pointpos = 0, name = g, color = colour_list[i],
+                                          pointpos = 0, name = g, color = colors[g],
                                           line = list(color = 'rgb(100,100,100)'),
                                           marker = list(color = 'rgb(100,100,100)'), alpha = 1,
                                           legendgroup=i, showlegend = FALSE,
@@ -981,6 +1004,8 @@ Lips_exp = R6::R6Class(
                             apply_da = self$params$heatmap$apply_da,
                             group_column_da = self$params$heatmap$group_column_da,
                             alpha_da = self$params$heatmap$alpha_da,
+                            color_palette = self$params$heatmap$color_palette,
+                            reverse_palette = self$params$heatmap$reverse_palette,
                             width = NULL,
                             height = NULL) {
 
@@ -1058,21 +1083,23 @@ Lips_exp = R6::R6Class(
         data_table[is.na(data_table)] = zmin
       }
 
+      # Get the color palette
+      color_count = colors_switch(color_palette)
+      color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+      color_palette = c(color_palette[1], color_palette[round(color_count/2)] , color_palette[color_count])
+      if (reverse_palette) {
+        color_palette = base::rev(color_palette)
+      }
+
       # Plot the data
       self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
                                                 scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
-                                                  low = "blue",
-                                                  mid = "#faf4af",
-                                                  high = "red",
+                                                  low = color_palette[3],
+                                                  mid = color_palette[2],
+                                                  high = color_palette[1],
                                                   midpoint = 0,
-                                                  # limits = c(-col_lim, col_lim)
                                                   limits = c(zmin, zmax)
                                                 ),
-                                                # scale_fill_gradient_fun = ggplot2::scale_fill_gradient(
-                                                #   low = "blue4",
-                                                #   high = "red",
-                                                #   # limits = c(-col_lim, col_lim)
-                                                # ),
                                                 width = width,
                                                 height = height,
                                                 limits = c(zmin, zmax),
@@ -1283,7 +1310,7 @@ Lips_exp = R6::R6Class(
                              group_2 = self$params$satindex_plot$group_2,
                              selected_lipid_class = self$params$satindex_plot$selected_lipid_class,
                              method = self$params$satindex_plot$method,
-                             colour_list,
+                             color_palette = self$params$satindex_plot$color_palette,
                              width = NULL,
                              height = NULL) {
       ## At the moment this function is using the raw data table!
@@ -1326,6 +1353,11 @@ Lips_exp = R6::R6Class(
         # Get sample groups and the list of classes
         groups = sort(unique(sample_meta[, group_col]))
         class_list = colnames(res_clean)
+        group_list = sort(unique(sample_meta[,group_col]))
+
+        colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+        colors = colorRampPalette(colors)(length(group_list))
+        colors = setNames(colors, group_list)
 
         x_dim = ceiling(sqrt(length(class_list)))
         y_dim = floor(sqrt(length(class_list)))
@@ -1374,7 +1406,7 @@ Lips_exp = R6::R6Class(
         j = 1
         for (c in class_list) {
           i = 1
-          subplot = plot_ly(colors = colour_list, width = width, height = height)
+          subplot = plot_ly(colors = unname(colors), width = width, height = height)
           for (g in groups){
             if (g %in% cleared_groups) {
               first_bool = FALSE
@@ -1390,12 +1422,12 @@ Lips_exp = R6::R6Class(
 
             # Subplot for the bar chart displaying the mean concentration
             subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
-                                            color = colour_list[i], alpha = 0.75,
+                                            color = colors[i], alpha = 0.75,
                                             legendgroup = i, showlegend = first_bool)
 
             # Subplot for boxplots displaying the median and all datapoints
             subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
-                                            pointpos = 0, name = g, color = colour_list[i],
+                                            pointpos = 0, name = g, color = colors[i],
                                             line = list(color = 'rgb(100,100,100)'),
                                             marker = list(color = 'rgb(100,100,100)'), alpha = 0.75,
                                             legendgroup = i, showlegend = FALSE,
@@ -1436,7 +1468,7 @@ Lips_exp = R6::R6Class(
                                 sample_meta = self$tables$raw_meta,
                                 group_col = self$indices$group_col,
                                 pathway = self$params$fa_analysis_plot$pathway,
-                                colour_list,
+                                color_palette = self$params$fa_analysis_plot$color_palette,
                                 width = NULL,
                                 height = NULL) {
 
@@ -1492,15 +1524,20 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
 
+      group_list = sort(unique(plot_table$group))
+      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+      colors = colorRampPalette(colors)(length(group_list))
+      colors = setNames(colors, group_list)
+
       # plotting
       i <- 1
-      fig <- plotly::plot_ly(colors = colour_list, width = width, height = height)
+      fig <- plotly::plot_ly(colors = unname(colors), width = width, height = height)
       for (grp in unique(plot_table$group)) {
         fig <- fig |>
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
                             x = ~fa_chain,
                             y = ~avg,
-                            color = colour_list[i],
+                            color = colors[i],
                             type = "bar",
                             name = grp,
                             error_y = ~ list(array = stdev,
