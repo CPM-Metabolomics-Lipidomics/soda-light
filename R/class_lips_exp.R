@@ -336,8 +336,8 @@ Lips_exp = R6::R6Class(
     set_raw_meta = function(){
       if (!is.na(self$indices$id_col_meta) & !is.null(self$tables$imp_meta)){
         data_table = self$tables$imp_meta
-        rownames(data_table) = data_table[, self$indices$id_col_meta]
-        data_table[,self$indices$id_col_meta] = NULL
+        rownames(data_table) = paste(data_table[, "batchNumber"], data_table[, self$indices$id_col_meta], sep = "_")
+        data_table[, self$indices$id_col_meta] = NULL
         self$tables$raw_meta = data_table
       }
     },
@@ -356,7 +356,7 @@ Lips_exp = R6::R6Class(
         data_table = self$tables$imp_data
 
         # Set ID column
-        rownames(data_table) = data_table[, self$indices$id_col_data]
+        # rownames(data_table) = data_table[, self$indices$id_col_data]
         data_table[,self$indices$id_col_data] = NULL
         data_table = as.matrix(data_table)
 
@@ -460,8 +460,7 @@ Lips_exp = R6::R6Class(
     },
 
     get_blank_table = function() {
-      blank_table = self$tables$imp_data[self$tables$imp_data[, self$indices$id_col_data] %in% self$indices$rownames_blanks, ]
-      rownames(blank_table) = blank_table[, self$indices$id_col_data]
+      blank_table = self$tables$imp_data[rownames(self$tables$imp_data) %in% self$indices$rownames_blanks, ]
       blank_table[, self$indices$id_col_data] = NULL
       self$tables$blank_table = as.matrix(blank_table)
     },

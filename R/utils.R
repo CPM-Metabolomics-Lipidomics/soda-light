@@ -671,8 +671,8 @@ lips_get_del_cols = function(data_table,
     batch_samples = base::intersect(batch_idx, idx_samples)
 
     # Get rownames
-    batch_blanks = imp_meta[batch_blanks, id_col_meta]
-    batch_samples = imp_meta[batch_samples, id_col_meta]
+    batch_blanks = rownames(imp_meta)[batch_blanks]
+    batch_samples = rownames(imp_meta)[batch_samples]
     batch_samples = base::intersect(rownames(data_table), batch_samples)
 
     del_cols = c(del_cols, blank_filter(data_table = data_table[batch_samples,],
@@ -690,7 +690,7 @@ lips_get_del_cols = function(data_table,
 
   # Group filtering
   saved_cols = c()
-  for (g in unique(raw_meta[,group_col])) {
+  for (g in unique(raw_meta[, group_col])) {
     group_idx = which(imp_meta[, group_col] == g)
     above_threshold = rep(0, length(del_cols))
     names(above_threshold) = del_cols
@@ -701,12 +701,12 @@ lips_get_del_cols = function(data_table,
       batch_samples = base::intersect(batch_idx, group_idx)
 
       # Get rownames
-      batch_blanks = imp_meta[batch_blanks, id_col_meta]
-      batch_samples = imp_meta[batch_samples, id_col_meta]
+      batch_blanks = rownames(imp_meta)[batch_blanks]
+      batch_samples = rownames(imp_meta)[batch_samples]
       batch_samples = base::intersect(rownames(data_table), batch_samples)
 
       # get batch blank means
-      blank_means = get_col_means(data_table = blank_table[as.character(batch_blanks),])
+      blank_means = get_col_means(data_table = blank_table[batch_blanks, ])
       threshold = blank_multiplier * blank_means
 
       # Find features / columns below threshold
@@ -1481,15 +1481,19 @@ example_lipidomics = function(name,
   meta_data = meta_data[meta_data$batchNumber %in% data_files &
                           (meta_data$experimentId %in% experiment_id |
                              meta_data$experimentId %in% data_files), 1:18]
+  rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
 
   # get the lipid data
   data_tables <- vector("list", length = length(data_files))
   for(a in 1:length(data_files)) {
-    file_path = file.path("data", "Database",data_files[a], paste0(data_files[a], "_output_merge.xlsx"))
+    file_path = file.path("data", "Database", data_files[a], paste0(data_files[a], "_output_merge.xlsx"))
     data_tables[[a]] = soda_read_table(file_path = file_path)
+    data_tables[[a]][, "rownames"] <- paste(data_files[a], data_tables[[a]][, "ID"], sep = "_")
   }
-
   lips_data = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
+  rownames(lips_data) <- lips_data[, "rownames"]
+  lips_data[, "rownames"] <- NULL
+
   # The imported data needs to be filtered because sometimes a batch consist out of multiple experiments
   lips_data = lips_data[lips_data[, "ID"] %in% meta_data[, "analystId"], ]
 
@@ -1530,12 +1534,12 @@ example_lipidomics = function(name,
   r6$indices$idx_pools = pool_idx
   r6$indices$idx_samples = sample_idx
 
-  r6$indices$rownames_blanks = r6$tables$imp_meta[blank_idx, r6$indices$id_col_meta]
-  r6$indices$rownames_qcs = r6$tables$imp_meta[qc_idx, r6$indices$id_col_meta]
-  r6$indices$rownames_pools = r6$tables$imp_meta[pool_idx, r6$indices$id_col_meta]
-  r6$indices$rownames_samples = r6$tables$imp_meta[sample_idx, r6$indices$id_col_meta]
+  r6$indices$rownames_blanks = rownames(r6$tables$imp_meta)[blank_idx]
+  r6$indices$rownames_qcs = rownames(r6$tables$imp_meta)[qc_idx]
+  r6$indices$rownames_pools = rownames(r6$tables$imp_meta)[pool_idx]
+  r6$indices$rownames_samples = rownames(r6$tables$imp_meta)[sample_idx]
 
-  r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples,]
+  r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
 
   r6$get_blank_table()
 
