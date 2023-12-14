@@ -149,8 +149,6 @@ class_comparison_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-
-
   r6$plot_class_comparison(width = width,
                            height = height)
 }
@@ -832,11 +830,6 @@ fa_analysis_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  # r6$plot_fa_analysis(data_table = r6$tables$raw_data,
-  #                     group_col = input$fa_analysis_metacol,
-  #                     colour_list = colour_list,
-  #                     width = width,
-  #                     height = height)
   r6$plot_fa_analysis(width = width,
                       height = height)
 }
@@ -982,18 +975,7 @@ heatmap_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$plot_heatmap(data_table = table_switch(input$heatmap_dataset, r6),
-                  impute = input$heatmap_impute,
-                  meta_table = r6$tables$raw_meta,
-                  meta_table_features = r6$tables$feature_table,
-                  cluster_rows = input$heatmap_cluster_samples,
-                  cluster_cols = input$heatmap_cluster_features,
-                  row_annotations = input$heatmap_map_rows,
-                  col_annotations = input$heatmap_map_cols,
-                  apply_da = input$heatmap_apply_da,
-                  group_column_da = input$heatmap_group_col_da,
-                  alpha_da = input$heatmap_alpha_da,
-                  width = dimensions_obj$xpx * dimensions_obj$x_plot,
+  r6$plot_heatmap(width = dimensions_obj$xpx * dimensions_obj$x_plot,
                   height = dimensions_obj$ypx * dimensions_obj$y_plot)
 }
 
@@ -1191,6 +1173,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
       heatmap_spawn(r6, input$heatmap_img_format, output)
     },error=function(e){
       print_tm(r6$name, 'Heatmap: ERROR.')
+      print(e)
       shinyjs::enable("heatmap_run")
     },finally={}
     )
