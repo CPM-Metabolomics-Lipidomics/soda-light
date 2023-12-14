@@ -7,6 +7,10 @@ meta_data <- read_xlsx(file = "./data/Database/SampleMasterfile.xlsx",
 
 experiments <- sort(unique(meta_data$experimentId))
 
+# remove all NLA stuff
+experiments <- experiments[!grepl(pattern = "^NLA_.*",
+                                  x = experiments)]
+
 line_exp <- '<table>
 <tr>
 <th>Experiment</th>
