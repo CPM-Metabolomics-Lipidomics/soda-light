@@ -11,10 +11,7 @@ class_distribution_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$plot_class_distribution(table = table_switch(input$class_distribution_dataset, r6),
-                             group_col = input$class_distribution_metacol,
-                             colour_list = colour_list,
-                             width = width,
+  r6$plot_class_distribution(width = width,
                              height = height)
 }
 
@@ -61,6 +58,17 @@ class_distribution_server = function(r6, output, session) {
         choices = colnames(r6$tables$raw_meta),
         selected = r6$params$class_distribution$group_col
       ),
+      shiny::selectizeInput(
+        inputId = ns('class_distribution_color_palette'),
+        label = "Color palette",
+        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        selected = r6$params$class_distribution$color_palette,
+        multiple = FALSE
+      ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
         inputId = ns("class_distribution_img_format"),
@@ -80,11 +88,12 @@ class_distribution_server = function(r6, output, session) {
 
 class_distribution_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # Generate the plot
-  shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_img_format), {
+  shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_color_palette, input$class_distribution_img_format), {
     print_tm(r6$name, "Class distribution: Updating params...")
 
     r6$param_class_distribution(dataset = input$class_distribution_dataset,
                                 group_col = input$class_distribution_metacol,
+                                color_palette = input$class_distribution_color_palette,
                                 img_format = input$class_distribution_img_format)
 
     base::tryCatch({
@@ -140,12 +149,7 @@ class_comparison_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-
-
-  r6$plot_class_comparison(data_table = table_switch(input$class_comparison_dataset, r6),
-                           group_col = input$class_comparison_metacol,
-                           colour_list = colour_list,
-                           width = width,
+  r6$plot_class_comparison(width = width,
                            height = height)
 }
 class_comparison_spawn = function(r6, format, output) {
@@ -187,6 +191,17 @@ class_comparison_server = function(r6, output, session) {
         choices = colnames(r6$tables$raw_meta),
         selected = r6$params$class_comparison$group_col
       ),
+      shiny::selectizeInput(
+        inputId = ns('class_comparison_color_palette'),
+        label = "Color palette",
+        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        selected = r6$params$class_comparison$color_palette,
+        multiple = FALSE
+      ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
         inputId = ns("class_comparison_img_format"),
@@ -205,11 +220,12 @@ class_comparison_server = function(r6, output, session) {
 class_comparison_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Generate the plot
-  shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_img_format), {
+  shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_color_palette, input$class_comparison_img_format), {
     print_tm(r6$name, "Class comparison: Updating params...")
 
     r6$param_class_comparison(dataset = input$class_comparison_dataset,
                               group_col = input$class_comparison_metacol,
+                              color_palette = input$class_comparison_color_palette,
                               img_format = input$class_comparison_img_format)
 
     base::tryCatch({
@@ -308,11 +324,18 @@ volcano_plot_server = function(r6, output, session) {
   # Set UI
   output$volcano_plot_sidebar_ui = shiny::renderUI({
     shiny::tagList(
-      shinyWidgets::prettySwitch(
-        inputId = ns('volcano_plot_auto_update'),
-        label = 'Auto-update',
-        value = TRUE
+      shinyWidgets::materialSwitch(
+        inputId = ns('volcano_plot_auto_refresh'),
+        label = 'Auto-refresh',
+        value = r6$params$volcano_plot$auto_refresh,
+        right = TRUE,
+        status = "success"
       ),
+      # shinyWidgets::prettySwitch(
+      #   inputId = ns('volcano_plot_auto_update'),
+      #   label = 'Auto-update',
+      #   value = TRUE
+      # ),
       shiny::selectInput(
         inputId = ns("volcano_plot_tables"),
         label = "Select data table",
@@ -485,7 +508,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
   shiny::observeEvent(
     c(shiny::req(length(input$volcano_plot_metagroup) == 2),
-      shiny::req(input$volcano_plot_auto_update),
+      input$volcano_plot_auto_refresh,
       input$volcano_plot_tables,
       input$volcano_plot_function,
       input$volcano_plot_adjustment,
@@ -500,8 +523,11 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_marker_size,
       input$volcano_plot_opacity,
       input$volcano_plot_img_format
-    ),{
-
+    ), {
+      if (!input$volcano_plot_auto_refresh) {
+        r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
+        return()
+      }
       print_tm(r6$name, "Volcano plot: Updating params...")
 
       # Is the column multivalue?
@@ -516,7 +542,8 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
         feature_metadata = input$volcano_plot_feature_metadata
       }
 
-      r6$param_volcano_plot(data_table = input$volcano_plot_tables,
+      r6$param_volcano_plot(auto_refresh = input$volcano_plot_auto_refresh,
+                            data_table = input$volcano_plot_tables,
                             adjustment = input$volcano_plot_adjustment,
                             group_col = input$volcano_plot_metacol,
                             group_1 = input$volcano_plot_metagroup[1],
@@ -613,11 +640,7 @@ satindex_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$plot_satindex(data_table = r6$tables$raw_data, #table_switch(input$class_comparison_dataset, r6),
-                   group_col = input$satindex_metacol,
-                   colour_list = colour_list,
-                   method = input$satindex_select_method,
-                   width = width,
+  r6$plot_satindex(width = width,
                    height = height)
 }
 
@@ -679,6 +702,17 @@ satindex_server = function(r6, output, session) {
         selected = r6$params$satindex_plot$selected_lipid_class,
         multiple = FALSE
       )),
+      shiny::selectizeInput(
+        inputId = ns('satindex_color_palette'),
+        label = "Color palette",
+        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        selected = r6$params$satindex_plot$color_palette,
+        multiple = FALSE
+      ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
         inputId = ns("satindex_img_format"),
@@ -701,6 +735,7 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                         input$satindex_img_format,
                         input$satindex_select_method,
                         input$satindex_metagroup,
+                        input$satindex_color_palette,
                         input$satindex_lipidclass), {
                           print_tm(r6$name, "Saturation index: Updating params...")
 
@@ -718,9 +753,11 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                           if(input$satindex_select_method == "db") {
                             shinyjs::show(id = "satindex_metagroup")
                             shinyjs::show(id = "satindex_lipidclass")
+                            shinyjs::hide(id = "satindex_color_palette")
                           } else {
                             shinyjs::hide(id = "satindex_metagroup")
                             shinyjs::hide(id = "satindex_lipidclass")
+                            shinyjs::show(id = "satindex_color_palette")
                           }
 
                           r6$param_satindex_plot(data_table = r6$tables$raw_data,
@@ -730,6 +767,7 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                                                  group_1 = input$satindex_metagroup[1],
                                                  group_2 = input$satindex_metagroup[2],
                                                  selected_lipid_class = input$satindex_lipidclass,
+                                                 color_palette = input$satindex_color_palette,
                                                  method = input$satindex_select_method,
                                                  img_format = input$satindex_img_format)
 
@@ -792,10 +830,7 @@ fa_analysis_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$plot_fa_analysis(data_table = r6$tables$raw_data, #table_switch(input$class_comparison_dataset, r6),
-                      group_col = input$fa_analysis_metacol,
-                      colour_list = colour_list,
-                      width = width,
+  r6$plot_fa_analysis(width = width,
                       height = height)
 }
 
@@ -843,6 +878,17 @@ fa_analysis_server = function(r6, output, session) {
         selected = "",
         multiple = TRUE,
         width = "100%"),
+      shiny::selectizeInput(
+        inputId = ns('fa_analysis_color_palette'),
+        label = "Color palette",
+        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        selected = r6$params$fa_analysis_plot$color_palette,
+        multiple = FALSE
+      ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
         inputId = ns("fa_analysis_img_format"),
@@ -863,6 +909,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
   # Generate the plot
   shiny::observeEvent(c(input$fa_analysis_metacol,
                         input$fa_analysis_pathway,
+                        input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
@@ -871,6 +918,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                               sample_meta = r6$tables$raw_meta,
                               group_col = input$fa_analysis_metacol,
                               pathway = input$fa_analysis_pathway,
+                              color_palette = input$fa_analysis_color_palette,
                               img_format = input$fa_analysis_img_format)
 
     base::tryCatch({
@@ -927,18 +975,7 @@ heatmap_generate = function(r6, colour_list, dimensions_obj, input) {
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$plot_heatmap(data_table = table_switch(input$heatmap_dataset, r6),
-                  impute = input$heatmap_impute,
-                  meta_table = r6$tables$raw_meta,
-                  meta_table_features = r6$tables$feature_table,
-                  cluster_rows = input$heatmap_cluster_samples,
-                  cluster_cols = input$heatmap_cluster_features,
-                  row_annotations = input$heatmap_map_rows,
-                  col_annotations = input$heatmap_map_cols,
-                  apply_da = input$heatmap_apply_da,
-                  group_column_da = input$heatmap_group_col_da,
-                  alpha_da = input$heatmap_alpha_da,
-                  width = dimensions_obj$xpx * dimensions_obj$x_plot,
+  r6$plot_heatmap(width = dimensions_obj$xpx * dimensions_obj$x_plot,
                   height = dimensions_obj$ypx * dimensions_obj$y_plot)
 }
 
@@ -1067,7 +1104,25 @@ heatmap_server = function(r6, output, session) {
                              value = r6$params$heatmap$alpha_da,
                              step = 0.01,
                              width = "100%")
-        )
+        ),
+        shiny::selectInput(
+          inputId = ns('heatmap_colors_palette'),
+          label = 'Color palette',
+          choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                      'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                      'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                      'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                      'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+          selected = r6$params$heatmap$color_palette,
+          width = '100%'
+        ),
+        shinyWidgets::materialSwitch(
+          inputId = ns('heatmap_reverse_palette'),
+          label = 'Reverse palette',
+          value = r6$params$heatmap$reverse_palette,
+          right = TRUE,
+          status = "primary"
+        ),
       ),
 
       shiny::actionButton(
@@ -1109,6 +1164,8 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                      group_column_da = input$heatmap_group_col_da,
                      apply_da = input$heatmap_apply_da,
                      alpha_da = input$heatmap_alpha_da,
+                     color_palette = input$heatmap_colors_palette,
+                     reverse_palette = input$heatmap_reverse_palette,
                      img_format = input$heatmap_img_format)
 
     base::tryCatch({
@@ -1116,6 +1173,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
       heatmap_spawn(r6, input$heatmap_img_format, output)
     },error=function(e){
       print_tm(r6$name, 'Heatmap: ERROR.')
+      print(e)
       shinyjs::enable("heatmap_run")
     },finally={}
     )
@@ -1202,6 +1260,13 @@ pca_server = function(r6, output, session) {
 
   output$pca_sidebar_ui = shiny::renderUI({
     shiny::tagList(
+      shinyWidgets::materialSwitch(
+        inputId = ns('pca_auto_refresh'),
+        label = 'Auto-refresh',
+        value = r6$params$pca$auto_refresh,
+        right = TRUE,
+        status = "success"
+      ),
       shiny::selectInput(
         inputId = ns("pca_data_table"),
         label = "Select dataset",
@@ -1315,11 +1380,29 @@ pca_server = function(r6, output, session) {
 
 pca_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
-  shiny::observeEvent(c(input$pca_data_table, input$pca_sample_groups_col, input$pca_feature_group, input$pca_apply_da, input$pca_alpha_da, input$pca_method, input$pca_npcs, input$pca_displayed_pc_1, input$pca_displayed_pc_2, input$pca_completeObs, input$pca_displayed_plots, input$pca_colors_palette, input$pca_img_format),{
+  shiny::observeEvent(c(input$pca_auto_refresh,
+                        input$pca_data_table,
+                        input$pca_sample_groups_col,
+                        input$pca_feature_group,
+                        input$pca_apply_da,
+                        input$pca_alpha_da,
+                        input$pca_method, input$pca_npcs,
+                        input$pca_displayed_pc_1,
+                        input$pca_displayed_pc_2,
+                        input$pca_completeObs,
+                        input$pca_displayed_plots,
+                        input$pca_colors_palette,
+                        input$pca_img_format), {
+    if (!input$pca_auto_refresh) {
+      r6$params$pca$auto_refresh = input$pca_auto_refresh
+      return()
+    }
+
     print_tm(r6$name, "PCA: Updating params...")
 
     print(input$pca_data_table)
-    r6$param_pca(data_table = table_name_switch(input$pca_data_table),
+    r6$param_pca(auto_refresh = input$pca_auto_refresh,
+                 data_table = table_name_switch(input$pca_data_table),
                  sample_groups_col = input$pca_sample_groups_col,
                  feature_groups_col = input$pca_feature_group,
                  apply_da = input$pca_apply_da,
