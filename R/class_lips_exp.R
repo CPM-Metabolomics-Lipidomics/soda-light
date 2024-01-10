@@ -307,11 +307,11 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_column, group_1, group_2, selected_lipid_class, color_palette, method, img_format) {
+    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_col, group_1, group_2, selected_lipid_class, color_palette, method, img_format) {
       self$params$satindex_plot$data_table = data_table
       self$params$satindex_plot$feature_meta = feature_meta
       self$params$satindex_plot$sample_meta = sample_meta
-      self$params$satindex_plot$group_col = group_column
+      self$params$satindex_plot$group_col = group_col
       self$params$satindex_plot$group_1 = group_1
       self$params$satindex_plot$group_2 = group_2
       self$params$satindex_plot$selected_lipid_class = selected_lipid_class
@@ -320,11 +320,11 @@ Lips_exp = R6::R6Class(
       self$params$satindex_plot$img_format = img_format
     },
 
-    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_column, pathway, color_palette, img_format) {
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, pathway, color_palette, img_format) {
       self$params$fa_analysis_plot$data_table = data_table
       self$params$fa_analysis_plot$feature_meta = feature_meta
       self$params$fa_analysis_plot$sample_meta = sample_meta
-      self$params$fa_analysis_plot$group_col = group_column
+      self$params$fa_analysis_plot$group_col = group_col
       self$params$fa_analysis_plot$pathway = pathway
       self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
@@ -613,7 +613,7 @@ Lips_exp = R6::R6Class(
       self$param_satindex_plot(data_table = self$tables$raw_data,
                                feature_meta = self$tables$feature_table,
                                sample_meta = self$tables$raw_meta,
-                               group_column = self$indices$group_col,
+                               group_col = self$indices$group_col,
                                group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
                                group_2 = unique(self$tables$raw_meta[,self$indices$group_col])[2],
                                selected_lipid_class = NULL,
@@ -624,7 +624,7 @@ Lips_exp = R6::R6Class(
       self$param_fa_analysis_plot(data_table = self$tables$raw_data,
                                   feature_meta = self$tables$feature_table,
                                   sample_meta = self$tables$raw_meta,
-                                  group_column = self$indices$group_col,
+                                  group_col = self$indices$group_col,
                                   pathway = NULL,
                                   color_palette = 'Spectral',
                                   img_format = "png")
@@ -782,7 +782,7 @@ Lips_exp = R6::R6Class(
     # Class distribution
     plot_class_distribution = function(table = self$tables$class_table_total_norm,
                                        meta_table = self$tables$raw_meta,
-                                       group_col = self$indices$group_col,
+                                       group_col = self$params$class_distribution$group_col,
                                        color_palette = self$params$class_distribution$color_palette,
                                        width = NULL,
                                        height = NULL){
@@ -829,7 +829,7 @@ Lips_exp = R6::R6Class(
     # Class comparison
     plot_class_comparison = function(data_table = self$tables$class_table_total_norm,
                                      meta_table = self$tables$raw_meta,
-                                     group_col = self$indices$group_col,
+                                     group_col = self$params$class_comparison$group_col,
                                      color_palette = self$params$class_comparison$color_palette,
                                      width = NULL,
                                      height = NULL){
@@ -1305,7 +1305,7 @@ Lips_exp = R6::R6Class(
     plot_satindex = function(data_table = self$tables$raw_data,
                              feature_table = self$tables$feature_table,
                              sample_meta = self$tables$raw_meta,
-                             group_col = self$indices$group_col,
+                             group_col = self$params$satindex_plot$group_col,
                              group_1 = self$params$satindex_plot$group_1,
                              group_2 = self$params$satindex_plot$group_2,
                              selected_lipid_class = self$params$satindex_plot$selected_lipid_class,
@@ -1466,7 +1466,7 @@ Lips_exp = R6::R6Class(
     plot_fa_analysis = function(data_table = self$tables$raw_data,
                                 feature_table = self$tables$feature_table,
                                 sample_meta = self$tables$raw_meta,
-                                group_col = self$indices$group_col,
+                                group_col = self$params$fa_analysis_plot$group_col,
                                 pathway = self$params$fa_analysis_plot$pathway,
                                 color_palette = self$params$fa_analysis_plot$color_palette,
                                 width = NULL,
