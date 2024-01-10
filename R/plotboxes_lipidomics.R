@@ -89,6 +89,10 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
   iv_class_distribution$add_rule("class_distribution_metacol", shinyvalidate::sv_required())
   iv_class_distribution$add_rule("class_distribution_color_palette", shinyvalidate::sv_required())
   iv_class_distribution$add_rule("class_distribution_img_format", shinyvalidate::sv_optional())
+  # iv_class_distribution$add_rule("class_distribution_dataset",
+  #                                iv_check_vector,
+  #                                choices = r6$hardcoded_settings$class_distribution$datasets,
+  #                                message = print_tm(r6$name, "Class distribution: Incorrect dataset selected!"))
   iv_class_distribution$add_rule("class_distribution_dataset", function(value) {
     if(!(value %in% r6$hardcoded_settings$class_distribution$datasets)) {
       print_tm(r6$name, "Class distribution: Incorrect dataset selected!")
@@ -112,7 +116,7 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
 
   # Generate the plot
   shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_color_palette, input$class_distribution_img_format), {
-    req(iv_class_distribution$is_valid())
+    shiny::req(iv_class_distribution$is_valid())
 
     print_tm(r6$name, "Class distribution: Updating params...")
 
@@ -268,7 +272,7 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
 
   # Generate the plot
   shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_color_palette, input$class_comparison_img_format), {
-    req(iv_class_comparison$is_valid())
+    shiny::req(iv_class_comparison$is_valid())
 
     print_tm(r6$name, "Class comparison: Updating params...")
 
@@ -427,11 +431,7 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('volcano_plot_color_palette'),
         label = "Feature metadata colors",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$volcano_plot$color_palette,
         multiple = FALSE
       ),
@@ -524,15 +524,47 @@ volcano_plot_server = function(r6, output, session) {
 }
 
 volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # input validation
+  iv_volcano_plot <- shinyvalidate::InputValidator$new()
+  iv_volcano_plot$add_rule("volcano_plot_tables", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_metacol", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
+  iv_volcano_plot$add_rule("volcano_plot_tables", function(value) {
+    if(!(value %in% r6$hardcoded_settings$volcano_plot$datasets)) {
+      print_tm(r6$name, "Volcano plot: Incorrect dataset selected!")
+    }
+  })
+  iv_volcano_plot$add_rule("volcano_plot_metacol", function(value) {
+    if(!(value %in% r6$hardcoded_settings$meta_column)) {
+      print_tm(r6$name, "Volcano plot: Incorrect group column selected!")
+    }
+  })
+  iv_volcano_plot$add_rule("volcano_plot_color_palette", function(value) {
+    if(!(value %in% r6$hardcoded_settings$color_palette)) {
+      print_tm(r6$name, "Volcano plot: Incorrect color palette selected!")
+    }
+  })
+  iv_volcano_plot$add_rule("volcano_plot_metagroup", function(value) {
+    if(!all(value %in% unique(r6$tables$raw_meta[, input$volcano_plot_metacol]))) {
+      print_tm(r6$name, "Volcano plot: Incorrect group selected!")
+    }
+  })
+
+  iv_volcano_plot$add_rule("volcano_plot_img_format", function(value) {
+    if(!(value %in% r6$hardcoded_settings$image_format)) {
+      print_tm(r6$name, "Volcano plot: Incorrect image format selected!")
+    }
+  })
 
   # auto-update selected groups
-  shiny::observeEvent(input$volcano_plot_metacol,{
-    # r6$params$volcano_plot$group_column = input$volcano_plot_metacol
+  shiny::observeEvent(input$volcano_plot_metacol, {
     shiny::updateSelectizeInput(
       inputId = "volcano_plot_metagroup",
       session = session,
-      choices = unique(r6$tables$raw_meta[,input$volcano_plot_metacol]),
-      selected = unique(r6$tables$raw_meta[,input$volcano_plot_metacol])[c(1,2)]
+      choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
+      selected = unique(r6$tables$raw_meta[, input$volcano_plot_metacol])[c(1, 2)]
     )
   })
 
@@ -573,6 +605,8 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_opacity,
       input$volcano_plot_img_format
     ), {
+      shiny::req(iv_volcano_plot$is_valid())
+
       if (!input$volcano_plot_auto_refresh) {
         r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
         return()
