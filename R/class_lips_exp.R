@@ -132,6 +132,7 @@ Lips_exp = R6::R6Class(
     ),
 
     hardcoded_settings = list(
+      # general
       meta_column = c("cellCount", "cellLineName", "cultureConditions", "genoType",
                       "harvestDate", "parentalCellLine", "sex"),
       color_palette = c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges",
@@ -139,6 +140,7 @@ Lips_exp = R6::R6Class(
                         "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
                         "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
                         "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
+      # plot specific
       class_distribution = list(
         datasets = list(
           "Class table",
