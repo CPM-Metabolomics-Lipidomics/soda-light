@@ -131,7 +131,63 @@ Lips_exp = R6::R6Class(
      )
     ),
 
-
+    hardcoded_settings = list(
+      class_distribution = list(
+        datasets = list(
+          "Class table",
+          "Class table total normalized"
+        )
+      ),
+      class_comparison = list(
+        datasets = list(
+          "Class table",
+          "Class table total normalized"
+        )
+      ),
+      volcano_plot = list(
+        datasets = list(
+          "Raw data table",
+          "Class normalized table",
+          "Total normalized table"
+        )
+      ),
+      heatmap = list(
+        datasets = list(
+          'Z-scored table',
+          'Z-scored total normalized table',
+          'Class table z-scored'
+        )
+      ),
+      samples_correlation = list(
+        datasets = list(
+          "Raw data table",
+          "Total normalized table",
+          'Z-scored table',
+          'Z-scored total normalized table'
+        )
+      ),
+      feature_correlation = list(
+        datasets = list(
+          "Raw data table",
+          "Total normalized table",
+          'Z-scored table',
+          'Z-scored total normalized table'
+        )
+      ),
+      pca = list(
+        datasets = list(
+          'Z-scored table',
+          'Z-scored total normalized table'
+        )
+      ),
+      db_plot = list(
+        datasets = list(
+          "Raw data table",
+          "Class normalized table",
+          "Total normalized table"
+        )
+      )
+    ),
 
     #--------------------------------------------------------------- Indices ----
 

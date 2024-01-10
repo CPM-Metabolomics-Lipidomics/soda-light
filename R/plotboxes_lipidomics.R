@@ -49,7 +49,7 @@ class_distribution_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_distribution_dataset"),
         label = "Select table",
-        choices = c('Class table', 'Class table total normalized'),
+        choices = r6$hardcoded_settings$class_distribution$datasets,
         selected = r6$params$class_distribution$dataset
       ),
       shiny::selectInput(
@@ -182,7 +182,7 @@ class_comparison_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_comparison_dataset"),
         label = "Select table",
-        choices = c('Class table', 'Class table total normalized'),
+        choices = r6$hardcoded_settings$class_comparison$datasets,
         selected = r6$params$class_comparison$dataset
       ),
       shiny::selectInput(
@@ -339,7 +339,7 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("volcano_plot_tables"),
         label = "Select data table",
-        choices = c("Raw data table", "Class normalized table", "Total normalized table"),
+        choices = r6$hardcoded_settings$volcano_plot$datasets,
         selected = r6$params$volcano_plot$data_table
       ),
       shiny::selectInput(
@@ -1012,7 +1012,7 @@ heatmap_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("heatmap_dataset"),
         label = "Select dataset",
-        choices = c('Z-scored table', 'Class table z-scored'),
+        choices = r6$hardcoded_settings$heatmap$datasets,
         selected = r6$params$heatmap$dataset
       ),
 
@@ -1270,7 +1270,7 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("pca_data_table"),
         label = "Select dataset",
-        choices = c('Z-scored table', 'Class table z-scored', 'Z-scored total normalized table'),
+        choices = r6$hardcoded_settings$pca$datasets,
         selected = r6$params$pca$data_table
       ),
       shiny::selectInput(
@@ -1607,7 +1607,7 @@ double_bonds_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("double_bonds_dataset"),
         label = "Select data table",
-        choices = c("Raw data table", "Class normalized table", "Total normalized table"),
+        choices = r6$hardcoded_settings$db_plot$datasets,
         selected = r6$params$db_plot$dataset
       ),
       shiny::selectInput(
