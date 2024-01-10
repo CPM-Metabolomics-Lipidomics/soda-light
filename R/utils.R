@@ -1469,6 +1469,14 @@ fa_analysis_calc <- function(data_table = NULL,
   return(res)
 }
 
+#--------------------------------------------------------- Input validation ----
+iv_check_select_input <- function(value, choices, message) {
+  if(!all(value %in% choices)) {
+    print(message)
+  }
+}
+
+
 #--------------------------------------------------------- Example datasets ----
 example_lipidomics = function(name,
                               id = NA,
