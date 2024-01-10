@@ -227,7 +227,7 @@ class_comparison_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_comparison_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$class_comparison$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -475,7 +475,7 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("volcano_plot_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$volcano_plot$img_format,
         width = "100%"),
 
@@ -734,7 +734,7 @@ satindex_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("satindex_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$satindex_plot$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -906,7 +906,7 @@ fa_analysis_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("fa_analysis_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$fa_analysis_plot$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -1144,7 +1144,7 @@ heatmap_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("heatmap_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$heatmap$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -1364,7 +1364,7 @@ pca_server = function(r6, output, session) {
         shiny::selectInput(
           inputId = ns("pca_img_format"),
           label = "Image format",
-          choices = c("png", "svg", "jpeg", "webp"),
+          choices = r6$hardcoded_settings$image_format,
           selected = r6$params$pca$img_format,
           width = "100%"),
         shiny::downloadButton(
@@ -1691,7 +1691,7 @@ double_bonds_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("double_bonds_plot_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$db_plot$img_format,
         width = "100%"),
       shiny::downloadButton(
