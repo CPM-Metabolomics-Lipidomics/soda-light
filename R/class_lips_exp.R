@@ -132,6 +132,11 @@ Lips_exp = R6::R6Class(
     ),
 
     hardcoded_settings = list(
+      color_palette = c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges",
+                        "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds",
+                        "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
+                        "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
+                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
       class_distribution = list(
         datasets = list(
           "Class table",
