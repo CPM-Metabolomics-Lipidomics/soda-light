@@ -786,6 +786,8 @@ Lips_exp = R6::R6Class(
                                        color_palette = self$params$class_distribution$color_palette,
                                        width = NULL,
                                        height = NULL){
+      print("Rico: group column")
+      print(group_col)
       # Produce the class x group table
       samp_list = rownames(table)
       class_list = colnames(table)
