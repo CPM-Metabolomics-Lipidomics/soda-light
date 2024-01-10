@@ -239,9 +239,37 @@ class_comparison_server = function(r6, output, session) {
   })
 }
 class_comparison_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # input validation
+  iv_class_comparison <- shinyvalidate::InputValidator$new()
+  iv_class_comparison$add_rule("class_comparison_dataset", shinyvalidate::sv_required())
+  iv_class_comparison$add_rule("class_comparison_metacol", shinyvalidate::sv_required())
+  iv_class_comparison$add_rule("class_comparison_color_palette", shinyvalidate::sv_required())
+  iv_class_comparison$add_rule("class_comparison_img_format", shinyvalidate::sv_optional())
+  iv_class_comparison$add_rule("class_comparison_dataset", function(value) {
+    if(!(value %in% r6$hardcoded_settings$class_comparison$datasets)) {
+      print_tm(r6$name, "Class comparison: Incorrect dataset selected!")
+    }
+  })
+  iv_class_comparison$add_rule("class_comparison_metacol", function(value) {
+    if(!(value %in% r6$hardcoded_settings$meta_column)) {
+      print_tm(r6$name, "Class comparison: Incorrect group column selected!")
+    }
+  })
+  iv_class_comparison$add_rule("class_comparison_color_palette", function(value) {
+    if(!(value %in% r6$hardcoded_settings$color_palette)) {
+      print_tm(r6$name, "Class comparison: Incorrect color palette selected!")
+    }
+  })
+  iv_class_comparison$add_rule("class_comparison_img_format", function(value) {
+    if(!(value %in% r6$hardcoded_settings$image_format)) {
+      print_tm(r6$name, "Class comparison: Incorrect image format selected!")
+    }
+  })
 
   # Generate the plot
   shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_color_palette, input$class_comparison_img_format), {
+    req(iv_class_comparison$is_valid())
+
     print_tm(r6$name, "Class comparison: Updating params...")
 
     r6$param_class_comparison(dataset = input$class_comparison_dataset,
