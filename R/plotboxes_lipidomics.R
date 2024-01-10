@@ -89,30 +89,46 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
   iv_class_distribution$add_rule("class_distribution_metacol", shinyvalidate::sv_required())
   iv_class_distribution$add_rule("class_distribution_color_palette", shinyvalidate::sv_required())
   iv_class_distribution$add_rule("class_distribution_img_format", shinyvalidate::sv_optional())
-  # iv_class_distribution$add_rule("class_distribution_dataset",
-  #                                iv_check_vector,
-  #                                choices = r6$hardcoded_settings$class_distribution$datasets,
-  #                                message = print_tm(r6$name, "Class distribution: Incorrect dataset selected!"))
-  iv_class_distribution$add_rule("class_distribution_dataset", function(value) {
-    if(!(value %in% r6$hardcoded_settings$class_distribution$datasets)) {
-      print_tm(r6$name, "Class distribution: Incorrect dataset selected!")
-    }
-  })
-  iv_class_distribution$add_rule("class_distribution_metacol", function(value) {
-    if(!(value %in% r6$hardcoded_settings$meta_column)) {
-      print_tm(r6$name, "Class distribution: Incorrect group column selected!")
-    }
-  })
-  iv_class_distribution$add_rule("class_distribution_color_palette", function(value) {
-    if(!(value %in% r6$hardcoded_settings$color_palette)) {
-      print_tm(r6$name, "Class distribution: Incorrect color palette selected!")
-    }
-  })
-  iv_class_distribution$add_rule("class_distribution_img_format", function(value) {
-    if(!(value %in% r6$hardcoded_settings$image_format)) {
-      print_tm(r6$name, "Class distribution: Incorrect image format selected!")
-    }
-  })
+  # iv_class_distribution$add_rule("class_distribution_dataset", function(value) {
+  #   if(!(value %in% r6$hardcoded_settings$class_distribution$datasets)) {
+  #     print_tm(r6$name, "Class distribution: Incorrect dataset selected!")
+  #   }
+  # })
+  # iv_class_distribution$add_rule("class_distribution_metacol", function(value) {
+  #   if(!(value %in% r6$hardcoded_settings$meta_column)) {
+  #     print_tm(r6$name, "Class distribution: Incorrect group column selected!")
+  #   }
+  # })
+  # iv_class_distribution$add_rule("class_distribution_color_palette", function(value) {
+  #   if(!(value %in% r6$hardcoded_settings$color_palette)) {
+  #     print_tm(r6$name, "Class distribution: Incorrect color palette selected!")
+  #   }
+  # })
+  # iv_class_distribution$add_rule("class_distribution_img_format", function(value) {
+  #   if(!(value %in% r6$hardcoded_settings$image_format)) {
+  #     print_tm(r6$name, "Class distribution: Incorrect image format selected!")
+  #   }
+  # })
+  iv_class_distribution$add_rule("class_distribution_dataset",
+                                 iv_check_select_input,
+                                 choices = r6$hardcoded_settings$class_distribution$datasets,
+                                 name_plot = r6$name,
+                                 message = "Class distribution: Incorrect dataset selected!")
+  iv_class_distribution$add_rule("class_distribution_metacol",
+                                 iv_check_select_input,
+                                 choices = r6$hardcoded_settings$meta_column,
+                                 name_plot = r6$name,
+                                 message = "Class distribution: Incorrect group column selected!")
+  iv_class_distribution$add_rule("class_distribution_color_palette",
+                                 iv_check_select_input,
+                                 choices = r6$hardcoded_settings$color_palette,
+                                 name_plot = r6$name,
+                                 message = "Class distribution: Incorrect color palette selected!")
+  iv_class_distribution$add_rule("class_distribution_img_format",
+                                 iv_check_select_input,
+                                 choices = r6$hardcoded_settings$image_format,
+                                 name_plot = r6$name,
+                                 message = "Class distribution: Incorrect image palette selected!")
 
   # Generate the plot
   shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_color_palette, input$class_distribution_img_format), {
@@ -249,26 +265,26 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
   iv_class_comparison$add_rule("class_comparison_metacol", shinyvalidate::sv_required())
   iv_class_comparison$add_rule("class_comparison_color_palette", shinyvalidate::sv_required())
   iv_class_comparison$add_rule("class_comparison_img_format", shinyvalidate::sv_optional())
-  iv_class_comparison$add_rule("class_comparison_dataset", function(value) {
-    if(!(value %in% r6$hardcoded_settings$class_comparison$datasets)) {
-      print_tm(r6$name, "Class comparison: Incorrect dataset selected!")
-    }
-  })
-  iv_class_comparison$add_rule("class_comparison_metacol", function(value) {
-    if(!(value %in% r6$hardcoded_settings$meta_column)) {
-      print_tm(r6$name, "Class comparison: Incorrect group column selected!")
-    }
-  })
-  iv_class_comparison$add_rule("class_comparison_color_palette", function(value) {
-    if(!(value %in% r6$hardcoded_settings$color_palette)) {
-      print_tm(r6$name, "Class comparison: Incorrect color palette selected!")
-    }
-  })
-  iv_class_comparison$add_rule("class_comparison_img_format", function(value) {
-    if(!(value %in% r6$hardcoded_settings$image_format)) {
-      print_tm(r6$name, "Class comparison: Incorrect image format selected!")
-    }
-  })
+  iv_class_comparison$add_rule("class_comparison_dataset",
+                               iv_check_select_input,
+                               choices = r6$hardcoded_settings$class_comparison$datasets,
+                               name_plot = r6$name,
+                               message = "Class comparison: Incorrect dataset selected!")
+  iv_class_comparison$add_rule("class_comparison_metacol",
+                               iv_check_select_input,
+                               choices = r6$hardcoded_settings$meta_column,
+                               name_plot = r6$name,
+                               message = "Class comparison: Incorrect group column selected!")
+  iv_class_comparison$add_rule("class_comparison_color_palette",
+                               iv_check_select_input,
+                               choices = r6$hardcoded_settings$color_palette,
+                               name_plot = r6$name,
+                               message = "Class comparison: Incorrect color palette selected!")
+  iv_class_comparison$add_rule("class_comparison_img_format",
+                               iv_check_select_input,
+                               choices = r6$hardcoded_settings$image_format,
+                               name_plot = r6$name,
+                               message = "Class comparison: Incorrect image palette selected!")
 
   # Generate the plot
   shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_color_palette, input$class_comparison_img_format), {
@@ -531,32 +547,31 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
-  iv_volcano_plot$add_rule("volcano_plot_tables", function(value) {
-    if(!(value %in% r6$hardcoded_settings$volcano_plot$datasets)) {
-      print_tm(r6$name, "Volcano plot: Incorrect dataset selected!")
-    }
-  })
-  iv_volcano_plot$add_rule("volcano_plot_metacol", function(value) {
-    if(!(value %in% r6$hardcoded_settings$meta_column)) {
-      print_tm(r6$name, "Volcano plot: Incorrect group column selected!")
-    }
-  })
-  iv_volcano_plot$add_rule("volcano_plot_color_palette", function(value) {
-    if(!(value %in% r6$hardcoded_settings$color_palette)) {
-      print_tm(r6$name, "Volcano plot: Incorrect color palette selected!")
-    }
-  })
-  iv_volcano_plot$add_rule("volcano_plot_metagroup", function(value) {
-    if(!all(value %in% unique(r6$tables$raw_meta[, input$volcano_plot_metacol]))) {
-      print_tm(r6$name, "Volcano plot: Incorrect group selected!")
-    }
-  })
-
-  iv_volcano_plot$add_rule("volcano_plot_img_format", function(value) {
-    if(!(value %in% r6$hardcoded_settings$image_format)) {
-      print_tm(r6$name, "Volcano plot: Incorrect image format selected!")
-    }
-  })
+  iv_volcano_plot$add_rule("volcano_plot_tables",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$datasets,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect dataset selected!")
+  iv_volcano_plot$add_rule("volcano_plot_metacol",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$meta_column,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect group column selected!")
+  iv_volcano_plot$add_rule("volcano_plot_color_palette",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$color_palette,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect color palette selected!")
+  iv_volcano_plot$add_rule("volcano_plot_img_format",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$image_format,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect image palette selected!")
+  iv_volcano_plot$add_rule("volcano_plot_metagroup",
+                           iv_check_select_input,
+                           choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect group selected!")
 
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
@@ -612,6 +627,8 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
         return()
       }
       print_tm(r6$name, "Volcano plot: Updating params...")
+      print("Rico: check meta group")
+      print(unique(r6$tables$raw_meta[, input$volcano_plot_metacol]))
 
       # Is the column multivalue?
       if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
