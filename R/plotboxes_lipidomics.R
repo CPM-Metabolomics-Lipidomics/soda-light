@@ -55,7 +55,7 @@ class_distribution_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_distribution_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$class_distribution$group_col
       ),
       shiny::selectizeInput(
@@ -97,7 +97,6 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
       class_distribution_spawn(r6, input$class_distribution_img_format, output)
     },error=function(e){
       print_tm(r6$name, 'Class distribution: ERROR.')
-      print(e)
     },finally={}
     )
   })
@@ -185,7 +184,7 @@ class_comparison_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_comparison_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$class_comparison$group_col
       ),
       shiny::selectizeInput(
@@ -338,7 +337,7 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("volcano_plot_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$volcano_plot$group_col
       ),
       shiny::selectizeInput(
@@ -678,7 +677,7 @@ satindex_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("satindex_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$satindex_plot$group_col
       ),
       shinyjs::hidden(shiny::selectizeInput(
@@ -854,7 +853,7 @@ fa_analysis_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("fa_analysis_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$fa_analysis_plot$group_col
       ),
       shiny::selectInput(
@@ -1590,7 +1589,7 @@ double_bonds_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("double_bonds_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$db_plot$group_column
       ),
       shiny::selectizeInput(
