@@ -1402,7 +1402,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
 
     print(input$pca_data_table)
     r6$param_pca(auto_refresh = input$pca_auto_refresh,
-                 data_table = table_name_switch(input$pca_data_table),
+                 data_table = input$pca_data_table,
                  sample_groups_col = input$pca_sample_groups_col,
                  feature_groups_col = input$pca_feature_group,
                  apply_da = input$pca_apply_da,
