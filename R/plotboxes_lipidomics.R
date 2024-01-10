@@ -69,7 +69,7 @@ class_distribution_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_distribution_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$class_distribution$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -83,8 +83,37 @@ class_distribution_server = function(r6, output, session) {
 }
 
 class_distribution_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # input validation
+  iv_class_distribution <- shinyvalidate::InputValidator$new()
+  iv_class_distribution$add_rule("class_distribution_dataset", shinyvalidate::sv_required())
+  iv_class_distribution$add_rule("class_distribution_metacol", shinyvalidate::sv_required())
+  iv_class_distribution$add_rule("class_distribution_color_palette", shinyvalidate::sv_required())
+  iv_class_distribution$add_rule("class_distribution_img_format", shinyvalidate::sv_optional())
+  iv_class_distribution$add_rule("class_distribution_dataset", function(value) {
+    if(!(value %in% r6$hardcoded_settings$class_distribution$datasets)) {
+      print_tm(r6$name, "Class distribution: Incorrect dataset selected!")
+    }
+  })
+  iv_class_distribution$add_rule("class_distribution_metacol", function(value) {
+    if(!(value %in% r6$hardcoded_settings$meta_column)) {
+      print_tm(r6$name, "Class distribution: Incorrect group column selected!")
+    }
+  })
+  iv_class_distribution$add_rule("class_distribution_color_palette", function(value) {
+    if(!(value %in% r6$hardcoded_settings$color_palette)) {
+      print_tm(r6$name, "Class distribution: Incorrect color palette selected!")
+    }
+  })
+  iv_class_distribution$add_rule("class_distribution_img_format", function(value) {
+    if(!(value %in% r6$hardcoded_settings$image_format)) {
+      print_tm(r6$name, "Class distribution: Incorrect image format selected!")
+    }
+  })
+
   # Generate the plot
   shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_color_palette, input$class_distribution_img_format), {
+    req(iv_class_distribution$is_valid())
+
     print_tm(r6$name, "Class distribution: Updating params...")
 
     r6$param_class_distribution(dataset = input$class_distribution_dataset,

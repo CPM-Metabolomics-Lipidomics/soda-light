@@ -140,6 +140,7 @@ Lips_exp = R6::R6Class(
                         "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
                         "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
                         "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
+      image_format = c("png", "svg", "jpeg", "webp"),
       # plot specific
       class_distribution = list(
         datasets = list(
