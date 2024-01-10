@@ -131,7 +131,63 @@ Lips_exp = R6::R6Class(
      )
     ),
 
-
+    hardcoded_settings = list(
+      class_distribution = list(
+        datasets = list(
+          "Class table",
+          "Class table total normalized"
+        )
+      ),
+      class_comparison = list(
+        datasets = list(
+          "Class table",
+          "Class table total normalized"
+        )
+      ),
+      volcano_plot = list(
+        datasets = list(
+          "Raw data table",
+          "Class normalized table",
+          "Total normalized table"
+        )
+      ),
+      heatmap = list(
+        datasets = list(
+          'Z-scored table',
+          'Z-scored total normalized table',
+          'Class table z-scored'
+        )
+      ),
+      samples_correlation = list(
+        datasets = list(
+          "Raw data table",
+          "Total normalized table",
+          'Z-scored table',
+          'Z-scored total normalized table'
+        )
+      ),
+      feature_correlation = list(
+        datasets = list(
+          "Raw data table",
+          "Total normalized table",
+          'Z-scored table',
+          'Z-scored total normalized table'
+        )
+      ),
+      pca = list(
+        datasets = list(
+          'Z-scored table',
+          'Z-scored total normalized table'
+        )
+      ),
+      db_plot = list(
+        datasets = list(
+          "Raw data table",
+          "Class normalized table",
+          "Total normalized table"
+        )
+      )
+    ),
 
     #--------------------------------------------------------------- Indices ----
 
@@ -200,6 +256,41 @@ Lips_exp = R6::R6Class(
 
 
     ),
+
+    #-------------------------------------------------------------- Local table
+
+    table_switch_local = function(table_name) {
+      switch(EXPR = table_name,
+             'Imported metadata table' = self$tables$imp_meta,
+             'Raw metadata table' = self$tables$raw_meta,
+             'Imported data table' = self$tables$imp_data,
+             'Raw data table' = self$tables$raw_data,
+             'Feature table' = self$tables$feature_table,
+             'Blank table' = self$tables$blank_table,
+             'Class normalized table' = self$tables$class_norm_data,
+             'Total normalized table' = self$tables$total_norm_data,
+             'Z-scored table' = self$tables$z_scored_data,
+             'Z-scored class normalized table' = self$tables$z_scored_class_norm_data,
+             'Z-scored total normalized table' = self$tables$z_scored_total_norm_data,
+             'Class table' = self$tables$class_table,
+             'Class table z-scored' = self$tables$class_table_z_scored,
+             'Class table total normalized' = self$tables$class_table_total_norm,
+             'Class table z-scored total normalized' = self$tables$class_table_z_scored_total_norm,
+             'Species summary table' = self$tables$summary_species_table,
+             'Class summary table' = self$tables$summary_class_table,
+             'GSEA prot list' = self$tables$gsea_prot_list,
+             'ORA prot list' = self$tables$ora_prot_list
+      )
+    },
+
+    table_check_convert = function(table) {
+      if (length(table) == 1) {
+        if (is.character(table)){
+          table = self$table_switch_local(table)
+        }
+      }
+      return(table)
+    },
 
     #---------------------------------------------------------------- Plots ----
     plots = list(
@@ -780,12 +871,14 @@ Lips_exp = R6::R6Class(
 
     #----------------------------------------------------- Plotting methods ----
     # Class distribution
-    plot_class_distribution = function(table = self$tables$class_table_total_norm,
+    plot_class_distribution = function(table = self$params$class_distribution$dataset,
                                        meta_table = self$tables$raw_meta,
                                        group_col = self$params$class_distribution$group_col,
                                        color_palette = self$params$class_distribution$color_palette,
                                        width = NULL,
                                        height = NULL){
+      table = self$table_check_convert(table)
+
       # Produce the class x group table
       samp_list = rownames(table)
       class_list = colnames(table)
@@ -827,12 +920,14 @@ Lips_exp = R6::R6Class(
     },
 
     # Class comparison
-    plot_class_comparison = function(data_table = self$tables$class_table_total_norm,
+    plot_class_comparison = function(data_table = self$params$class_comparison$dataset,
                                      meta_table = self$tables$raw_meta,
                                      group_col = self$params$class_comparison$group_col,
                                      color_palette = self$params$class_comparison$color_palette,
                                      width = NULL,
                                      height = NULL){
+      data_table = self$table_check_convert(data_table)
+
       # Get sample groups and the list of classes
       groups = sort(unique(meta_table[,group_col]))
       class_list = colnames(data_table)
@@ -940,6 +1035,7 @@ Lips_exp = R6::R6Class(
                             color_palette = self$params$volcano_plot$color_palette,
                             width = NULL,
                             height = NULL){
+      data_table = self$table_check_convert(data_table)
 
       p_val_threshold = as.numeric(p_val_threshold)
       fc_threshold = as.numeric(fc_threshold)
@@ -993,7 +1089,7 @@ Lips_exp = R6::R6Class(
     },
 
     ## Heatmap plot
-    plot_heatmap = function(data_table = self$tables$z_scored_total_norm_data,
+    plot_heatmap = function(data_table = self$params$heatmap$dataset,
                             impute = self$params$heatmap$impute,
                             meta_table = self$tables$raw_meta,
                             meta_table_features = self$tables$feature_table,
@@ -1008,7 +1104,7 @@ Lips_exp = R6::R6Class(
                             reverse_palette = self$params$heatmap$reverse_palette,
                             width = NULL,
                             height = NULL) {
-
+      data_table = self$table_check_convert(data_table)
 
       if (apply_da) {
         data_table = apply_discriminant_analysis(data_table = data_table,
@@ -1110,7 +1206,7 @@ Lips_exp = R6::R6Class(
     },
 
     ## PCA scores and loading plots
-    plot_pca = function(data_table = self$tables[[self$params$pca$data_table]],
+    plot_pca = function(data_table = self$params$pca$data_table,
                         meta_table = self$tables$raw_meta,
                         feature_table = self$tables$feature_table,
                         sample_groups_col = self$params$pca$sample_groups_col,
@@ -1127,11 +1223,10 @@ Lips_exp = R6::R6Class(
                         return_data = TRUE,
                         width = NULL,
                         height = NULL) {
-
-
+      data_table = self$table_check_convert(data_table)
 
       alpha_da = as.numeric(alpha_da)
-      nPcs= as.numeric(nPcs)
+      nPcs = as.numeric(nPcs)
       displayed_pc_1 = as.numeric(displayed_pc_1)
       displayed_pc_2 = as.numeric(displayed_pc_2)
 
@@ -1188,13 +1283,15 @@ Lips_exp = R6::R6Class(
     },
 
     ## Double bond plot
-    plot_doublebonds_single = function(data_table = self$tables$dbplot_table,
+    plot_doublebonds_single = function(data_table = self$params$db_plot$dataset,
                                        lipid_class = self$params$db_plot$selected_lipid_class,
                                        carbon_selection = self$params$db_plot$selected_carbon_chain,
                                        unsat_selection = self$params$db_plot$selected_unsat,
                                        group_1 = self$params$db_plot$selected_groups[1],
                                        width = NULL,
                                        height = NULL){
+      data_table = self$table_check_convert(data_table)
+
       x_label = carbon_selection
       y_label = unsat_selection
       carbon_selection = feature_table_cols_switch(carbon_selection)
