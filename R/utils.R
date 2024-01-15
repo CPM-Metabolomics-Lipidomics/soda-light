@@ -1469,6 +1469,7 @@ fa_analysis_calc <- function(data_table = NULL,
   return(res)
 }
 
+
 #--------------------------------------------------------- Input validation ----
 iv_check_select_input <- function(value, choices, name_plot, message) {
   if(!all(value %in% choices)) {

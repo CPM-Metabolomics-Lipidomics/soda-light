@@ -196,6 +196,14 @@ Lips_exp = R6::R6Class(
           "Class normalized table",
           "Total normalized table"
         )
+      ),
+      fa_analysis = list(
+        pathway = list(
+          "SFA",
+          "MUFA",
+          "PUFA(n-6)",
+          "PUFA(n-3)"
+        )
       )
     ),
 
@@ -1620,8 +1628,8 @@ Lips_exp = R6::R6Class(
       )
       names(pathway_fa) <- c(rep("SFA", 6),
                              rep("MUFA", 5),
-                             rep("PUFA6", 9),
-                             rep("PUFA3", 9))
+                             rep("PUFA(n-6)", 9),
+                             rep("PUFA(n-3)", 9))
 
       if(!is.null(pathway)) {
         selected_pathway_fa <- unique(pathway_fa[names(pathway_fa) %in% pathway])

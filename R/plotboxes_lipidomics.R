@@ -89,26 +89,6 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
   iv_class_distribution$add_rule("class_distribution_metacol", shinyvalidate::sv_required())
   iv_class_distribution$add_rule("class_distribution_color_palette", shinyvalidate::sv_required())
   iv_class_distribution$add_rule("class_distribution_img_format", shinyvalidate::sv_optional())
-  # iv_class_distribution$add_rule("class_distribution_dataset", function(value) {
-  #   if(!(value %in% r6$hardcoded_settings$class_distribution$datasets)) {
-  #     print_tm(r6$name, "Class distribution: Incorrect dataset selected!")
-  #   }
-  # })
-  # iv_class_distribution$add_rule("class_distribution_metacol", function(value) {
-  #   if(!(value %in% r6$hardcoded_settings$meta_column)) {
-  #     print_tm(r6$name, "Class distribution: Incorrect group column selected!")
-  #   }
-  # })
-  # iv_class_distribution$add_rule("class_distribution_color_palette", function(value) {
-  #   if(!(value %in% r6$hardcoded_settings$color_palette)) {
-  #     print_tm(r6$name, "Class distribution: Incorrect color palette selected!")
-  #   }
-  # })
-  # iv_class_distribution$add_rule("class_distribution_img_format", function(value) {
-  #   if(!(value %in% r6$hardcoded_settings$image_format)) {
-  #     print_tm(r6$name, "Class distribution: Incorrect image format selected!")
-  #   }
-  # })
   iv_class_distribution$add_rule("class_distribution_dataset",
                                  iv_check_select_input,
                                  choices = r6$hardcoded_settings$class_distribution$datasets,
@@ -128,7 +108,7 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
                                  iv_check_select_input,
                                  choices = r6$hardcoded_settings$image_format,
                                  name_plot = r6$name,
-                                 message = "Class distribution: Incorrect image palette selected!")
+                                 message = "Class distribution: Incorrect image format selected!")
 
   # Generate the plot
   shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_color_palette, input$class_distribution_img_format), {
@@ -284,7 +264,7 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
                                iv_check_select_input,
                                choices = r6$hardcoded_settings$image_format,
                                name_plot = r6$name,
-                               message = "Class comparison: Incorrect image palette selected!")
+                               message = "Class comparison: Incorrect image format selected!")
 
   # Generate the plot
   shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_color_palette, input$class_comparison_img_format), {
@@ -541,37 +521,37 @@ volcano_plot_server = function(r6, output, session) {
 
 volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # input validation
-  iv_volcano_plot <- shinyvalidate::InputValidator$new()
-  iv_volcano_plot$add_rule("volcano_plot_tables", shinyvalidate::sv_required())
-  iv_volcano_plot$add_rule("volcano_plot_metacol", shinyvalidate::sv_required())
-  iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
-  iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
-  iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
-  iv_volcano_plot$add_rule("volcano_plot_tables",
-                           iv_check_select_input,
-                           choices = r6$hardcoded_settings$volcano_plot$datasets,
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect dataset selected!")
-  iv_volcano_plot$add_rule("volcano_plot_metacol",
-                           iv_check_select_input,
-                           choices = r6$hardcoded_settings$meta_column,
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect group column selected!")
-  iv_volcano_plot$add_rule("volcano_plot_color_palette",
-                           iv_check_select_input,
-                           choices = r6$hardcoded_settings$color_palette,
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect color palette selected!")
-  iv_volcano_plot$add_rule("volcano_plot_img_format",
-                           iv_check_select_input,
-                           choices = r6$hardcoded_settings$image_format,
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect image palette selected!")
-  iv_volcano_plot$add_rule("volcano_plot_metagroup",
-                           iv_check_select_input,
-                           choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect group selected!")
+  # iv_volcano_plot <- shinyvalidate::InputValidator$new()
+  # iv_volcano_plot$add_rule("volcano_plot_tables", shinyvalidate::sv_required())
+  # iv_volcano_plot$add_rule("volcano_plot_metacol", shinyvalidate::sv_required())
+  # iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
+  # iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
+  # iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
+  # iv_volcano_plot$add_rule("volcano_plot_tables",
+  #                          iv_check_select_input,
+  #                          choices = r6$hardcoded_settings$volcano_plot$datasets,
+  #                          name_plot = r6$name,
+  #                          message = "Volcano plot: Incorrect dataset selected!")
+  # iv_volcano_plot$add_rule("volcano_plot_metacol",
+  #                          iv_check_select_input,
+  #                          choices = r6$hardcoded_settings$meta_column,
+  #                          name_plot = r6$name,
+  #                          message = "Volcano plot: Incorrect group column selected!")
+  # iv_volcano_plot$add_rule("volcano_plot_color_palette",
+  #                          iv_check_select_input,
+  #                          choices = r6$hardcoded_settings$color_palette,
+  #                          name_plot = r6$name,
+  #                          message = "Volcano plot: Incorrect color palette selected!")
+  # iv_volcano_plot$add_rule("volcano_plot_img_format",
+  #                          iv_check_select_input,
+  #                          choices = r6$hardcoded_settings$image_format,
+  #                          name_plot = r6$name,
+  #                          message = "Volcano plot: Incorrect image palette selected!")
+  # iv_volcano_plot$add_rule("volcano_plot_metagroup",
+  #                          iv_check_select_input,
+  #                          choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
+  #                          name_plot = r6$name,
+  #                          message = "Volcano plot: Incorrect group selected!")
 
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
@@ -620,7 +600,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_opacity,
       input$volcano_plot_img_format
     ), {
-      shiny::req(iv_volcano_plot$is_valid())
+      # shiny::req(iv_volcano_plot$is_valid())
 
       if (!input$volcano_plot_auto_refresh) {
         r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
@@ -967,11 +947,8 @@ fa_analysis_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("fa_analysis_pathway"),
         label = "Select pathway",
-        choices = c("SFA" = "SFA",
-                    "MUFA" = "MUFA",
-                    "PUFA(n-6)" = "PUFA6",
-                    "PUFA(n-3)" = "PUFA3"),
-        selected = "",
+        choices = r6$hardcoded_settings$fa_analysis$pathway,
+        selected = "all",
         multiple = TRUE,
         width = "100%"),
       shiny::selectizeInput(
@@ -998,11 +975,39 @@ fa_analysis_server = function(r6, output, session) {
 }
 
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_fa_analysis <- shinyvalidate::InputValidator$new()
+  iv_fa_analysis$add_rule("fa_analysis_metacol", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_pathway", shinyvalidate::sv_optional())
+  iv_fa_analysis$add_rule("fa_analysis_color_palette", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_img_format", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_metacol",
+                          iv_check_select_input,
+                          choices = r6$hardcoded_settings$meta_column,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect group column selected!")
+  iv_fa_analysis$add_rule("fa_analysis_pathway",
+                          iv_check_select_input,
+                          choices = r6$hardcoded_settings$fa_analysis$pathway,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect pathway(s) selected!")
+  iv_fa_analysis$add_rule("fa_analysis_color_palette",
+                          iv_check_select_input,
+                          choices = r6$hardcoded_settings$color_palette,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect color palette selected!")
+  iv_fa_analysis$add_rule("fa_analysis_img_format",
+                          iv_check_select_input,
+                          choices = r6$hardcoded_settings$image_format,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect image format selected!")
+
   # Generate the plot
   shiny::observeEvent(c(input$fa_analysis_metacol,
                         input$fa_analysis_pathway,
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
+    shiny::req(iv_fa_analysis$is_valid())
+
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
     r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
