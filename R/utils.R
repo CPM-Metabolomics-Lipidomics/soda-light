@@ -991,8 +991,8 @@ get_fold_changes = function(data_table, idx_group_1, idx_group_2, used_function,
 
 
   fold_changes = apply(data_table, 2, function(column) {
-    mean_group1 = base::mean(column[idx_group_1], na.rm = T)
-    mean_group2 = base::mean(column[idx_group_2], na.rm = T)
+    mean_group1 = av_function(column[idx_group_1])
+    mean_group2 = av_function(column[idx_group_2])
 
     # Impute NA means with 0
     if (is.na(mean_group1)) mean_group1 = 0
