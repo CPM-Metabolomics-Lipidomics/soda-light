@@ -1466,7 +1466,7 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("pca_sample_groups_col"),
         label = "Sample group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$pca$sample_groups_col
       ),
       shiny::selectInput(
@@ -1499,7 +1499,7 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns('pca_method'),
         label = 'PCA method',
-        choices = c('svd', 'nipals', 'rnipals', 'bpca', 'ppca', 'svdImpute', 'llsImputeAll'),
+        choices = r6$hardcoded_settings$pca$method,
         selected = r6$params$pca$pca_method,
         width = '100%'
       ),
@@ -1529,7 +1529,7 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns('pca_displayed_plots'),
         label = 'Displayed plot',
-        choices = c('both', 'scores', 'loadings', 'variance'),
+        choices = r6$hardcoded_settings$pca$display_plot,
         selected = r6$params$pca$displayed_plots,
         width = '100%'
       ),
@@ -1565,6 +1565,86 @@ pca_server = function(r6, output, session) {
 }
 
 pca_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_pca <- shinyvalidate::InputValidator$new()
+  iv_pca$add_rule("pca_auto_refresh", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_data_table", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_sample_groups_col", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_feature_group", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_apply_da", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_alpha_da", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_method", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_npcs", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_displayed_pc_1", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_displayed_pc_2", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_completeObs", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_displayed_plots", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_colors_palette", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_img_format", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_auto_refresh",
+                  iv_check_select_input,
+                  choices = c(FALSE, TRUE),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect auto refresh set")
+  iv_pca$add_rule("pca_data_table",
+                  iv_check_select_input,
+                  choices = r6$hardcoded_settings$pca$datasets,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect data set selected!")
+  iv_pca$add_rule("pca_sample_groups_col",
+                  iv_check_select_input,
+                  choices = r6$hardcoded_settings$meta_column,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect group column selected!")
+  iv_pca$add_rule("pca_feature_group",
+                  iv_check_select_input,
+                  choices =  unique(colnames(r6$tables$feature_table)),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect feature group column selected!")
+  iv_pca$add_rule("pca_apply_da",
+                  iv_check_select_input,
+                  choices =  c(FALSE, TRUE),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect apply DA set!")
+  iv_pca$add_rule("pca_alpha_da",
+                  iv_check_numeric_input,
+                  check_range = c(0, 0.99),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect alpha DA set!")
+  iv_pca$add_rule("pca_method",
+                  iv_check_select_input,
+                  choices =  r6$hardcoded_settings$pca$method,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect pca method set!")
+  iv_pca$add_rule("pca_npcs",
+                  iv_check_numeric_input,
+                  check_range = c(1, r6$params$pca$nPcs),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect number of PC's set!")
+  iv_pca$add_rule("pca_displayed_pc_1",
+                  iv_check_numeric_input,
+                  check_range = c(1, r6$params$pca$nPcs),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect value for PC1 set!")
+  iv_pca$add_rule("pca_displayed_pc_2",
+                  iv_check_numeric_input,
+                  check_range = c(1, r6$params$pca$nPcs),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect value for PC2 set!")
+  iv_pca$add_rule("pca_completeObs",
+                  iv_check_select_input,
+                  choices =  c(FALSE, TRUE),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect complete observations set!")
+  iv_pca$add_rule("pca_displayed_plots",
+                  iv_check_select_input,
+                  choices =  r6$hardcoded_settings$pca$display_plot,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect display plot selected!")
+  iv_pca$add_rule("pca_img_format",
+                  iv_check_select_input,
+                  choices =  r6$hardcoded_settings$image_format,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect image format selected!")
 
   shiny::observeEvent(c(input$pca_auto_refresh,
                         input$pca_data_table,
@@ -1579,6 +1659,11 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                         input$pca_displayed_plots,
                         input$pca_colors_palette,
                         input$pca_img_format), {
+    shiny::req(iv_pca$is_valid())
+
+    print("Rico: check DA")
+    print(input$pca_apply_da)
+
     if (!input$pca_auto_refresh) {
       r6$params$pca$auto_refresh = input$pca_auto_refresh
       return()

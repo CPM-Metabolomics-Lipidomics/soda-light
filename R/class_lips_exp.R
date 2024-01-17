@@ -207,6 +207,21 @@ Lips_exp = R6::R6Class(
         datasets = list(
           'Z-scored table',
           'Z-scored total normalized table'
+        ),
+        method = list(
+          "svd",
+          "nipals",
+          "rnipals",
+          "bpca",
+          "ppca",
+          "svdImpute",
+          "llsImputeAll"
+        ),
+        display_plot = list(
+          "both",
+          "scores",
+          "loadings",
+          "variance"
         )
       ),
       db_plot = list(
