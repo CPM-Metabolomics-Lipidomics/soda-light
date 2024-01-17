@@ -1459,24 +1459,24 @@ Lips_exp = R6::R6Class(
       res <- switch(
         method,
         "(palmitate+stearate) / oleate ratio" = satindex_calc_ratio(data_table = data_table,
-                                      feature_table = feature_table,
-                                      sample_meta = sample_meta),
+                                                                    feature_table = feature_table,
+                                                                    sample_meta = sample_meta),
         "use all FA tails" = satindex_calc_all(data_table = data_table,
-                                  feature_table = feature_table,
-                                  sample_meta = sample_meta),
+                                               feature_table = feature_table,
+                                               sample_meta = sample_meta),
         "overall" = satindex_calc_overall(data_table = data_table,
                                           feature_table = feature_table,
                                           sample_meta = sample_meta),
         "double bond" = satindex_calc_db(data_table = data_table,
-                                feature_table = feature_table,
-                                sample_meta = sample_meta,
-                                group_col = group_col,
-                                group_1 = group_1,
-                                group_2 = group_2,
-                                selected_lipid_class = selected_lipid_class)
+                                         feature_table = feature_table,
+                                         sample_meta = sample_meta,
+                                         group_col = group_col,
+                                         group_1 = group_1,
+                                         group_2 = group_2,
+                                         selected_lipid_class = selected_lipid_class)
       )
 
-      if(method != "db") {
+      if(method != "double bond") {
         # remove some Inf and replace by NaN
         res <- apply(res, 2, function(x) {
           x[is.infinite(x)] <- NaN

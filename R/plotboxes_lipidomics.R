@@ -866,32 +866,50 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
   iv_satindex$add_rule("satindex_select_method", shinyvalidate::sv_required())
   iv_satindex$add_rule("satindex_metacol", shinyvalidate::sv_required())
   iv_satindex$add_rule("satindex_metagroup", shinyvalidate::sv_required())
-  iv_satindex$add_rule("satindex_lipidclass", shinyvalidate::sv_optional())
+  iv_satindex$add_rule("satindex_lipidclass", shinyvalidate::sv_required())
   iv_satindex$add_rule("satindex_color_palette", shinyvalidate::sv_optional())
   iv_satindex$add_rule("satindex_img_format", shinyvalidate::sv_optional())
+  iv_satindex$add_rule("satindex_select_method",
+                       iv_check_select_input,
+                       choices = r6$hardcoded_settings$satindex$method,
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect method selected!")
   iv_satindex$add_rule("satindex_metacol",
                        iv_check_select_input,
                        choices = r6$hardcoded_settings$meta_column,
                        name_plot = r6$name,
-                       message = "Class distribution: Incorrect group column selected!")
+                       message = "SI index: Incorrect group column selected!")
+  iv_satindex$add_rule("satindex_metagroup",
+                       iv_check_select_input,
+                       choices = unique(r6$tables$raw_meta[, r6$params$satindex_plot$group_col]),
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect group(s) selected!")
+  iv_satindex$add_rule("satindex_lipidclass",
+                       iv_check_select_input,
+                       choices = unique(r6$tables$feature_table$lipid_class),
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect group(s) selected!")
   iv_satindex$add_rule("satindex_color_palette",
                        iv_check_select_input,
                        choices = r6$hardcoded_settings$color_palette,
                        name_plot = r6$name,
-                       message = "Class distribution: Incorrect color palette selected!")
+                       message = "SI index: Incorrect color palette selected!")
   iv_satindex$add_rule("satindex_img_format",
                        iv_check_select_input,
                        choices = r6$hardcoded_settings$image_format,
                        name_plot = r6$name,
-                       message = "Class distribution: Incorrect image format selected!")
+                       message = "SI index: Incorrect image format selected!")
 
   # Generate the plot
-  shiny::observeEvent(c(input$satindex_metacol,
+  shiny::observeEvent(c(shiny::req(length(input$satindex_metagroup) == 2),
+                        input$satindex_metacol,
                         input$satindex_img_format,
                         input$satindex_select_method,
                         input$satindex_metagroup,
                         input$satindex_color_palette,
                         input$satindex_lipidclass), {
+                          shiny::req(iv_satindex$is_valid())
+
                           print_tm(r6$name, "Saturation index: Updating params...")
 
                           if(input$satindex_select_method == "ratio") {
@@ -905,7 +923,7 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                           }
 
                           # show / hide the group selection
-                          if(input$satindex_select_method == "db") {
+                          if(input$satindex_select_method == "double bond") {
                             shinyjs::show(id = "satindex_metagroup")
                             shinyjs::show(id = "satindex_lipidclass")
                             shinyjs::hide(id = "satindex_color_palette")
