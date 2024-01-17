@@ -100,7 +100,7 @@ Lips_exp = R6::R6Class(
         selected_test = "T-test",
         fc_range = c(-5, 5),
         fc_values = c(-1, 1),
-        pval_range = c(0, 5),
+        pval_range = c(0, 10),
         pval_values = c(1, 5),
         img_format = "png"
       ),
@@ -132,6 +132,16 @@ Lips_exp = R6::R6Class(
     ),
 
     hardcoded_settings = list(
+      # general
+      meta_column = c("cellCount", "cellLineName", "cultureConditions", "genoType",
+                      "harvestDate", "parentalCellLine", "sex"),
+      color_palette = c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges",
+                        "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds",
+                        "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
+                        "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
+                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
+      image_format = c("png", "svg", "jpeg", "webp"),
+      # plot specific
       class_distribution = list(
         datasets = list(
           "Class table",
@@ -149,6 +159,25 @@ Lips_exp = R6::R6Class(
           "Raw data table",
           "Class normalized table",
           "Total normalized table"
+        ),
+        calc_func = list(
+          "median",
+          "mean"
+        ),
+        test_func = list(
+          "t-Test",
+          "Wilcoxon"
+        ),
+        adjustment_func = list(
+          "None",
+          "BH"
+        ),
+        display_plot = list(
+          "main",
+          "all",
+          "left",
+          "right",
+          "top"
         )
       ),
       heatmap = list(
@@ -156,6 +185,15 @@ Lips_exp = R6::R6Class(
           'Z-scored table',
           'Z-scored total normalized table',
           'Class table z-scored'
+        ),
+        map_cols = list(
+          "Lipid class",
+          "Double bonds (chain 1)",
+          "Carbon count (chain 1)",
+          "Double bonds (chain 2)",
+          "Carbon count (chain 2)",
+          "Double bonds (sum)",
+          "Carbon count (sum)"
         )
       ),
       samples_correlation = list(
@@ -178,6 +216,21 @@ Lips_exp = R6::R6Class(
         datasets = list(
           'Z-scored table',
           'Z-scored total normalized table'
+        ),
+        method = list(
+          "svd",
+          "nipals",
+          "rnipals",
+          "bpca",
+          "ppca",
+          "svdImpute",
+          "llsImputeAll"
+        ),
+        display_plot = list(
+          "both",
+          "scores",
+          "loadings",
+          "variance"
         )
       ),
       db_plot = list(
@@ -185,6 +238,43 @@ Lips_exp = R6::R6Class(
           "Raw data table",
           "Class normalized table",
           "Total normalized table"
+        ),
+        carbon_select = list(
+          "Carbon count (chain 1)",
+          "Carbon count (chain 2)",
+          "Carbon count (sum)"
+        ),
+        unsat_select = list(
+          "Double bonds (chain 1)",
+          "Double bonds (chain 2)",
+          "Double bonds (sum)"
+        ),
+        calc_func = list(
+          "median",
+          "mean"
+        ),
+        test_func = list(
+          "Wilcoxon",
+          "t-Test"
+        ),
+        adjustment_func = list(
+          "None",
+          "Benjamini-Hochberg"
+        )
+      ),
+      satindex = list(
+        method = list(
+          "(palmitate+stearate) / oleate ratio" ,
+          "use all FA tails",
+          "overall",
+          "double bond")
+      ),
+      fa_analysis = list(
+        pathway = list(
+          "SFA",
+          "MUFA",
+          "PUFA(n-6)",
+          "PUFA(n-3)"
         )
       )
     ),
@@ -697,7 +787,7 @@ Lips_exp = R6::R6Class(
                          selected_test = "t-Test",
                          fc_range = c(-5, 5),
                          fc_values = c(-1, 1),
-                         pval_range = c(0, 5),
+                         pval_range = c(0, 10),
                          pval_values = c(1, 5),
                          img_format = "png")
 
@@ -732,7 +822,6 @@ Lips_exp = R6::R6Class(
                                  test = self$params$volcano_plot$selected_test,
                                  group_1 = self$params$volcano_plot$group_1,
                                  group_2 = self$params$volcano_plot$group_2) {
-
 
       rownames_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_1]
       rownames_group_2 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_2]
@@ -1415,25 +1504,25 @@ Lips_exp = R6::R6Class(
       # calculations
       res <- switch(
         method,
-        "ratio" = satindex_calc_ratio(data_table = data_table,
-                                      feature_table = feature_table,
-                                      sample_meta = sample_meta),
-        "all" = satindex_calc_all(data_table = data_table,
-                                  feature_table = feature_table,
-                                  sample_meta = sample_meta),
+        "(palmitate+stearate) / oleate ratio" = satindex_calc_ratio(data_table = data_table,
+                                                                    feature_table = feature_table,
+                                                                    sample_meta = sample_meta),
+        "use all FA tails" = satindex_calc_all(data_table = data_table,
+                                               feature_table = feature_table,
+                                               sample_meta = sample_meta),
         "overall" = satindex_calc_overall(data_table = data_table,
                                           feature_table = feature_table,
                                           sample_meta = sample_meta),
-        "db" = satindex_calc_db(data_table = data_table,
-                                feature_table = feature_table,
-                                sample_meta = sample_meta,
-                                group_col = group_col,
-                                group_1 = group_1,
-                                group_2 = group_2,
-                                selected_lipid_class = selected_lipid_class)
+        "double bond" = satindex_calc_db(data_table = data_table,
+                                         feature_table = feature_table,
+                                         sample_meta = sample_meta,
+                                         group_col = group_col,
+                                         group_1 = group_1,
+                                         group_2 = group_2,
+                                         selected_lipid_class = selected_lipid_class)
       )
 
-      if(method != "db") {
+      if(method != "double bond") {
         # remove some Inf and replace by NaN
         res <- apply(res, 2, function(x) {
           x[is.infinite(x)] <- NaN
@@ -1610,8 +1699,8 @@ Lips_exp = R6::R6Class(
       )
       names(pathway_fa) <- c(rep("SFA", 6),
                              rep("MUFA", 5),
-                             rep("PUFA6", 9),
-                             rep("PUFA3", 9))
+                             rep("PUFA(n-6)", 9),
+                             rep("PUFA(n-3)", 9))
 
       if(!is.null(pathway)) {
         selected_pathway_fa <- unique(pathway_fa[names(pathway_fa) %in% pathway])
