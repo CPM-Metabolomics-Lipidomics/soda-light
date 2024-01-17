@@ -517,6 +517,7 @@ volcano_plot_server = function(r6, output, session) {
 volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # input validation
   iv_volcano_plot <- shinyvalidate::InputValidator$new()
+  iv_volcano_plot$add_rule("volcano_plot_auto_refresh", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_tables", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_metacol", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
@@ -531,8 +532,12 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   iv_volcano_plot$add_rule("volcano_plot_fc_threshold", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_marker_size", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_opacity", shinyvalidate::sv_required())
-
   iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
+  iv_volcano_plot$add_rule("volcano_plot_auto_refresh",
+                           iv_check_select_input,
+                           choices = c(FALSE, TRUE),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect dataset selected!")
   iv_volcano_plot$add_rule("volcano_plot_tables",
                            iv_check_select_input,
                            choices = r6$hardcoded_settings$volcano_plot$datasets,
