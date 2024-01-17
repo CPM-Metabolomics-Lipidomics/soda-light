@@ -521,37 +521,38 @@ volcano_plot_server = function(r6, output, session) {
 
 volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   # input validation
-  # iv_volcano_plot <- shinyvalidate::InputValidator$new()
-  # iv_volcano_plot$add_rule("volcano_plot_tables", shinyvalidate::sv_required())
-  # iv_volcano_plot$add_rule("volcano_plot_metacol", shinyvalidate::sv_required())
-  # iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
-  # iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
-  # iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
-  # iv_volcano_plot$add_rule("volcano_plot_tables",
-  #                          iv_check_select_input,
-  #                          choices = r6$hardcoded_settings$volcano_plot$datasets,
-  #                          name_plot = r6$name,
-  #                          message = "Volcano plot: Incorrect dataset selected!")
-  # iv_volcano_plot$add_rule("volcano_plot_metacol",
-  #                          iv_check_select_input,
-  #                          choices = r6$hardcoded_settings$meta_column,
-  #                          name_plot = r6$name,
-  #                          message = "Volcano plot: Incorrect group column selected!")
-  # iv_volcano_plot$add_rule("volcano_plot_color_palette",
-  #                          iv_check_select_input,
-  #                          choices = r6$hardcoded_settings$color_palette,
-  #                          name_plot = r6$name,
-  #                          message = "Volcano plot: Incorrect color palette selected!")
-  # iv_volcano_plot$add_rule("volcano_plot_img_format",
-  #                          iv_check_select_input,
-  #                          choices = r6$hardcoded_settings$image_format,
-  #                          name_plot = r6$name,
-  #                          message = "Volcano plot: Incorrect image palette selected!")
-  # iv_volcano_plot$add_rule("volcano_plot_metagroup",
-  #                          iv_check_select_input,
-  #                          choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
-  #                          name_plot = r6$name,
-  #                          message = "Volcano plot: Incorrect group selected!")
+  iv_volcano_plot <- shinyvalidate::InputValidator$new()
+  iv_volcano_plot$add_rule("volcano_plot_tables", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_metacol", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
+  iv_volcano_plot$add_rule("volcano_plot_tables",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$datasets,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect dataset selected!")
+  iv_volcano_plot$add_rule("volcano_plot_metacol",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$meta_column,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect group column selected!")
+  iv_volcano_plot$add_rule("volcano_plot_color_palette",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$color_palette,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect color palette selected!")
+  iv_volcano_plot$add_rule("volcano_plot_img_format",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$image_format,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect image palette selected!")
+  ## this one is giving a problem
+  iv_volcano_plot$add_rule("volcano_plot_metagroup",
+                           iv_check_select_input,
+                           choices = unique(r6$tables$raw_meta[, r6$params$volcano_plot$group_col]),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect group selected!")
 
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
@@ -600,15 +601,14 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_opacity,
       input$volcano_plot_img_format
     ), {
-      # shiny::req(iv_volcano_plot$is_valid())
+       shiny::req(iv_volcano_plot$is_valid(),
+                 length(input$volcano_plot_metagroup) == 2)
 
       if (!input$volcano_plot_auto_refresh) {
         r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
         return()
       }
       print_tm(r6$name, "Volcano plot: Updating params...")
-      print("Rico: check meta group")
-      print(unique(r6$tables$raw_meta[, input$volcano_plot_metacol]))
 
       # Is the column multivalue?
       if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
