@@ -159,6 +159,10 @@ Lips_exp = R6::R6Class(
           "Raw data table",
           "Class normalized table",
           "Total normalized table"
+        ),
+        calc_func = list(
+          "median",
+          "mean"
         )
       ),
       heatmap = list(
@@ -751,6 +755,8 @@ Lips_exp = R6::R6Class(
                                  group_1 = self$params$volcano_plot$group_1,
                                  group_2 = self$params$volcano_plot$group_2) {
 
+      print("Rico: used_function")
+      print(used_function)
 
       rownames_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_1]
       rownames_group_2 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_2]

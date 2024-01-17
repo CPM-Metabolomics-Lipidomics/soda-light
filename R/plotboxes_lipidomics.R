@@ -380,11 +380,6 @@ volcano_plot_server = function(r6, output, session) {
         right = TRUE,
         status = "success"
       ),
-      # shinyWidgets::prettySwitch(
-      #   inputId = ns('volcano_plot_auto_update'),
-      #   label = 'Auto-update',
-      #   value = TRUE
-      # ),
       shiny::selectInput(
         inputId = ns("volcano_plot_tables"),
         label = "Select data table",
@@ -412,13 +407,13 @@ volcano_plot_server = function(r6, output, session) {
         selected = r6$params$volcano_plot$feature_metadata,
         multiple = FALSE
       ),
-      shiny::selectizeInput(
-        inputId = ns('volcano_plot_annotation_terms'),
-        label = "Feature annotations",
-        choices = NULL,
-        selected = NULL,
-        multiple = TRUE
-      ),
+      # shiny::selectizeInput(
+      #   inputId = ns('volcano_plot_annotation_terms'),
+      #   label = "Feature annotations",
+      #   choices = NULL,
+      #   selected = NULL,
+      #   multiple = TRUE
+      # ),
       shinyWidgets::prettySwitch(
         inputId = ns('volcano_plot_keep_significant'),
         label = 'Keep only significant data',
@@ -434,7 +429,7 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("volcano_plot_function"),
         label = "FC function",
-        choices = c("median", "mean"),
+        choices = r6$hardcoded_settings$volcano_plot$calc_func,
         selected = r6$params$volcano_plot$selected_function,
         multiple = FALSE
       ),
@@ -526,6 +521,14 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   iv_volcano_plot$add_rule("volcano_plot_metacol", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_feature_metadata", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_keep_significant", shinyvalidate::sv_optional())
+  iv_volcano_plot$add_rule("volcano_plot_function", shinyvalidate::sv_required())
+  # iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
+  # iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
+  # iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
+
+
   iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
   iv_volcano_plot$add_rule("volcano_plot_tables",
                            iv_check_select_input,
@@ -547,12 +550,26 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                            choices = r6$hardcoded_settings$image_format,
                            name_plot = r6$name,
                            message = "Volcano plot: Incorrect image palette selected!")
-  ## this one is giving a problem
   iv_volcano_plot$add_rule("volcano_plot_metagroup",
                            iv_check_select_input,
                            choices = unique(r6$tables$raw_meta[, r6$params$volcano_plot$group_col]),
                            name_plot = r6$name,
                            message = "Volcano plot: Incorrect group selected!")
+  iv_volcano_plot$add_rule("volcano_plot_feature_metadata",
+                           iv_check_select_input,
+                           choices = c("None", unique(colnames(r6$tables$feature_table))),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect feature metadata selected!")
+  iv_volcano_plot$add_rule("volcano_plot_keep_significant",
+                           iv_check_select_input,
+                           choices = c(FALSE, TRUE),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect keep significant selected!")
+  iv_volcano_plot$add_rule("volcano_plot_function",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$calc_func,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect FC function selected!")
 
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
@@ -564,23 +581,23 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     )
   })
 
-  shiny::observeEvent(input$volcano_plot_feature_metadata, {
-    if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
-      shiny::updateSelectizeInput(
-        inputId = "volcano_plot_annotation_terms",
-        session = session,
-        choices = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$feature_list,
-        selected = character(0)
-      )
-    } else {
-      shiny::updateSelectizeInput(
-        inputId = "volcano_plot_annotation_terms",
-        session = session,
-        choices = NULL,
-        selected = character(0)
-      )
-    }
-  })
+  # shiny::observeEvent(input$volcano_plot_feature_metadata, {
+  #   if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
+  #     shiny::updateSelectizeInput(
+  #       inputId = "volcano_plot_annotation_terms",
+  #       session = session,
+  #       choices = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$feature_list,
+  #       selected = character(0)
+  #     )
+  #   } else {
+  #     shiny::updateSelectizeInput(
+  #       inputId = "volcano_plot_annotation_terms",
+  #       session = session,
+  #       choices = NULL,
+  #       selected = character(0)
+  #     )
+  #   }
+  # })
 
 
   shiny::observeEvent(
@@ -592,7 +609,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_test,
       input$volcano_plot_displayed_plot,
       input$volcano_plot_feature_metadata,
-      input$volcano_plot_annotation_terms,
+      # input$volcano_plot_annotation_terms,
       input$volcano_plot_keep_significant,
       input$volcano_plot_color_palette,
       input$volcano_plot_p_val_threshold,
