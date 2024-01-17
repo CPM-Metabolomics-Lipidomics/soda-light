@@ -1819,35 +1819,35 @@ double_bonds_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("double_bonds_carbon_select"),
         label = "Carbon count",
-        choices = c('Carbon count (chain 1)', 'Carbon count (chain 2)', 'Carbon count (sum)'),
+        choices = r6$hardcoded_settings$db_plot$carbon_select,
         selected = r6$params$db_plot$selected_carbon_chain,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("double_bonds_unsat_select"),
         label = "Unsaturation count",
-        choices = c('Double bonds (chain 1)', 'Double bonds (chain 2)', 'Double bonds (sum)'),
+        choices = r6$hardcoded_settings$db_plot$unsat_select,
         selected = r6$params$db_plot$selected_unsat,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("double_bonds_function"),
         label = "FC function",
-        choices = c("median", "mean"),
+        choices = r6$hardcoded_settings$db_plot$calc_func,
         selected = r6$params$db_plot$selected_function,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("double_bonds_test"),
         label = "Select test",
-        choices = c("Wilcoxon", "t-Test"),
+        choices = r6$hardcoded_settings$db_plot$test_func,
         selected = r6$params$db_plot$selected_test,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("double_bonds_plot_adjustment"),
         label = "Select adjustment",
-        choices = c("None", "Benjamini-Hochberg"),
+        choices = r6$hardcoded_settings$db_plot$adjustment_func,
         selected = r6$params$db_plot$adjustment,
         multiple = FALSE
       ),
@@ -1885,6 +1885,79 @@ double_bonds_server = function(r6, output, session) {
 }
 
 db_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_db_plot <- shinyvalidate::InputValidator$new()
+  iv_db_plot$add_rule("double_bonds_dataset", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_metacol", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_metagroup", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_class", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_carbon_select", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_unsat_select", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_function", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_test", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_plot_adjustment", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("log2_fc_slider", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("min_log10_bh_pval_slider", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_plot_img_format", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_dataset",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$datasets,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect data set selected!")
+  iv_db_plot$add_rule("double_bonds_metacol",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$meta_column,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect group column selected!")
+  iv_db_plot$add_rule("double_bonds_metagroup",
+                      iv_check_select_input,
+                      choices = unique(r6$tables$raw_meta[, r6$params$db_plot$group_col]),
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect group(s) selected!")
+  iv_db_plot$add_rule("double_bonds_class",
+                      iv_check_select_input,
+                      choices = unique(r6$tables$feature_table$lipid_class),
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect lipid class selected!")
+  iv_db_plot$add_rule("double_bonds_carbon_select",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$carbon_select,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect carbon count selected!")
+  iv_db_plot$add_rule("double_bonds_unsat_select",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$unsat_select,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect unsaturation count selected!")
+  iv_db_plot$add_rule("double_bonds_function",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$calc_func,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect FC function selected!")
+  iv_db_plot$add_rule("double_bonds_test",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$test_func,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect test function selected!")
+  iv_db_plot$add_rule("double_bonds_plot_adjustment",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$adjustment_func,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect adjustment function selected!")
+  iv_db_plot$add_rule("double_bonds_plot_img_format",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$image_format,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect image format selected!")
+  iv_db_plot$add_rule("log2_fc_slider",
+                      iv_check_numeric_range,
+                      check_range = c(r6$params$db_plot$fc_range[1], r6$params$db_plot$fc_range[2]),
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect FC range set!")
+  iv_db_plot$add_rule("min_log10_bh_pval_slider",
+                      iv_check_numeric_range,
+                      check_range = c(r6$params$db_plot$pval_range[1], r6$params$db_plot$pval_range[2]),
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect p-value range set!")
 
   # Group col selection
   shiny::observeEvent(input$double_bonds_metacol,{
@@ -1898,6 +1971,7 @@ db_plot_events = function(r6, dimensions_obj, color_palette, input, output, sess
 
   # Double bonds plot SINGLE
   shiny::observeEvent(c(shiny::req(length(input$double_bonds_metagroup) == 1), input$double_bonds_class, input$double_bonds_dataset, input$double_bonds_function, input$double_bonds_plot_img_format, input$double_bonds_carbon_select, input$double_bonds_unsat_select), {
+    shiny::req(iv_db_plot$is_valid())
 
     print_tm(r6$name, "Double bonds plot single: Updating params...")
 
@@ -1922,9 +1996,11 @@ db_plot_events = function(r6, dimensions_obj, color_palette, input, output, sess
 
   # Double bonds plot DOUBLE : Non-slider events
   shiny::observeEvent(c(input$double_bonds_dataset, input$double_bonds_metagroup, input$double_bonds_class, input$double_bonds_function, input$double_bonds_plot_adjustment, input$double_bonds_test, input$double_bonds_plot_img_format, input$double_bonds_carbon_select, input$double_bonds_unsat_select),{
-    shiny::req(length(input$double_bonds_metagroup) == 2)
+    shiny::req(length(input$double_bonds_metagroup) == 2,
+               iv_db_plot$is_valid())
 
     print_tm(r6$name, "Double bonds plot non-sliders: Updating params...")
+
     r6$params$db_plot$dataset = input$double_bonds_dataset
     r6$params$db_plot$group_column = input$double_bonds_metacol
     r6$params$db_plot$selected_groups = input$double_bonds_metagroup
@@ -1936,7 +2012,6 @@ db_plot_events = function(r6, dimensions_obj, color_palette, input, output, sess
     r6$params$db_plot$selected_test = input$double_bonds_test
     r6$params$db_plot$img_format = input$double_bonds_plot_img_format
 
-
     double_bonds_generate_double(r6, colour_list, dimensions_obj, input, session)
     double_bonds_spawn(r6, input$double_bonds_plot_img_format, output)
 
@@ -1944,9 +2019,11 @@ db_plot_events = function(r6, dimensions_obj, color_palette, input, output, sess
 
   # Double bonds plot DOUBLE : Slider events
   shiny::observeEvent(c(input$log2_fc_slider, input$min_log10_bh_pval_slider),{
-    shiny::req(length(input$double_bonds_metagroup) == 2)
+    shiny::req(length(input$double_bonds_metagroup) == 2,
+               iv_db_plot$is_valid())
 
     print_tm(r6$name, "Double bonds plot sliders: Updating params...")
+
     r6$params$db_plot$fc_values = input$log2_fc_slider
     r6$params$db_plot$pval_values = input$min_log10_bh_pval_slider
 

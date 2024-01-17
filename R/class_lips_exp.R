@@ -100,7 +100,7 @@ Lips_exp = R6::R6Class(
         selected_test = "T-test",
         fc_range = c(-5, 5),
         fc_values = c(-1, 1),
-        pval_range = c(0, 5),
+        pval_range = c(0, 10),
         pval_values = c(1, 5),
         img_format = "png"
       ),
@@ -214,6 +214,28 @@ Lips_exp = R6::R6Class(
           "Raw data table",
           "Class normalized table",
           "Total normalized table"
+        ),
+        carbon_select = list(
+          "Carbon count (chain 1)",
+          "Carbon count (chain 2)",
+          "Carbon count (sum)"
+        ),
+        unsat_select = list(
+          "Double bonds (chain 1)",
+          "Double bonds (chain 2)",
+          "Double bonds (sum)"
+        ),
+        calc_func = list(
+          "median",
+          "mean"
+        ),
+        test_func = list(
+          "Wilcoxon",
+          "t-Test"
+        ),
+        adjustment_func = list(
+          "None",
+          "Benjamini-Hochberg"
         )
       ),
       satindex = list(
@@ -741,7 +763,7 @@ Lips_exp = R6::R6Class(
                          selected_test = "t-Test",
                          fc_range = c(-5, 5),
                          fc_values = c(-1, 1),
-                         pval_range = c(0, 5),
+                         pval_range = c(0, 10),
                          pval_values = c(1, 5),
                          img_format = "png")
 

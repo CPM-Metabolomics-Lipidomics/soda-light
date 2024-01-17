@@ -1478,9 +1478,17 @@ iv_check_select_input <- function(value, choices, name_plot, message) {
 }
 
 iv_check_numeric_input <- function(value, check_range, name_plot, message) {
-  if(!as.numeric(value) |
+  if(!is.numeric(as.numeric(value)) |
      as.numeric(value) < check_range[1] |
      as.numeric(value) > check_range[2]) {
+    print_tm(name_plot, message)
+  }
+}
+
+iv_check_numeric_range <- function(value, check_range, name_plot, message) {
+  if(!all(is.numeric(as.numeric(value))) |
+     as.numeric(value[1]) < check_range[1] |
+     as.numeric(value[2]) > check_range[2]) {
     print_tm(name_plot, message)
   }
 }
