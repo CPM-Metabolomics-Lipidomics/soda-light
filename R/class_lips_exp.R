@@ -216,6 +216,13 @@ Lips_exp = R6::R6Class(
           "Total normalized table"
         )
       ),
+      satindex = list(
+        method = list(
+          "(palmitate+stearate) / oleate ratio" ,
+          "use all FA tails",
+          "overall",
+          "double bond")
+      ),
       fa_analysis = list(
         pathway = list(
           "SFA",
@@ -1451,16 +1458,16 @@ Lips_exp = R6::R6Class(
       # calculations
       res <- switch(
         method,
-        "ratio" = satindex_calc_ratio(data_table = data_table,
+        "(palmitate+stearate) / oleate ratio" = satindex_calc_ratio(data_table = data_table,
                                       feature_table = feature_table,
                                       sample_meta = sample_meta),
-        "all" = satindex_calc_all(data_table = data_table,
+        "use all FA tails" = satindex_calc_all(data_table = data_table,
                                   feature_table = feature_table,
                                   sample_meta = sample_meta),
         "overall" = satindex_calc_overall(data_table = data_table,
                                           feature_table = feature_table,
                                           sample_meta = sample_meta),
-        "db" = satindex_calc_db(data_table = data_table,
+        "double bond" = satindex_calc_db(data_table = data_table,
                                 feature_table = feature_table,
                                 sample_meta = sample_meta,
                                 group_col = group_col,

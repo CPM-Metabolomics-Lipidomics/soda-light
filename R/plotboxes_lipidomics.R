@@ -809,10 +809,11 @@ satindex_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("satindex_select_method"),
         label = "Select a method",
-        choices = c("(palmitate+stearate) / oleate ratio" = "ratio",
-                    "use all FA tails" = "all",
-                    "overall" = "overall",
-                    "double bond" = "db"),
+        choices = r6$hardcoded_settings$satindex$method,
+          # c("(palmitate+stearate) / oleate ratio" = "ratio",
+          #           "use all FA tails" = "all",
+          #           "overall" = "overall",
+          #           "double bond" = "db"),
         selected = "ratio"
       ),
       shiny::textOutput(outputId = ns("satindex_note")),
@@ -860,6 +861,30 @@ satindex_server = function(r6, output, session) {
 }
 
 satindex_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # input validation
+  iv_satindex <- shinyvalidate::InputValidator$new()
+  iv_satindex$add_rule("satindex_select_method", shinyvalidate::sv_required())
+  iv_satindex$add_rule("satindex_metacol", shinyvalidate::sv_required())
+  iv_satindex$add_rule("satindex_metagroup", shinyvalidate::sv_required())
+  iv_satindex$add_rule("satindex_lipidclass", shinyvalidate::sv_optional())
+  iv_satindex$add_rule("satindex_color_palette", shinyvalidate::sv_optional())
+  iv_satindex$add_rule("satindex_img_format", shinyvalidate::sv_optional())
+  iv_satindex$add_rule("satindex_metacol",
+                       iv_check_select_input,
+                       choices = r6$hardcoded_settings$meta_column,
+                       name_plot = r6$name,
+                       message = "Class distribution: Incorrect group column selected!")
+  iv_satindex$add_rule("satindex_color_palette",
+                       iv_check_select_input,
+                       choices = r6$hardcoded_settings$color_palette,
+                       name_plot = r6$name,
+                       message = "Class distribution: Incorrect color palette selected!")
+  iv_satindex$add_rule("satindex_img_format",
+                       iv_check_select_input,
+                       choices = r6$hardcoded_settings$image_format,
+                       name_plot = r6$name,
+                       message = "Class distribution: Incorrect image format selected!")
+
   # Generate the plot
   shiny::observeEvent(c(input$satindex_metacol,
                         input$satindex_img_format,
