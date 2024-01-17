@@ -17,7 +17,7 @@ if(dev) {
   export <- data.frame(matrix(ncol = 6,
                               nrow = length(experiments)))
   colnames(export) <- c("experimentId", "experimentTitle", "genoType",
-                        "cellType", "parentCellLine", "cellLine")
+                        "cellType", "parentCellLine", "cellLine", "treatment")
 
   for(a in 1:length(experiments)) {
     genoType <- unique(meta_data$genoType[meta_data$experimentId == experiments[a]])
@@ -40,12 +40,18 @@ if(dev) {
     cellLine <- cellLine[cellLine != "NA"]
     cellLine <- paste(cellLine, collapse = ", ")
 
+    treatment <- unique(meta_data$treatment[meta_data$experimentId == experiments[a]])
+    treatment <- treatment[!is.na(treatment)]
+    treatment <- treatment[treatment != "NA"]
+    treatment <- paste(treatment, collapse = ", ")
+
     export$experimentId[a] <- experiments[a]
     export$experimentTitle[a] <- paste(genoType, cellType, collapse = " ")
     export$genoType[a] <- genoType
     export$cellType[a] <- cellType
     export$parentCellLine[a] <- parentCellLine
     export$cellLine[a] <- cellLine
+    export$treatment[a] <- treatment
 
   }
 
