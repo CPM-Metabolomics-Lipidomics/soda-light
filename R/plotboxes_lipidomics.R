@@ -436,21 +436,21 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("volcano_plot_test"),
         label = "Select test",
-        choices = c("Wilcoxon", "t-Test"),
+        choices = r6$hardcoded_settings$volcano_plot$test_func,
         selected = r6$params$volcano_plot$selected_test,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("volcano_plot_adjustment"),
         label = "Select adjustment",
-        choices = c("None", "BH"),
+        choices = r6$hardcoded_settings$volcano_plot$adjustment_func,
         selected = r6$params$volcano_plot$adjustment,
         multiple = FALSE
       ),
       shiny::selectInput(
         inputId = ns("volcano_plot_displayed_plot"),
         label = 'Displayed plot',
-        choices = c('main', 'all', 'left', 'right', 'top'),
+        choices = r6$hardcoded_settings$volcano_plot$display_plot,
         selected = r6$params$volcano_plot$displayed_plot,
         width = '100%'
       ),
@@ -484,11 +484,11 @@ volcano_plot_server = function(r6, output, session) {
         step = 0.1,
         width = '100%'
       ),
-      shiny::actionButton(
-        inputId = ns("volcano_feature_select"),
-        label = "Save selection",
-        width = "100%"
-      ),
+      # shiny::actionButton(
+      #   inputId = ns("volcano_feature_select"),
+      #   label = "Save selection",
+      #   width = "100%"
+      # ),
 
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
@@ -524,10 +524,13 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   iv_volcano_plot$add_rule("volcano_plot_feature_metadata", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_keep_significant", shinyvalidate::sv_optional())
   iv_volcano_plot$add_rule("volcano_plot_function", shinyvalidate::sv_required())
-  # iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
-  # iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
-  # iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
-
+  iv_volcano_plot$add_rule("volcano_plot_test", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_adjustment", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_displayed_plot", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_p_val_threshold", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_fc_threshold", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_marker_size", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_opacity", shinyvalidate::sv_required())
 
   iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
   iv_volcano_plot$add_rule("volcano_plot_tables",
@@ -570,6 +573,41 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                            choices = r6$hardcoded_settings$volcano_plot$calc_func,
                            name_plot = r6$name,
                            message = "Volcano plot: Incorrect FC function selected!")
+  iv_volcano_plot$add_rule("volcano_plot_test",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$test_func,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect test function selected!")
+  iv_volcano_plot$add_rule("volcano_plot_adjustment",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$adjustment_func,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect adjustment function selected!")
+  iv_volcano_plot$add_rule("volcano_plot_displayed_plot",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$display_plot,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect display plot selected!")
+  iv_volcano_plot$add_rule("volcano_plot_p_val_threshold",
+                           iv_check_numeric_input,
+                           check_range = c(0, 1),
+                           name_plot = r6$name,
+                           message = "Volcano plot: p-value threshold not numeric or outside range!")
+  iv_volcano_plot$add_rule("volcano_plot_fc_threshold",
+                           iv_check_numeric_input,
+                           check_range = c(0, 100),
+                           name_plot = r6$name,
+                           message = "Volcano plot: FC threshold (0, 100) not numeric or outside range!")
+  iv_volcano_plot$add_rule("volcano_plot_marker_size",
+                           iv_check_numeric_input,
+                           check_range = c(1, 30),
+                           name_plot = r6$name,
+                           message = "Volcano plot: marker size (1, 30) not numeric or outside range!")
+  iv_volcano_plot$add_rule("volcano_plot_opacity",
+                           iv_check_numeric_input,
+                           check_range = c(0.1, 1),
+                           name_plot = r6$name,
+                           message = "Volcano plot: opacity (1, 30) not numeric or outside range!")
 
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
@@ -669,24 +707,23 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     })
 
 
-
   # Save selection
-  shiny::observeEvent(input$volcano_feature_select, {
-    print_tm(r6$name, "Volcano plot: saving selection.")
-    volcano_selection = plotly::event_data(
-      "plotly_selected"
-    )
-    if (is.null(volcano_selection)){
-      print_tm(r6$name, "Brushed points appear here (double-click to clear)")
-    }else {
-      r6$slice_volcano_table(
-        x = volcano_selection[3][[1]],
-        y = volcano_selection[4][[1]],
-        x_col = "log2_fold_change",
-        y_col = adjustment_switch(input$volcano_plot_adjustment)
-      )
-    }
-  })
+  # shiny::observeEvent(input$volcano_feature_select, {
+  #   print_tm(r6$name, "Volcano plot: saving selection.")
+  #   volcano_selection = plotly::event_data(
+  #     "plotly_selected"
+  #   )
+  #   if (is.null(volcano_selection)){
+  #     print_tm(r6$name, "Brushed points appear here (double-click to clear)")
+  #   }else {
+  #     r6$slice_volcano_table(
+  #       x = volcano_selection[3][[1]],
+  #       y = volcano_selection[4][[1]],
+  #       x_col = "log2_fold_change",
+  #       y_col = adjustment_switch(input$volcano_plot_adjustment)
+  #     )
+  #   }
+  # })
 
   # Export volcano table
   output$download_volcano_table = shiny::downloadHandler(

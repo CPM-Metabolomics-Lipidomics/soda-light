@@ -163,6 +163,21 @@ Lips_exp = R6::R6Class(
         calc_func = list(
           "median",
           "mean"
+        ),
+        test_func = list(
+          "t-Test",
+          "Wilcoxon"
+        ),
+        adjustment_func = list(
+          "None",
+          "BH"
+        ),
+        display_plot = list(
+          "main",
+          "all",
+          "left",
+          "right",
+          "top"
         )
       ),
       heatmap = list(
@@ -754,9 +769,6 @@ Lips_exp = R6::R6Class(
                                  test = self$params$volcano_plot$selected_test,
                                  group_1 = self$params$volcano_plot$group_1,
                                  group_2 = self$params$volcano_plot$group_2) {
-
-      print("Rico: used_function")
-      print(used_function)
 
       rownames_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_1]
       rownames_group_2 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_2]
