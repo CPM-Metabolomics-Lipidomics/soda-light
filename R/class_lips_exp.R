@@ -185,6 +185,15 @@ Lips_exp = R6::R6Class(
           'Z-scored table',
           'Z-scored total normalized table',
           'Class table z-scored'
+        ),
+        map_cols = list(
+          "Lipid class",
+          "Double bonds (chain 1)",
+          "Carbon count (chain 1)",
+          "Double bonds (chain 2)",
+          "Carbon count (chain 2)",
+          "Double bonds (sum)",
+          "Carbon count (sum)"
         )
       ),
       samples_correlation = list(

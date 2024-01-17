@@ -1249,7 +1249,7 @@ heatmap_server = function(r6, output, session) {
             inputId = ns("heatmap_map_rows"),
             label = "Map sample data",
             multiple = TRUE,
-            choices = colnames(r6$tables$raw_meta),
+            choices = r6$hardcoded_settings$meta_column,
             selected = r6$params$heatmap$map_sample_data
           )
         ),
@@ -1259,8 +1259,7 @@ heatmap_server = function(r6, output, session) {
             inputId = ns("heatmap_map_cols"),
             label = "Map feature data",
             multiple = TRUE,
-            choices = c('Lipid class', 'Double bonds (chain 1)', 'Carbon count (chain 1)', 'Double bonds (chain 2)',
-                        'Carbon count (chain 2)', 'Double bonds (sum)', 'Carbon count (sum)'),
+            choices = r6$hardcoded_settings$heatmap$map_cols,
             selected = r6$params$heatmap$map_feature_data
           )
         )
@@ -1284,7 +1283,7 @@ heatmap_server = function(r6, output, session) {
           width = 6,
           shiny::selectizeInput(inputId = ns("heatmap_group_col_da"),
                                 label = "Group column",
-                                choices = colnames(r6$tables$raw_meta),
+                                choices = r6$hardcoded_settings$meta_column,
                                 selected = r6$params$heatmap$group_column_da,
                                 multiple = FALSE,
                                 width = "100%")
@@ -1338,6 +1337,79 @@ heatmap_server = function(r6, output, session) {
 }
 
 heatmap_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_heatmap <- shinyvalidate::InputValidator$new()
+  iv_heatmap$add_rule("heatmap_dataset", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_impute", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_cluster_samples", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_cluster_features", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_map_rows", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_map_cols", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_apply_da", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_group_col_da", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_alpha_da", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_colors_palette", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_reverse_palette", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_img_format", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_dataset",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$heatmap$datasets,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect data set selected!")
+  iv_heatmap$add_rule("heatmap_impute",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect impute set!")
+  iv_heatmap$add_rule("heatmap_cluster_samples",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect cluster samples set!")
+  iv_heatmap$add_rule("heatmap_cluster_features",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect cluster features set!")
+  iv_heatmap$add_rule("heatmap_map_rows",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$meta_column,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect map sample data selected!")
+  iv_heatmap$add_rule("heatmap_map_cols",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$heatmap$map_cols,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect map feature data selected!")
+  iv_heatmap$add_rule("heatmap_apply_da",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect apply DA set!")
+  iv_heatmap$add_rule("heatmap_group_col_da",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$meta_column,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect group column for DA selected!")
+  iv_heatmap$add_rule("heatmap_alpha_da",
+                      iv_check_numeric_input,
+                      check_range = c(0, 1),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect alpha for DA set!")
+  iv_heatmap$add_rule("heatmap_colors_palette",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$color_palette,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect color palette selected!")
+  iv_heatmap$add_rule("heatmap_reverse_palette",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect reverse color palette selected!")
+  iv_heatmap$add_rule("heatmap_img_format",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$image_format,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect image format selected!")
 
   shiny::observeEvent(c(input$heatmap_run,
                         input$heatmap_img_format), {
