@@ -991,8 +991,8 @@ get_fold_changes = function(data_table, idx_group_1, idx_group_2, used_function,
 
 
   fold_changes = apply(data_table, 2, function(column) {
-    mean_group1 = base::mean(column[idx_group_1], na.rm = T)
-    mean_group2 = base::mean(column[idx_group_2], na.rm = T)
+    mean_group1 = av_function(column[idx_group_1])
+    mean_group2 = av_function(column[idx_group_2])
 
     # Impute NA means with 0
     if (is.na(mean_group1)) mean_group1 = 0
@@ -1469,6 +1469,29 @@ fa_analysis_calc <- function(data_table = NULL,
   return(res)
 }
 
+
+#--------------------------------------------------------- Input validation ----
+iv_check_select_input <- function(value, choices, name_plot, message) {
+  if(!all(value %in% choices)) {
+    print_tm(name_plot, message)
+  }
+}
+
+iv_check_numeric_input <- function(value, check_range, name_plot, message) {
+  if(!is.numeric(as.numeric(value)) |
+     as.numeric(value) < check_range[1] |
+     as.numeric(value) > check_range[2]) {
+    print_tm(name_plot, message)
+  }
+}
+
+iv_check_numeric_range <- function(value, check_range, name_plot, message) {
+  if(!all(is.numeric(as.numeric(value))) |
+     as.numeric(value[1]) < check_range[1] |
+     as.numeric(value[2]) > check_range[2]) {
+    print_tm(name_plot, message)
+  }
+}
 #--------------------------------------------------------- Example datasets ----
 example_lipidomics = function(name,
                               id = NA,

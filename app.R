@@ -7,6 +7,7 @@ library(bs4Dash)
 library(shinyWidgets)
 library(shinybrowser)
 library(shinymanager)
+library(shinyvalidate)
 
 # Plotting
 library(ggplot2)
