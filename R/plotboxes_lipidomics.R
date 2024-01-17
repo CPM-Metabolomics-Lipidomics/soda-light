@@ -607,7 +607,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                            iv_check_numeric_input,
                            check_range = c(0.1, 1),
                            name_plot = r6$name,
-                           message = "Volcano plot: opacity (1, 30) not numeric or outside range!")
+                           message = "Volcano plot: opacity (0.1, 1) not numeric or outside range!")
 
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
