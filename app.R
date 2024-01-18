@@ -69,7 +69,14 @@ header_ui = function() {
   # Extract version
   version = gsub("[^0-9.-]", "", desc[3,1])
   header = paste(name, "|", version, sep = " ")
-  bs4Dash::dashboardHeader(title = header)
+  # bs4Dash::dashboardHeader(title = header)
+  bs4Dash::dashboardHeader(
+    title = bs4Dash::dashboardBrand(
+      title = img(src = "./images/logo-neurolipid-atlas.png",
+                  title = "Neurolipid Atlas",
+                  height = "60px")
+    )
+  )
 }
 
 #------------------------------------------------------------ Setup sidebar ----
