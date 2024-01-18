@@ -708,7 +708,7 @@ lipidomics_ui = function(id) {
           width = 11,
           shinyWidgets::checkboxGroupButtons(inputId = ns("showPlots"),
                                              label = NULL,
-                                             status = "default",
+                                             status = "info",
                                              choices = lipidomics_plot_list(),
                                              selected = "select_class_distribution",
                                              checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
@@ -718,12 +718,10 @@ lipidomics_ui = function(id) {
         ),
         shiny::column(
           width = 1,
-          shinyWidgets::actionBttn(inputId = ns("clear_plots"),
-                                   label = "Clear",
-                                   style = "material-flat",
-                                   color = "danger",
-                                   block = T,
-                                   icon = icon("x"))
+          bs4Dash::actionButton(inputId = ns("clear_plots"),
+                                label = "Clear",
+                                status = "danger",
+                                icon = icon("x"))
         )
       ),
       shiny::fluidRow(

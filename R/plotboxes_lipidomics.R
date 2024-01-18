@@ -414,10 +414,12 @@ volcano_plot_server = function(r6, output, session) {
       #   selected = NULL,
       #   multiple = TRUE
       # ),
-      shinyWidgets::prettySwitch(
+      shinyWidgets::materialSwitch(
         inputId = ns('volcano_plot_keep_significant'),
         label = 'Keep only significant data',
-        value = r6$params$volcano_plot$keep_significant
+        value = r6$params$volcano_plot$keep_significant,
+        right = TRUE,
+        status = "success"
       ),
       shiny::selectizeInput(
         inputId = ns('volcano_plot_color_palette'),

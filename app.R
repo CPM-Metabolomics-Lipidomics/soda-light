@@ -69,13 +69,37 @@ header_ui = function() {
   # Extract version
   version = gsub("[^0-9.-]", "", desc[3,1])
   header = paste(name, "|", version, sep = " ")
-  bs4Dash::dashboardHeader(title = header)
+  # bs4Dash::dashboardHeader(title = header)
+  bs4Dash::dashboardHeader(
+    title = bs4Dash::dashboardBrand(
+      title = img(src = "./images/logo-neurolipid-atlas.png",
+                  title = "Neurolipid Atlas",
+                  height = "60px")
+    )
+  )
+}
+
+#------------------------------------------------------------- Setup footer ----
+footer_ui = function() {
+
+  # Get data from the description file
+  desc = read.delim("DESCRIPTION", header = FALSE)
+
+  # Extract and capitalise name
+  name = stringr::str_split(desc[1,1], ":")[[1]][2]
+  name = toupper(trimws(name))
+
+  # Extract version
+  version = gsub("[^0-9.-]", "", desc[3,1])
+  header = paste(name, "|", version, sep = " ")
+  bs4Dash::dashboardFooter(left = header)
 }
 
 #------------------------------------------------------------ Setup sidebar ----
 
 sidebar_ui = function() {
   bs4Dash::dashboardSidebar(
+    skin = "light",
     bs4Dash::sidebarMenu(
 
       bs4Dash::menuItem(
@@ -117,9 +141,16 @@ body_ui = function() {
 
 #----------------------------------------------------------------------- UI ----
 header = header_ui()
+footer = footer_ui()
 sidebar = sidebar_ui()
 body = body_ui()
-ui = bs4Dash::dashboardPage(header, sidebar, body)
+ui = bs4Dash::dashboardPage(header = header,
+                            sidebar = sidebar,
+                            body = body,
+                            footer = footer,
+                            freshTheme = "custom.css",
+                            dark = NULL,
+                            help = NULL)
 # ui = shinymanager::secure_app(bs4Dash::dashboardPage(header, sidebar, body))
 #------------------------------------------------------------------- Server ----
 
@@ -133,9 +164,9 @@ server = function(input, output, session) {
 
     dims = list(
       x_box = 0.9,
-      y_box = 0.75,
+      y_box = 0.70,
       x_plot = 0.8,
-      y_plot = 0.70,
+      y_plot = 0.67,
       x_plot_full = 0.95,
       y_plot_full = 0.91,
       xpx_total = NULL,
