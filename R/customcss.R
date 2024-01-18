@@ -46,6 +46,11 @@ if(dev){
   css_new <- gsub(x = css_new,
                   pattern = "main-footer\\{background:#fff;border-top:1px solid #dee2e6;color:#869099;padding:1rem\\}",
                   replacement = "main-footer\\{background:#fff;border-top:1px solid #dee2e6;color:#869099;padding:0.5rem\\}")
+  # fix, button border
+  css_new <- gsub(x = css_new,
+                  pattern = "btn-info\\{color:#1F2D3D;background-color:#ededed;border-color:#ededed;box-shadow:none\\}",
+                  replacement = "btn-info\\{color:#1F2D3D;background-color:#ededed;border-color:#ccc;box-shadow:none\\}")
+
 
   # write back
   writeLines(text = css_new,

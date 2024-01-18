@@ -708,7 +708,7 @@ lipidomics_ui = function(id) {
           width = 11,
           shinyWidgets::checkboxGroupButtons(inputId = ns("showPlots"),
                                              label = NULL,
-                                             status = "default",
+                                             status = "info",
                                              choices = lipidomics_plot_list(),
                                              selected = "select_class_distribution",
                                              checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
