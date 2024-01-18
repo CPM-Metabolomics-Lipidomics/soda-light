@@ -10,7 +10,8 @@ if(dev){
     ),
     bs4dash_status(
       danger = "#db285a",
-      info = "#ededed"
+      info = "#ededed",
+      success = "#0255e9"
     ),
     bs4dash_sidebar_light(
       bg = "#ededed",  # working for bg whole sidebar
