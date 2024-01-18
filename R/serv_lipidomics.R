@@ -718,12 +718,10 @@ lipidomics_ui = function(id) {
         ),
         shiny::column(
           width = 1,
-          shinyWidgets::actionBttn(inputId = ns("clear_plots"),
-                                   label = "Clear",
-                                   style = "material-flat",
-                                   color = "danger",
-                                   block = T,
-                                   icon = icon("x"))
+          bs4Dash::actionButton(inputId = ns("clear_plots"),
+                                label = "Clear",
+                                status = "danger",
+                                icon = icon("x"))
         )
       ),
       shiny::fluidRow(

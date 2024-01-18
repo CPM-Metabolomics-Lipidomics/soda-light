@@ -8,6 +8,9 @@ if(dev){
     bs4dash_layout(
       main_bg = "#ffffff"
     ),
+    bs4dash_status(
+      danger = "#db285a"
+    ),
     bs4dash_sidebar_light(
       bg = "#ededed",  # working for bg whole sidebar
       # header_color = "#094af9",  # not working
@@ -43,6 +46,7 @@ if(dev){
                   pattern = "main-footer\\{background:#fff;border-top:1px solid #dee2e6;color:#869099;padding:1rem\\}",
                   replacement = "main-footer\\{background:#fff;border-top:1px solid #dee2e6;color:#869099;padding:0.5rem\\}")
 
+  # write back
   writeLines(text = css_new,
              file.path("www", "custom.css"))
 }
