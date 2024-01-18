@@ -55,17 +55,13 @@ class_distribution_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_distribution_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$class_distribution$group_col
       ),
       shiny::selectizeInput(
         inputId = ns('class_distribution_color_palette'),
         label = "Color palette",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$class_distribution$color_palette,
         multiple = FALSE
       ),
@@ -73,7 +69,7 @@ class_distribution_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_distribution_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$class_distribution$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -87,8 +83,37 @@ class_distribution_server = function(r6, output, session) {
 }
 
 class_distribution_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # input validation
+  iv_class_distribution <- shinyvalidate::InputValidator$new()
+  iv_class_distribution$add_rule("class_distribution_dataset", shinyvalidate::sv_required())
+  iv_class_distribution$add_rule("class_distribution_metacol", shinyvalidate::sv_required())
+  iv_class_distribution$add_rule("class_distribution_color_palette", shinyvalidate::sv_required())
+  iv_class_distribution$add_rule("class_distribution_img_format", shinyvalidate::sv_optional())
+  iv_class_distribution$add_rule("class_distribution_dataset",
+                                 iv_check_select_input,
+                                 choices = r6$hardcoded_settings$class_distribution$datasets,
+                                 name_plot = r6$name,
+                                 message = "Class distribution: Incorrect dataset selected!")
+  iv_class_distribution$add_rule("class_distribution_metacol",
+                                 iv_check_select_input,
+                                 choices = r6$hardcoded_settings$meta_column,
+                                 name_plot = r6$name,
+                                 message = "Class distribution: Incorrect group column selected!")
+  iv_class_distribution$add_rule("class_distribution_color_palette",
+                                 iv_check_select_input,
+                                 choices = r6$hardcoded_settings$color_palette,
+                                 name_plot = r6$name,
+                                 message = "Class distribution: Incorrect color palette selected!")
+  iv_class_distribution$add_rule("class_distribution_img_format",
+                                 iv_check_select_input,
+                                 choices = r6$hardcoded_settings$image_format,
+                                 name_plot = r6$name,
+                                 message = "Class distribution: Incorrect image format selected!")
+
   # Generate the plot
   shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_color_palette, input$class_distribution_img_format), {
+    shiny::req(iv_class_distribution$is_valid())
+
     print_tm(r6$name, "Class distribution: Updating params...")
 
     r6$param_class_distribution(dataset = input$class_distribution_dataset,
@@ -188,17 +213,13 @@ class_comparison_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_comparison_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$class_comparison$group_col
       ),
       shiny::selectizeInput(
         inputId = ns('class_comparison_color_palette'),
         label = "Color palette",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$class_comparison$color_palette,
         multiple = FALSE
       ),
@@ -206,7 +227,7 @@ class_comparison_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("class_comparison_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$class_comparison$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -218,9 +239,37 @@ class_comparison_server = function(r6, output, session) {
   })
 }
 class_comparison_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # input validation
+  iv_class_comparison <- shinyvalidate::InputValidator$new()
+  iv_class_comparison$add_rule("class_comparison_dataset", shinyvalidate::sv_required())
+  iv_class_comparison$add_rule("class_comparison_metacol", shinyvalidate::sv_required())
+  iv_class_comparison$add_rule("class_comparison_color_palette", shinyvalidate::sv_required())
+  iv_class_comparison$add_rule("class_comparison_img_format", shinyvalidate::sv_optional())
+  iv_class_comparison$add_rule("class_comparison_dataset",
+                               iv_check_select_input,
+                               choices = r6$hardcoded_settings$class_comparison$datasets,
+                               name_plot = r6$name,
+                               message = "Class comparison: Incorrect dataset selected!")
+  iv_class_comparison$add_rule("class_comparison_metacol",
+                               iv_check_select_input,
+                               choices = r6$hardcoded_settings$meta_column,
+                               name_plot = r6$name,
+                               message = "Class comparison: Incorrect group column selected!")
+  iv_class_comparison$add_rule("class_comparison_color_palette",
+                               iv_check_select_input,
+                               choices = r6$hardcoded_settings$color_palette,
+                               name_plot = r6$name,
+                               message = "Class comparison: Incorrect color palette selected!")
+  iv_class_comparison$add_rule("class_comparison_img_format",
+                               iv_check_select_input,
+                               choices = r6$hardcoded_settings$image_format,
+                               name_plot = r6$name,
+                               message = "Class comparison: Incorrect image format selected!")
 
   # Generate the plot
   shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_color_palette, input$class_comparison_img_format), {
+    shiny::req(iv_class_comparison$is_valid())
+
     print_tm(r6$name, "Class comparison: Updating params...")
 
     r6$param_class_comparison(dataset = input$class_comparison_dataset,
@@ -331,11 +380,6 @@ volcano_plot_server = function(r6, output, session) {
         right = TRUE,
         status = "success"
       ),
-      # shinyWidgets::prettySwitch(
-      #   inputId = ns('volcano_plot_auto_update'),
-      #   label = 'Auto-update',
-      #   value = TRUE
-      # ),
       shiny::selectInput(
         inputId = ns("volcano_plot_tables"),
         label = "Select data table",
@@ -345,7 +389,7 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("volcano_plot_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$volcano_plot$group_col
       ),
       shiny::selectizeInput(
@@ -363,13 +407,13 @@ volcano_plot_server = function(r6, output, session) {
         selected = r6$params$volcano_plot$feature_metadata,
         multiple = FALSE
       ),
-      shiny::selectizeInput(
-        inputId = ns('volcano_plot_annotation_terms'),
-        label = "Feature annotations",
-        choices = NULL,
-        selected = NULL,
-        multiple = TRUE
-      ),
+      # shiny::selectizeInput(
+      #   inputId = ns('volcano_plot_annotation_terms'),
+      #   label = "Feature annotations",
+      #   choices = NULL,
+      #   selected = NULL,
+      #   multiple = TRUE
+      # ),
       shinyWidgets::prettySwitch(
         inputId = ns('volcano_plot_keep_significant'),
         label = 'Keep only significant data',
@@ -378,39 +422,35 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('volcano_plot_color_palette'),
         label = "Feature metadata colors",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$volcano_plot$color_palette,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("volcano_plot_function"),
         label = "FC function",
-        choices = c("median", "mean"),
+        choices = r6$hardcoded_settings$volcano_plot$calc_func,
         selected = r6$params$volcano_plot$selected_function,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("volcano_plot_test"),
         label = "Select test",
-        choices = c("Wilcoxon", "t-Test"),
+        choices = r6$hardcoded_settings$volcano_plot$test_func,
         selected = r6$params$volcano_plot$selected_test,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("volcano_plot_adjustment"),
         label = "Select adjustment",
-        choices = c("None", "BH"),
+        choices = r6$hardcoded_settings$volcano_plot$adjustment_func,
         selected = r6$params$volcano_plot$adjustment,
         multiple = FALSE
       ),
       shiny::selectInput(
         inputId = ns("volcano_plot_displayed_plot"),
         label = 'Displayed plot',
-        choices = c('main', 'all', 'left', 'right', 'top'),
+        choices = r6$hardcoded_settings$volcano_plot$display_plot,
         selected = r6$params$volcano_plot$displayed_plot,
         width = '100%'
       ),
@@ -444,17 +484,17 @@ volcano_plot_server = function(r6, output, session) {
         step = 0.1,
         width = '100%'
       ),
-      shiny::actionButton(
-        inputId = ns("volcano_feature_select"),
-        label = "Save selection",
-        width = "100%"
-      ),
+      # shiny::actionButton(
+      #   inputId = ns("volcano_feature_select"),
+      #   label = "Save selection",
+      #   width = "100%"
+      # ),
 
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
         inputId = ns("volcano_plot_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$volcano_plot$img_format,
         width = "100%"),
 
@@ -475,35 +515,132 @@ volcano_plot_server = function(r6, output, session) {
 }
 
 volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # input validation
+  iv_volcano_plot <- shinyvalidate::InputValidator$new()
+  iv_volcano_plot$add_rule("volcano_plot_auto_refresh", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_tables", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_metacol", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_feature_metadata", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_keep_significant", shinyvalidate::sv_optional())
+  iv_volcano_plot$add_rule("volcano_plot_function", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_test", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_adjustment", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_displayed_plot", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_p_val_threshold", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_fc_threshold", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_marker_size", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_opacity", shinyvalidate::sv_required())
+  iv_volcano_plot$add_rule("volcano_plot_img_format", shinyvalidate::sv_optional())
+  iv_volcano_plot$add_rule("volcano_plot_auto_refresh",
+                           iv_check_select_input,
+                           choices = c(FALSE, TRUE),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect dataset selected!")
+  iv_volcano_plot$add_rule("volcano_plot_tables",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$datasets,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect dataset selected!")
+  iv_volcano_plot$add_rule("volcano_plot_metacol",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$meta_column,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect group column selected!")
+  iv_volcano_plot$add_rule("volcano_plot_color_palette",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$color_palette,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect color palette selected!")
+  iv_volcano_plot$add_rule("volcano_plot_img_format",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$image_format,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect image palette selected!")
+  iv_volcano_plot$add_rule("volcano_plot_metagroup",
+                           iv_check_select_input,
+                           choices = unique(r6$tables$raw_meta[, r6$params$volcano_plot$group_col]),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect group selected!")
+  iv_volcano_plot$add_rule("volcano_plot_feature_metadata",
+                           iv_check_select_input,
+                           choices = c("None", unique(colnames(r6$tables$feature_table))),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect feature metadata selected!")
+  iv_volcano_plot$add_rule("volcano_plot_keep_significant",
+                           iv_check_select_input,
+                           choices = c(FALSE, TRUE),
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect keep significant selected!")
+  iv_volcano_plot$add_rule("volcano_plot_function",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$calc_func,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect FC function selected!")
+  iv_volcano_plot$add_rule("volcano_plot_test",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$test_func,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect test function selected!")
+  iv_volcano_plot$add_rule("volcano_plot_adjustment",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$adjustment_func,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect adjustment function selected!")
+  iv_volcano_plot$add_rule("volcano_plot_displayed_plot",
+                           iv_check_select_input,
+                           choices = r6$hardcoded_settings$volcano_plot$display_plot,
+                           name_plot = r6$name,
+                           message = "Volcano plot: Incorrect display plot selected!")
+  iv_volcano_plot$add_rule("volcano_plot_p_val_threshold",
+                           iv_check_numeric_input,
+                           check_range = c(0, 1),
+                           name_plot = r6$name,
+                           message = "Volcano plot: p-value threshold not numeric or outside range!")
+  iv_volcano_plot$add_rule("volcano_plot_fc_threshold",
+                           iv_check_numeric_input,
+                           check_range = c(0, 100),
+                           name_plot = r6$name,
+                           message = "Volcano plot: FC threshold (0, 100) not numeric or outside range!")
+  iv_volcano_plot$add_rule("volcano_plot_marker_size",
+                           iv_check_numeric_input,
+                           check_range = c(1, 30),
+                           name_plot = r6$name,
+                           message = "Volcano plot: marker size (1, 30) not numeric or outside range!")
+  iv_volcano_plot$add_rule("volcano_plot_opacity",
+                           iv_check_numeric_input,
+                           check_range = c(0.1, 1),
+                           name_plot = r6$name,
+                           message = "Volcano plot: opacity (0.1, 1) not numeric or outside range!")
 
   # auto-update selected groups
-  shiny::observeEvent(input$volcano_plot_metacol,{
-    # r6$params$volcano_plot$group_column = input$volcano_plot_metacol
+  shiny::observeEvent(input$volcano_plot_metacol, {
     shiny::updateSelectizeInput(
       inputId = "volcano_plot_metagroup",
       session = session,
-      choices = unique(r6$tables$raw_meta[,input$volcano_plot_metacol]),
-      selected = unique(r6$tables$raw_meta[,input$volcano_plot_metacol])[c(1,2)]
+      choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
+      selected = unique(r6$tables$raw_meta[, input$volcano_plot_metacol])[c(1, 2)]
     )
   })
 
-  shiny::observeEvent(input$volcano_plot_feature_metadata, {
-    if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
-      shiny::updateSelectizeInput(
-        inputId = "volcano_plot_annotation_terms",
-        session = session,
-        choices = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$feature_list,
-        selected = character(0)
-      )
-    } else {
-      shiny::updateSelectizeInput(
-        inputId = "volcano_plot_annotation_terms",
-        session = session,
-        choices = NULL,
-        selected = character(0)
-      )
-    }
-  })
+  # shiny::observeEvent(input$volcano_plot_feature_metadata, {
+  #   if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
+  #     shiny::updateSelectizeInput(
+  #       inputId = "volcano_plot_annotation_terms",
+  #       session = session,
+  #       choices = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$feature_list,
+  #       selected = character(0)
+  #     )
+  #   } else {
+  #     shiny::updateSelectizeInput(
+  #       inputId = "volcano_plot_annotation_terms",
+  #       session = session,
+  #       choices = NULL,
+  #       selected = character(0)
+  #     )
+  #   }
+  # })
 
 
   shiny::observeEvent(
@@ -515,7 +652,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_test,
       input$volcano_plot_displayed_plot,
       input$volcano_plot_feature_metadata,
-      input$volcano_plot_annotation_terms,
+      # input$volcano_plot_annotation_terms,
       input$volcano_plot_keep_significant,
       input$volcano_plot_color_palette,
       input$volcano_plot_p_val_threshold,
@@ -524,6 +661,9 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_opacity,
       input$volcano_plot_img_format
     ), {
+       shiny::req(iv_volcano_plot$is_valid(),
+                 length(input$volcano_plot_metagroup) == 2)
+
       if (!input$volcano_plot_auto_refresh) {
         r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
         return()
@@ -572,24 +712,23 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     })
 
 
-
   # Save selection
-  shiny::observeEvent(input$volcano_feature_select, {
-    print_tm(r6$name, "Volcano plot: saving selection.")
-    volcano_selection = plotly::event_data(
-      "plotly_selected"
-    )
-    if (is.null(volcano_selection)){
-      print_tm(r6$name, "Brushed points appear here (double-click to clear)")
-    }else {
-      r6$slice_volcano_table(
-        x = volcano_selection[3][[1]],
-        y = volcano_selection[4][[1]],
-        x_col = "log2_fold_change",
-        y_col = adjustment_switch(input$volcano_plot_adjustment)
-      )
-    }
-  })
+  # shiny::observeEvent(input$volcano_feature_select, {
+  #   print_tm(r6$name, "Volcano plot: saving selection.")
+  #   volcano_selection = plotly::event_data(
+  #     "plotly_selected"
+  #   )
+  #   if (is.null(volcano_selection)){
+  #     print_tm(r6$name, "Brushed points appear here (double-click to clear)")
+  #   }else {
+  #     r6$slice_volcano_table(
+  #       x = volcano_selection[3][[1]],
+  #       y = volcano_selection[4][[1]],
+  #       x_col = "log2_fold_change",
+  #       y_col = adjustment_switch(input$volcano_plot_adjustment)
+  #     )
+  #   }
+  # })
 
   # Export volcano table
   output$download_volcano_table = shiny::downloadHandler(
@@ -675,17 +814,18 @@ satindex_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("satindex_select_method"),
         label = "Select a method",
-        choices = c("(palmitate+stearate) / oleate ratio" = "ratio",
-                    "use all FA tails" = "all",
-                    "overall" = "overall",
-                    "double bond" = "db"),
+        choices = r6$hardcoded_settings$satindex$method,
+          # c("(palmitate+stearate) / oleate ratio" = "ratio",
+          #           "use all FA tails" = "all",
+          #           "overall" = "overall",
+          #           "double bond" = "db"),
         selected = "ratio"
       ),
       shiny::textOutput(outputId = ns("satindex_note")),
       shiny::selectInput(
         inputId = ns("satindex_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$satindex_plot$group_col
       ),
       shinyjs::hidden(shiny::selectizeInput(
@@ -705,11 +845,7 @@ satindex_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('satindex_color_palette'),
         label = "Color palette",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$satindex_plot$color_palette,
         multiple = FALSE
       ),
@@ -717,7 +853,7 @@ satindex_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("satindex_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$satindex_plot$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -730,13 +866,55 @@ satindex_server = function(r6, output, session) {
 }
 
 satindex_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # input validation
+  iv_satindex <- shinyvalidate::InputValidator$new()
+  iv_satindex$add_rule("satindex_select_method", shinyvalidate::sv_required())
+  iv_satindex$add_rule("satindex_metacol", shinyvalidate::sv_required())
+  iv_satindex$add_rule("satindex_metagroup", shinyvalidate::sv_required())
+  iv_satindex$add_rule("satindex_lipidclass", shinyvalidate::sv_required())
+  iv_satindex$add_rule("satindex_color_palette", shinyvalidate::sv_optional())
+  iv_satindex$add_rule("satindex_img_format", shinyvalidate::sv_optional())
+  iv_satindex$add_rule("satindex_select_method",
+                       iv_check_select_input,
+                       choices = r6$hardcoded_settings$satindex$method,
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect method selected!")
+  iv_satindex$add_rule("satindex_metacol",
+                       iv_check_select_input,
+                       choices = r6$hardcoded_settings$meta_column,
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect group column selected!")
+  iv_satindex$add_rule("satindex_metagroup",
+                       iv_check_select_input,
+                       choices = unique(r6$tables$raw_meta[, r6$params$satindex_plot$group_col]),
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect group(s) selected!")
+  iv_satindex$add_rule("satindex_lipidclass",
+                       iv_check_select_input,
+                       choices = unique(r6$tables$feature_table$lipid_class),
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect group(s) selected!")
+  iv_satindex$add_rule("satindex_color_palette",
+                       iv_check_select_input,
+                       choices = r6$hardcoded_settings$color_palette,
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect color palette selected!")
+  iv_satindex$add_rule("satindex_img_format",
+                       iv_check_select_input,
+                       choices = r6$hardcoded_settings$image_format,
+                       name_plot = r6$name,
+                       message = "SI index: Incorrect image format selected!")
+
   # Generate the plot
-  shiny::observeEvent(c(input$satindex_metacol,
+  shiny::observeEvent(c(shiny::req(length(input$satindex_metagroup) == 2),
+                        input$satindex_metacol,
                         input$satindex_img_format,
                         input$satindex_select_method,
                         input$satindex_metagroup,
                         input$satindex_color_palette,
                         input$satindex_lipidclass), {
+                          shiny::req(iv_satindex$is_valid())
+
                           print_tm(r6$name, "Saturation index: Updating params...")
 
                           if(input$satindex_select_method == "ratio") {
@@ -750,7 +928,7 @@ satindex_events = function(r6, dimensions_obj, color_palette, input, output, ses
                           }
 
                           # show / hide the group selection
-                          if(input$satindex_select_method == "db") {
+                          if(input$satindex_select_method == "double bond") {
                             shinyjs::show(id = "satindex_metagroup")
                             shinyjs::show(id = "satindex_lipidclass")
                             shinyjs::hide(id = "satindex_color_palette")
@@ -865,27 +1043,20 @@ fa_analysis_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("fa_analysis_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$fa_analysis_plot$group_col
       ),
       shiny::selectInput(
         inputId = ns("fa_analysis_pathway"),
         label = "Select pathway",
-        choices = c("SFA" = "SFA",
-                    "MUFA" = "MUFA",
-                    "PUFA(n-6)" = "PUFA6",
-                    "PUFA(n-3)" = "PUFA3"),
-        selected = "",
+        choices = r6$hardcoded_settings$fa_analysis$pathway,
+        selected = "all",
         multiple = TRUE,
         width = "100%"),
       shiny::selectizeInput(
         inputId = ns('fa_analysis_color_palette'),
         label = "Color palette",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$fa_analysis_plot$color_palette,
         multiple = FALSE
       ),
@@ -893,7 +1064,7 @@ fa_analysis_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("fa_analysis_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$fa_analysis_plot$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -906,11 +1077,39 @@ fa_analysis_server = function(r6, output, session) {
 }
 
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_fa_analysis <- shinyvalidate::InputValidator$new()
+  iv_fa_analysis$add_rule("fa_analysis_metacol", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_pathway", shinyvalidate::sv_optional())
+  iv_fa_analysis$add_rule("fa_analysis_color_palette", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_img_format", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_metacol",
+                          iv_check_select_input,
+                          choices = r6$hardcoded_settings$meta_column,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect group column selected!")
+  iv_fa_analysis$add_rule("fa_analysis_pathway",
+                          iv_check_select_input,
+                          choices = r6$hardcoded_settings$fa_analysis$pathway,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect pathway(s) selected!")
+  iv_fa_analysis$add_rule("fa_analysis_color_palette",
+                          iv_check_select_input,
+                          choices = r6$hardcoded_settings$color_palette,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect color palette selected!")
+  iv_fa_analysis$add_rule("fa_analysis_img_format",
+                          iv_check_select_input,
+                          choices = r6$hardcoded_settings$image_format,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect image format selected!")
+
   # Generate the plot
   shiny::observeEvent(c(input$fa_analysis_metacol,
                         input$fa_analysis_pathway,
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
+    shiny::req(iv_fa_analysis$is_valid())
+
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
     r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
@@ -1055,7 +1254,7 @@ heatmap_server = function(r6, output, session) {
             inputId = ns("heatmap_map_rows"),
             label = "Map sample data",
             multiple = TRUE,
-            choices = colnames(r6$tables$raw_meta),
+            choices = r6$hardcoded_settings$meta_column,
             selected = r6$params$heatmap$map_sample_data
           )
         ),
@@ -1065,8 +1264,7 @@ heatmap_server = function(r6, output, session) {
             inputId = ns("heatmap_map_cols"),
             label = "Map feature data",
             multiple = TRUE,
-            choices = c('Lipid class', 'Double bonds (chain 1)', 'Carbon count (chain 1)', 'Double bonds (chain 2)',
-                        'Carbon count (chain 2)', 'Double bonds (sum)', 'Carbon count (sum)'),
+            choices = r6$hardcoded_settings$heatmap$map_cols,
             selected = r6$params$heatmap$map_feature_data
           )
         )
@@ -1090,7 +1288,7 @@ heatmap_server = function(r6, output, session) {
           width = 6,
           shiny::selectizeInput(inputId = ns("heatmap_group_col_da"),
                                 label = "Group column",
-                                choices = colnames(r6$tables$raw_meta),
+                                choices = r6$hardcoded_settings$meta_column,
                                 selected = r6$params$heatmap$group_column_da,
                                 multiple = FALSE,
                                 width = "100%")
@@ -1108,11 +1306,7 @@ heatmap_server = function(r6, output, session) {
         shiny::selectInput(
           inputId = ns('heatmap_colors_palette'),
           label = 'Color palette',
-          choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                      'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                      'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                      'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                      'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+          choices = r6$hardcoded_settings$color_palette,
           selected = r6$params$heatmap$color_palette,
           width = '100%'
         ),
@@ -1135,7 +1329,7 @@ heatmap_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("heatmap_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$heatmap$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -1148,6 +1342,79 @@ heatmap_server = function(r6, output, session) {
 }
 
 heatmap_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_heatmap <- shinyvalidate::InputValidator$new()
+  iv_heatmap$add_rule("heatmap_dataset", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_impute", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_cluster_samples", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_cluster_features", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_map_rows", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_map_cols", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_apply_da", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_group_col_da", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_alpha_da", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_colors_palette", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_reverse_palette", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_img_format", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_dataset",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$heatmap$datasets,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect data set selected!")
+  iv_heatmap$add_rule("heatmap_impute",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect impute set!")
+  iv_heatmap$add_rule("heatmap_cluster_samples",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect cluster samples set!")
+  iv_heatmap$add_rule("heatmap_cluster_features",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect cluster features set!")
+  iv_heatmap$add_rule("heatmap_map_rows",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$meta_column,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect map sample data selected!")
+  iv_heatmap$add_rule("heatmap_map_cols",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$heatmap$map_cols,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect map feature data selected!")
+  iv_heatmap$add_rule("heatmap_apply_da",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect apply DA set!")
+  iv_heatmap$add_rule("heatmap_group_col_da",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$meta_column,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect group column for DA selected!")
+  iv_heatmap$add_rule("heatmap_alpha_da",
+                      iv_check_numeric_input,
+                      check_range = c(0, 1),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect alpha for DA set!")
+  iv_heatmap$add_rule("heatmap_colors_palette",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$color_palette,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect color palette selected!")
+  iv_heatmap$add_rule("heatmap_reverse_palette",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect reverse color palette selected!")
+  iv_heatmap$add_rule("heatmap_img_format",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$image_format,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect image format selected!")
 
   shiny::observeEvent(c(input$heatmap_run,
                         input$heatmap_img_format), {
@@ -1276,7 +1543,7 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("pca_sample_groups_col"),
         label = "Sample group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$pca$sample_groups_col
       ),
       shiny::selectInput(
@@ -1309,7 +1576,7 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns('pca_method'),
         label = 'PCA method',
-        choices = c('svd', 'nipals', 'rnipals', 'bpca', 'ppca', 'svdImpute', 'llsImputeAll'),
+        choices = r6$hardcoded_settings$pca$method,
         selected = r6$params$pca$pca_method,
         width = '100%'
       ),
@@ -1339,18 +1606,14 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns('pca_displayed_plots'),
         label = 'Displayed plot',
-        choices = c('both', 'scores', 'loadings', 'variance'),
+        choices = r6$hardcoded_settings$pca$display_plot,
         selected = r6$params$pca$displayed_plots,
         width = '100%'
       ),
       shiny::selectInput(
         inputId = ns('pca_colors_palette'),
         label = 'Color palette',
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$pca$colors_palette,
         width = '100%'
       ),
@@ -1359,7 +1622,7 @@ pca_server = function(r6, output, session) {
         shiny::selectInput(
           inputId = ns("pca_img_format"),
           label = "Image format",
-          choices = c("png", "svg", "jpeg", "webp"),
+          choices = r6$hardcoded_settings$image_format,
           selected = r6$params$pca$img_format,
           width = "100%"),
         shiny::downloadButton(
@@ -1379,6 +1642,86 @@ pca_server = function(r6, output, session) {
 }
 
 pca_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_pca <- shinyvalidate::InputValidator$new()
+  iv_pca$add_rule("pca_auto_refresh", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_data_table", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_sample_groups_col", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_feature_group", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_apply_da", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_alpha_da", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_method", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_npcs", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_displayed_pc_1", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_displayed_pc_2", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_completeObs", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_displayed_plots", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_colors_palette", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_img_format", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_auto_refresh",
+                  iv_check_select_input,
+                  choices = c(FALSE, TRUE),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect auto refresh set")
+  iv_pca$add_rule("pca_data_table",
+                  iv_check_select_input,
+                  choices = r6$hardcoded_settings$pca$datasets,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect data set selected!")
+  iv_pca$add_rule("pca_sample_groups_col",
+                  iv_check_select_input,
+                  choices = r6$hardcoded_settings$meta_column,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect group column selected!")
+  iv_pca$add_rule("pca_feature_group",
+                  iv_check_select_input,
+                  choices =  unique(colnames(r6$tables$feature_table)),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect feature group column selected!")
+  iv_pca$add_rule("pca_apply_da",
+                  iv_check_select_input,
+                  choices =  c(FALSE, TRUE),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect apply DA set!")
+  iv_pca$add_rule("pca_alpha_da",
+                  iv_check_numeric_input,
+                  check_range = c(0, 0.99),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect alpha DA set!")
+  iv_pca$add_rule("pca_method",
+                  iv_check_select_input,
+                  choices =  r6$hardcoded_settings$pca$method,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect pca method set!")
+  iv_pca$add_rule("pca_npcs",
+                  iv_check_numeric_input,
+                  check_range = c(1, r6$params$pca$nPcs),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect number of PC's set!")
+  iv_pca$add_rule("pca_displayed_pc_1",
+                  iv_check_numeric_input,
+                  check_range = c(1, r6$params$pca$nPcs),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect value for PC1 set!")
+  iv_pca$add_rule("pca_displayed_pc_2",
+                  iv_check_numeric_input,
+                  check_range = c(1, r6$params$pca$nPcs),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect value for PC2 set!")
+  iv_pca$add_rule("pca_completeObs",
+                  iv_check_select_input,
+                  choices =  c(FALSE, TRUE),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect complete observations set!")
+  iv_pca$add_rule("pca_displayed_plots",
+                  iv_check_select_input,
+                  choices =  r6$hardcoded_settings$pca$display_plot,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect display plot selected!")
+  iv_pca$add_rule("pca_img_format",
+                  iv_check_select_input,
+                  choices =  r6$hardcoded_settings$image_format,
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect image format selected!")
 
   shiny::observeEvent(c(input$pca_auto_refresh,
                         input$pca_data_table,
@@ -1393,6 +1736,11 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                         input$pca_displayed_plots,
                         input$pca_colors_palette,
                         input$pca_img_format), {
+    shiny::req(iv_pca$is_valid())
+
+    print("Rico: check DA")
+    print(input$pca_apply_da)
+
     if (!input$pca_auto_refresh) {
       r6$params$pca$auto_refresh = input$pca_auto_refresh
       return()
@@ -1613,7 +1961,7 @@ double_bonds_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("double_bonds_metacol"),
         label = "Select group column",
-        choices = colnames(r6$tables$raw_meta),
+        choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$db_plot$group_column
       ),
       shiny::selectizeInput(
@@ -1633,35 +1981,35 @@ double_bonds_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("double_bonds_carbon_select"),
         label = "Carbon count",
-        choices = c('Carbon count (chain 1)', 'Carbon count (chain 2)', 'Carbon count (sum)'),
+        choices = r6$hardcoded_settings$db_plot$carbon_select,
         selected = r6$params$db_plot$selected_carbon_chain,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("double_bonds_unsat_select"),
         label = "Unsaturation count",
-        choices = c('Double bonds (chain 1)', 'Double bonds (chain 2)', 'Double bonds (sum)'),
+        choices = r6$hardcoded_settings$db_plot$unsat_select,
         selected = r6$params$db_plot$selected_unsat,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("double_bonds_function"),
         label = "FC function",
-        choices = c("median", "mean"),
+        choices = r6$hardcoded_settings$db_plot$calc_func,
         selected = r6$params$db_plot$selected_function,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("double_bonds_test"),
         label = "Select test",
-        choices = c("Wilcoxon", "t-Test"),
+        choices = r6$hardcoded_settings$db_plot$test_func,
         selected = r6$params$db_plot$selected_test,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns("double_bonds_plot_adjustment"),
         label = "Select adjustment",
-        choices = c("None", "Benjamini-Hochberg"),
+        choices = r6$hardcoded_settings$db_plot$adjustment_func,
         selected = r6$params$db_plot$adjustment,
         multiple = FALSE
       ),
@@ -1686,7 +2034,7 @@ double_bonds_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("double_bonds_plot_img_format"),
         label = "Image format",
-        choices = c("png", "svg", "jpeg", "webp"),
+        choices = r6$hardcoded_settings$image_format,
         selected = r6$params$db_plot$img_format,
         width = "100%"),
       shiny::downloadButton(
@@ -1699,6 +2047,79 @@ double_bonds_server = function(r6, output, session) {
 }
 
 db_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_db_plot <- shinyvalidate::InputValidator$new()
+  iv_db_plot$add_rule("double_bonds_dataset", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_metacol", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_metagroup", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_class", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_carbon_select", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_unsat_select", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_function", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_test", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_plot_adjustment", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("log2_fc_slider", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("min_log10_bh_pval_slider", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_plot_img_format", shinyvalidate::sv_required())
+  iv_db_plot$add_rule("double_bonds_dataset",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$datasets,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect data set selected!")
+  iv_db_plot$add_rule("double_bonds_metacol",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$meta_column,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect group column selected!")
+  iv_db_plot$add_rule("double_bonds_metagroup",
+                      iv_check_select_input,
+                      choices = unique(r6$tables$raw_meta[, r6$params$db_plot$group_col]),
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect group(s) selected!")
+  iv_db_plot$add_rule("double_bonds_class",
+                      iv_check_select_input,
+                      choices = unique(r6$tables$feature_table$lipid_class),
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect lipid class selected!")
+  iv_db_plot$add_rule("double_bonds_carbon_select",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$carbon_select,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect carbon count selected!")
+  iv_db_plot$add_rule("double_bonds_unsat_select",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$unsat_select,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect unsaturation count selected!")
+  iv_db_plot$add_rule("double_bonds_function",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$calc_func,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect FC function selected!")
+  iv_db_plot$add_rule("double_bonds_test",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$test_func,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect test function selected!")
+  iv_db_plot$add_rule("double_bonds_plot_adjustment",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$db_plot$adjustment_func,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect adjustment function selected!")
+  iv_db_plot$add_rule("double_bonds_plot_img_format",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$image_format,
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect image format selected!")
+  iv_db_plot$add_rule("log2_fc_slider",
+                      iv_check_numeric_range,
+                      check_range = c(r6$params$db_plot$fc_range[1], r6$params$db_plot$fc_range[2]),
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect FC range set!")
+  iv_db_plot$add_rule("min_log10_bh_pval_slider",
+                      iv_check_numeric_range,
+                      check_range = c(r6$params$db_plot$pval_range[1], r6$params$db_plot$pval_range[2]),
+                      name_plot = r6$name,
+                      message = "Double bond plot: Incorrect p-value range set!")
 
   # Group col selection
   shiny::observeEvent(input$double_bonds_metacol,{
@@ -1712,6 +2133,7 @@ db_plot_events = function(r6, dimensions_obj, color_palette, input, output, sess
 
   # Double bonds plot SINGLE
   shiny::observeEvent(c(shiny::req(length(input$double_bonds_metagroup) == 1), input$double_bonds_class, input$double_bonds_dataset, input$double_bonds_function, input$double_bonds_plot_img_format, input$double_bonds_carbon_select, input$double_bonds_unsat_select), {
+    shiny::req(iv_db_plot$is_valid())
 
     print_tm(r6$name, "Double bonds plot single: Updating params...")
 
@@ -1736,9 +2158,11 @@ db_plot_events = function(r6, dimensions_obj, color_palette, input, output, sess
 
   # Double bonds plot DOUBLE : Non-slider events
   shiny::observeEvent(c(input$double_bonds_dataset, input$double_bonds_metagroup, input$double_bonds_class, input$double_bonds_function, input$double_bonds_plot_adjustment, input$double_bonds_test, input$double_bonds_plot_img_format, input$double_bonds_carbon_select, input$double_bonds_unsat_select),{
-    shiny::req(length(input$double_bonds_metagroup) == 2)
+    shiny::req(length(input$double_bonds_metagroup) == 2,
+               iv_db_plot$is_valid())
 
     print_tm(r6$name, "Double bonds plot non-sliders: Updating params...")
+
     r6$params$db_plot$dataset = input$double_bonds_dataset
     r6$params$db_plot$group_column = input$double_bonds_metacol
     r6$params$db_plot$selected_groups = input$double_bonds_metagroup
@@ -1750,7 +2174,6 @@ db_plot_events = function(r6, dimensions_obj, color_palette, input, output, sess
     r6$params$db_plot$selected_test = input$double_bonds_test
     r6$params$db_plot$img_format = input$double_bonds_plot_img_format
 
-
     double_bonds_generate_double(r6, colour_list, dimensions_obj, input, session)
     double_bonds_spawn(r6, input$double_bonds_plot_img_format, output)
 
@@ -1758,9 +2181,11 @@ db_plot_events = function(r6, dimensions_obj, color_palette, input, output, sess
 
   # Double bonds plot DOUBLE : Slider events
   shiny::observeEvent(c(input$log2_fc_slider, input$min_log10_bh_pval_slider),{
-    shiny::req(length(input$double_bonds_metagroup) == 2)
+    shiny::req(length(input$double_bonds_metagroup) == 2,
+               iv_db_plot$is_valid())
 
     print_tm(r6$name, "Double bonds plot sliders: Updating params...")
+
     r6$params$db_plot$fc_values = input$log2_fc_slider
     r6$params$db_plot$pval_values = input$min_log10_bh_pval_slider
 
