@@ -34,9 +34,15 @@ if(dev){
   # not all things are working
   # dirty hack here
   css <- readLines(file.path("www", "custom.css"))
+  # fix bg color on top of page
   css_new <- gsub(x = css,
                   pattern = "navbar-white\\{background-color:#fff\\}",
                   replacement = "navbar-white\\{background-color:#ededed\\}")
+  # fix, make footer smaller
+  css_new <- gsub(x = css_new,
+                  pattern = "main-footer\\{background:#fff;border-top:1px solid #dee2e6;color:#869099;padding:1rem\\}",
+                  replacement = "main-footer\\{background:#fff;border-top:1px solid #dee2e6;color:#869099;padding:0.5rem\\}")
+
   writeLines(text = css_new,
              file.path("www", "custom.css"))
 }

@@ -164,7 +164,7 @@ server = function(input, output, session) {
 
     dims = list(
       x_box = 0.9,
-      y_box = 0.75,
+      y_box = 0.70,
       x_plot = 0.8,
       y_plot = 0.70,
       x_plot_full = 0.95,
