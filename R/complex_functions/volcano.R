@@ -442,7 +442,9 @@ plot_volcano = function(data, marker_size, p_val_threshold = 0.05, fc_threshold 
 
   main_plot = plotly::plot_ly()
 
-  for (group in unique(data$groups)) {
+  sort_group <- sort_legend(text = data$groups)
+
+  for (group in sort_group) {
     subset_data = data[data$groups == group, ]
     main_plot = plotly::add_trace(
       main_plot,
@@ -502,3 +504,5 @@ plot_volcano = function(data, marker_size, p_val_threshold = 0.05, fc_threshold 
                              ))
   return(main_plot)
 }
+
+
