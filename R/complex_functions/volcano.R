@@ -64,6 +64,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     names = names
   )
 
+  right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+  left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
   plot_label = paste0(left_label, ' - ', right_label)
 
   # Format data
@@ -468,7 +470,8 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
   }
 
   main_plot = plotly::layout(main_plot,
-                             title = label,
+                             title = list(text = label,
+                                          xref = "paper"),
                              xaxis = list(title = "Log2(Fold Change)",
                                           zeroline = T,
                                           range = c(-ceiling(max(abs(data$log2_fold_change))),
