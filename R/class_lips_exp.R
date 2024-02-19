@@ -501,12 +501,13 @@ Lips_exp = R6::R6Class(
       self$params$satindex_plot$img_format = img_format
     },
 
-    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, pathway, color_palette, img_format) {
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, pathway, selected_lipidclass, color_palette, img_format) {
       self$params$fa_analysis_plot$data_table = data_table
       self$params$fa_analysis_plot$feature_meta = feature_meta
       self$params$fa_analysis_plot$sample_meta = sample_meta
       self$params$fa_analysis_plot$group_col = group_col
       self$params$fa_analysis_plot$pathway = pathway
+      self$params$fa_analysis_plot$selected_lipidclass = selected_lipidclass
       self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
     },
@@ -806,6 +807,7 @@ Lips_exp = R6::R6Class(
                                   feature_meta = self$tables$feature_table,
                                   sample_meta = self$tables$raw_meta,
                                   group_col = self$indices$group_col,
+                                  selected_lipidclass = self$indices$selected_lipidclass,
                                   pathway = NULL,
                                   color_palette = 'Spectral',
                                   img_format = "png")
@@ -1654,6 +1656,7 @@ Lips_exp = R6::R6Class(
                                 sample_meta = self$tables$raw_meta,
                                 group_col = self$params$fa_analysis_plot$group_col,
                                 pathway = self$params$fa_analysis_plot$pathway,
+                                selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
                                 color_palette = self$params$fa_analysis_plot$color_palette,
                                 width = NULL,
                                 height = NULL) {
