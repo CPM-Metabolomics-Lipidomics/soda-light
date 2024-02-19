@@ -64,8 +64,20 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     names = names
   )
 
-  right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
-  left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+  if(nchar(left_label) != nchar(right_label)) {
+    if(nchar(left_label) > nchar(right_label)) {
+      num <- nchar(left_label) - nchar(right_label)
+      right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;", paste(rep("&nbsp;", num), collapse = ""))
+      left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    } else {
+      num <- nchar(right_label) - nchar(left_label)
+      right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+      left_label <- paste0(paste(rep("&nbsp;", num), collapse = ""), "&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    }
+  } else {
+    right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+    left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+  }
   plot_label = paste0(left_label, ' - ', right_label)
 
   # Format data
