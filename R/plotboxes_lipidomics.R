@@ -1052,7 +1052,7 @@ fa_analysis_server = function(r6, output, session) {
         inputId = ns("fa_analysis_pathway"),
         label = "Select pathway",
         choices = r6$hardcoded_settings$fa_analysis$pathway,
-        selected = "all",
+        selected = r6$params$fa_analysis_plot$pathway,
         multiple = TRUE,
         width = "100%"),
       shiny::selectizeInput(
