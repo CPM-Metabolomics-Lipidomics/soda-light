@@ -914,27 +914,6 @@ lipidomics_summary_plot = function(r6, data_table) {
 }
 
 
-# sort the legend alphabetically and make sure numbers are sorted correctly
-sort_legend <- function(text = NULL) {
-  uniq_text <- unique(text)
-  # is the vector numeric
-  if(all(grepl(pattern = "^[0-9.]+ \\([0-9]*\\)$",
-               x = uniq_text))) {
-    num_text <- gsub(x = uniq_text,
-                     pattern = "^([0-9.]+) \\([0-9]*\\)$",
-                     replacement = "\\1")
-    idx <- sort(x = as.numeric(num_text),
-                index.return = TRUE)$ix
-    res <- uniq_text[idx]
-  } else {
-    idx <- sort(x = uniq_text,
-                index.return = TRUE)$ix
-    res <- uniq_text[idx]
-  }
-
-  return(res)
-}
-
 #--------------------------------------------------------------- Statistics ----
 
 get_pca_data = function(data_table){
