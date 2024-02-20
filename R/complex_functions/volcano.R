@@ -64,6 +64,22 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     names = names
   )
 
+  if(nchar(left_label) != nchar(right_label)) {
+    if(nchar(left_label) > nchar(right_label)) {
+      num <- nchar(left_label) - nchar(right_label)
+      right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;", paste(rep("&nbsp;", num), collapse = ""))
+      left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    } else {
+      num <- nchar(right_label) - nchar(left_label)
+      right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+      left_label <- paste0(paste(rep("&nbsp;", num), collapse = ""), "&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    }
+  } else {
+    right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+    left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+  }
+  plot_label = paste0(left_label, ' - ', right_label)
+
   # Format data
   data$log2_fold_change = log2(data$fold_change)
   data$log10_p_values = -log10(data$p_values)
@@ -136,8 +152,11 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
   } else {right_data = NULL}
 
+
+
   # Main plot y_label
   main_plot = plot_volcano(data = data,
+                           label = plot_label,
                            marker_size = marker_size,
                            p_val_threshold = p_val_threshold,
                            fc_threshold = fc_threshold,
@@ -219,12 +238,12 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     )
 
     out_plot = plotly::layout(out_plot,
-                              yaxis = list(title = y_label))
+                                yaxis = list(title = y_label))
   } else if (!is.null(left_data) & !is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # All violins
 
     out_plot = plotly::subplot(
       list(blank_plot, top_violin, blank_plot,
-           left_violin, main_plot, right_violin),
+                  left_violin, main_plot, right_violin),
       nrows = 2,
       shareX = TRUE,
       shareY = TRUE,
@@ -356,9 +375,9 @@ plot_volcano_violin = function(data, threshold, side, label, opacity = 1, marker
                          y0 = threshold,
                          y1 = threshold,
                          line = list(color = "black", width = 1, dash = "dot")
+                         )
                        )
                      )
-  )
 
 
 
@@ -434,7 +453,7 @@ plot_volcano_violin_top = function(data,
   return(p)
 }
 
-plot_volcano = function(data, marker_size, p_val_threshold = 0.05, fc_threshold = 2, opacity = 1, show_y_title = F , y_axis_title = '-Log10(p-value)') {
+plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05, fc_threshold = 2, opacity = 1, show_y_title = F , y_axis_title = '-Log10(p-value)') {
 
   if (!show_y_title){
     y_axis_title = NULL
@@ -465,6 +484,8 @@ plot_volcano = function(data, marker_size, p_val_threshold = 0.05, fc_threshold 
   }
 
   main_plot = plotly::layout(main_plot,
+                             title = list(text = label,
+                                          xref = "paper"),
                              xaxis = list(title = "Log2(Fold Change)",
                                           zeroline = T,
                                           range = c(-ceiling(max(abs(data$log2_fold_change))),
@@ -504,5 +525,4 @@ plot_volcano = function(data, marker_size, p_val_threshold = 0.05, fc_threshold 
                              ))
   return(main_plot)
 }
-
 
