@@ -1059,7 +1059,7 @@ fa_analysis_server = function(r6, output, session) {
         inputId = ns("fa_analysis_selected_lipidclass"),
         label = "Select lipid class",
         choices = c("All", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA", "TG"))]),
-        selected = r6$params$fa_analysis$selected_lipid_class,
+        selected = r6$params$fa_analysis$selected_lipidclass,
         multiple = FALSE
       ),
       shiny::selectizeInput(
