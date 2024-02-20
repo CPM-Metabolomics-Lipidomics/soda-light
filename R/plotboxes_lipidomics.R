@@ -1104,7 +1104,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                           message = "FA analysis: Incorrect pathway(s) selected!")
   iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass",
                           iv_check_select_input,
-                          choices = c("All", unique(r6$tables$feature_table$lipid_class)),
+                          choices = c("All", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA", "TG"))]),
                           name_plot = r6$name,
                           message = "FA analysis: Incorrect pathway(s) selected!")
   iv_fa_analysis$add_rule("fa_analysis_color_palette",
