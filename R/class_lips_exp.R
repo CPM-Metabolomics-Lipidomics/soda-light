@@ -126,6 +126,7 @@ Lips_exp = R6::R6Class(
        sample_meta = "Raw meta table",
        group_col = NULL,
        pathway = NULL,
+       selected_lipidclass = "All",
        color_palette = 'Spectral',
        img_format = "png"
      )
