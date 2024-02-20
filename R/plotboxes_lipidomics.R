@@ -1121,6 +1121,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
   # Generate the plot
   shiny::observeEvent(c(input$fa_analysis_metacol,
                         input$fa_analysis_pathway,
+                        input$fa_analysis_selected_lipidclass,
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
     shiny::req(iv_fa_analysis$is_valid())

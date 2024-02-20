@@ -1665,7 +1665,8 @@ Lips_exp = R6::R6Class(
       # do the calculations
       res <- fa_analysis_calc(data_table = data_table,
                               feature_table = feature_table,
-                              sample_meta = sample_meta)
+                              sample_meta = sample_meta,
+                              selected_lipidclass = selected_lipidclass)
 
 
       # Produce the class x group table
