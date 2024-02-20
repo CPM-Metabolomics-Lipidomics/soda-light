@@ -1434,15 +1434,21 @@ satindex_calc_db <- function(data_table = NULL,
 #------------------------------------------------------ Fatty acid analysis ----
 fa_analysis_calc <- function(data_table = NULL,
                              feature_table = NULL,
-                             sample_meta = NULL) {
+                             sample_meta = NULL,
+                             selected_lipidclass = NULL) {
   ## Features
-  # remove PA and TG
   feature_table$lipid <- rownames(feature_table)
-  sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA", "TG"))]
+
+  if(selected_lipidclass == "All") {
+    # all lipids, but remove PA and TG
+    sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA", "TG"))]
+  } else {
+    sel_feat_idx <- feature_table$lipid[feature_table$lipid_class %in% selected_lipidclass]
+  }
   sel_feature_table <- feature_table[feature_table$lipid %in% sel_feat_idx, ]
 
   ## Data
-  # remove PA and TG
+  # select the correct data
   sel_data_table <- data_table[, sel_feat_idx]
 
   # get the unique chain lengths and unsaturation

@@ -1052,9 +1052,16 @@ fa_analysis_server = function(r6, output, session) {
         inputId = ns("fa_analysis_pathway"),
         label = "Select pathway",
         choices = r6$hardcoded_settings$fa_analysis$pathway,
-        selected = "all",
+        selected = r6$params$fa_analysis_plot$pathway,
         multiple = TRUE,
         width = "100%"),
+      shiny::selectizeInput(
+        inputId = ns("fa_analysis_selected_lipidclass"),
+        label = "Select lipid class",
+        choices = c("All", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA", "TG"))]),
+        selected = r6$params$fa_analysis$selected_lipidclass,
+        multiple = FALSE
+      ),
       shiny::selectizeInput(
         inputId = ns('fa_analysis_color_palette'),
         label = "Color palette",
@@ -1082,6 +1089,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
   iv_fa_analysis <- shinyvalidate::InputValidator$new()
   iv_fa_analysis$add_rule("fa_analysis_metacol", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_pathway", shinyvalidate::sv_optional())
+  iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_color_palette", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_img_format", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_metacol",
@@ -1092,6 +1100,11 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
   iv_fa_analysis$add_rule("fa_analysis_pathway",
                           iv_check_select_input,
                           choices = r6$hardcoded_settings$fa_analysis$pathway,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect pathway(s) selected!")
+  iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass",
+                          iv_check_select_input,
+                          choices = c("All", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA", "TG"))]),
                           name_plot = r6$name,
                           message = "FA analysis: Incorrect pathway(s) selected!")
   iv_fa_analysis$add_rule("fa_analysis_color_palette",
@@ -1108,6 +1121,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
   # Generate the plot
   shiny::observeEvent(c(input$fa_analysis_metacol,
                         input$fa_analysis_pathway,
+                        input$fa_analysis_selected_lipidclass,
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
     shiny::req(iv_fa_analysis$is_valid())
@@ -1119,6 +1133,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                               sample_meta = r6$tables$raw_meta,
                               group_col = input$fa_analysis_metacol,
                               pathway = input$fa_analysis_pathway,
+                              selected_lipidclass = input$fa_analysis_selected_lipidclass,
                               color_palette = input$fa_analysis_color_palette,
                               img_format = input$fa_analysis_img_format)
 
