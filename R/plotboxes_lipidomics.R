@@ -817,11 +817,7 @@ satindex_server = function(r6, output, session) {
         inputId = ns("satindex_select_method"),
         label = "Select a method",
         choices = r6$hardcoded_settings$satindex$method,
-          # c("(palmitate+stearate) / oleate ratio" = "ratio",
-          #           "use all FA tails" = "all",
-          #           "overall" = "overall",
-          #           "double bond" = "db"),
-        selected = "ratio"
+        selected = r6$params$satindex_plot$method
       ),
       shiny::textOutput(outputId = ns("satindex_note")),
       shiny::selectInput(
