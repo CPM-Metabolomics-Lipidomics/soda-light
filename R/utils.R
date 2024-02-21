@@ -1521,8 +1521,6 @@ qc_trend_plot <- function(data = NULL,
                           pattern = "^([a-zA-Z]*) .*",
                           replacement = "\\1")
 
-  print(unique(data$lipidclass))
-
   p <- data |>
     ggplot2::ggplot(ggplot2::aes(x = ID,
                                  y = log2fc,
@@ -1565,6 +1563,28 @@ qc_prep_trend <- function(data = NULL,
   qc_data$log2fc <- log2(qc_data$value / qc_data$ref_value)
 
   return(qc_data)
+}
+
+qc_rsd_violin <- function(data = NULL,
+                          title = NULL) {
+  data$lipidclass <- gsub(x = data$lipid,
+                          pattern = "^([a-zA-Z]*) .*",
+                          replacement = "\\1")
+
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = lipidclass,
+                                 y = rsd)) +
+    ggplot2::geom_violin() +
+    ggplot2::geom_jitter(width = 0.1) +
+    ggplot2::geom_hline(yintercept = 0.3,
+                        color = "red",
+                        linetype = 2) +
+    ggplot2::labs(title = title,
+                  x = "Lipid class",
+                  y = "Relative standard deviation") +
+  ggplot2::theme_minimal()
+
+  return(p)
 }
 #--------------------------------------------------------- Example datasets ----
 example_lipidomics = function(name,
