@@ -1,11 +1,15 @@
 dev <- FALSE
 
 if(dev) {
-  work_dir <- "/home/rjederks/Documents/Projects/soda-light/"
+  work_dir <- "/home/ricoderks/Documents/LUMC/Projects/soda-light/"
   feature_table <- read.csv(file = file.path(work_dir, "240220_features.csv"),
                             row.names = 1,
                             header = TRUE)
   data_table <- read.csv(file = file.path(work_dir, "240220_data.csv"),
+                         row.names = 1,
+                         header = TRUE,
+                         check.names = FALSE)
+  meta_table <- read.csv(file = file.path(work_dir, "240220_meta.csv"),
                          row.names = 1,
                          header = TRUE,
                          check.names = FALSE)
@@ -14,8 +18,11 @@ if(dev) {
   # initialize some stuff
   # the feature table doesn't contain a column lipids fix here
   feature_table$lipid <- rownames(feature_table)
+
   # get the unique lipid classes
   lipid_classes <- unique(feature_table$lipid_class)
+  # for now remove TG and PA
+  lipid_classes <- lipid_classes[!(lipid_classes %in% c("PA", "TG"))]
 
   tot_lipids <- vector(mode = "list",
                        length = length(lipid_classes))
@@ -26,11 +33,10 @@ if(dev) {
              c("tot_sat", "tot_unsat", "SI"))
   })
 
-  # for now remove TG and PA
-  lipid_classes <- lipid_classes[!(lipid_classes %in% c("PA", "TG"))]
+
 
   for(a in lipid_classes) {
-    a <- "PC"
+    # a <- "PC"
     # lipids with only one FA chain (including PA)
     if(all(feature_table$carbons_2[feature_table$lipid_class == a] == 0) | a == "TG") {
       if(a == "TG") {
