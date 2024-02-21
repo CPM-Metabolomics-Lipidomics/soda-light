@@ -8,9 +8,11 @@ qc_ui = function(id){
     ),
     shiny::fluidRow(
       shiny::column(width = 5,
+                    shiny::textOutput(outputId = ns("qc_c_imp_rsd_text")),
                     shiny::plotOutput(outputId = ns("qc_c_imp_rsd"))),
       shiny::column(width = 2),
       shiny::column(width = 5,
+                    shiny::textOutput(outputId = ns("qc_p_imp_rsd_text")),
                     shiny::plotOutput(outputId = ns("qc_p_imp_rsd")))
     ),
     shiny::fluidRow(
@@ -49,6 +51,11 @@ qc_server = function(id, module_controler) {
         # get the sample id's of the quality contol cells
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
 
+        # if nothing found
+        if(length(qc_ids) == 0) {
+          return(NULL)
+        }
+
         qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
@@ -64,6 +71,23 @@ qc_server = function(id, module_controler) {
         return(p)
       })
 
+
+      output$qc_c_imp_rsd_text <- renderText({
+        req(r6$tables$imp_data,
+            r6$tables$imp_meta)
+
+        # get the sample id's of the quality contol cells
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
+
+        # if nothing found
+        if(length(qc_ids) == 0) {
+          return("No QC cell samples present!")
+        } else {
+          return(NULL)
+        }
+      })
+
+
       output$qc_p_imp_rsd <- shiny::renderPlot({
         ## QC plasma histogram
 
@@ -72,6 +96,11 @@ qc_server = function(id, module_controler) {
 
         # get the sample id's of the quality contol cells
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+
+        # if nothing found
+        if(length(qc_ids) == 0) {
+          return(NULL)
+        }
 
         qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
           tidyr::pivot_longer(cols = -ID,
@@ -88,6 +117,23 @@ qc_server = function(id, module_controler) {
         return(p)
       })
 
+
+      output$qc_p_imp_rsd_text <- renderText({
+        req(r6$tables$imp_data,
+            r6$tables$imp_meta)
+
+        # get the sample id's of the quality contol cells
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+
+        # if nothing found
+        if(length(qc_ids) == 0) {
+          return("No QC plasma samples present!")
+        } else {
+          return(NULL)
+        }
+      })
+
+
       output$qc_c_imp_trend <- shiny::renderPlot({
         ## QC cells trend
 
@@ -96,6 +142,11 @@ qc_server = function(id, module_controler) {
 
         # get the sample id's of the quality contol cells
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
+
+        # if nothing found
+        if(length(qc_ids) == 0) {
+          return(NULL)
+        }
 
         qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
           tidyr::pivot_longer(cols = -ID,
@@ -129,6 +180,11 @@ qc_server = function(id, module_controler) {
 
         # get the sample id's of the quality contol cells
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+
+        # if nothing found
+        if(length(qc_ids) == 0) {
+          return(NULL)
+        }
 
         qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
           tidyr::pivot_longer(cols = -ID,
