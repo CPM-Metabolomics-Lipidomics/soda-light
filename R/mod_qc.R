@@ -43,10 +43,13 @@ qc_server = function(id, module_controler) {
       output$qc_c_imp_rsd <- shiny::renderPlot({
         ## QC cells histogram
 
-        req(r6$tables$imp_data)
+        req(r6$tables$imp_data,
+            r6$tables$imp_meta)
 
-        qc_data <- r6$tables$imp_data[grepl(x = r6$tables$imp_data$ID,
-                                            pattern = "^QC_C.*"), ] |>
+        # get the sample id's of the quality contol cells
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
+
+        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
                               values_to = "value")
@@ -64,10 +67,13 @@ qc_server = function(id, module_controler) {
       output$qc_p_imp_rsd <- shiny::renderPlot({
         ## QC plasma histogram
 
-        req(r6$tables$imp_data)
+        req(r6$tables$imp_data,
+            r6$tables$imp_meta)
 
-        qc_data <- r6$tables$imp_data[grepl(x = r6$tables$imp_data$ID,
-                                            pattern = "^QC_P.*"), ] |>
+        # get the sample id's of the quality contol cells
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+
+        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
                               values_to = "value")
@@ -85,15 +91,18 @@ qc_server = function(id, module_controler) {
       output$qc_c_imp_trend <- shiny::renderPlot({
         ## QC cells trend
 
-        req(r6$tables$imp_data)
+        req(r6$tables$imp_data,
+            r6$tables$imp_meta)
 
-        qc_data <- r6$tables$imp_data[grepl(x = r6$tables$imp_data$ID,
-                                            pattern = "^QC_C.*"), ] |>
+        # get the sample id's of the quality contol cells
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
+
+        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
                               values_to = "value")
 
-        ref_qc <- qc_data[qc_data$ID == "QC_C_1", ]
+        ref_qc <- qc_data[qc_data$ID == sort(qc_ids)[1], ]
         colnames(ref_qc)[3] <- "ref_value"
 
         qc_data <- merge(
@@ -115,15 +124,18 @@ qc_server = function(id, module_controler) {
       output$qc_p_imp_trend <- shiny::renderPlot({
         ## QC plasma trend
 
-        req(r6$tables$imp_data)
+        req(r6$tables$imp_data,
+            r6$tables$imp_meta)
 
-        qc_data <- r6$tables$imp_data[grepl(x = r6$tables$imp_data$ID,
-                                            pattern = "^QC_P.*"), ] |>
+        # get the sample id's of the quality contol cells
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+
+        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
                               values_to = "value")
 
-        ref_qc <- qc_data[qc_data$ID == "QC_P_1", ]
+        ref_qc <- qc_data[qc_data$ID == sort(qc_ids)[1], ]
         colnames(ref_qc)[3] <- "ref_value"
 
         qc_data <- merge(
