@@ -4,22 +4,24 @@ qc_ui = function(id){
   ns = shiny::NS(id)
   shiny::fluidPage(
     shiny::fluidRow(
-      shiny::p("QC page wil be shown here!"),
-    ),
-
-    shiny::fluidRow(
-      shiny::column(width = 6,
-                    shiny::plotOutput(outputId = ns("qc_c_rsd"))),
-      shiny::column(width = 6,
-                    shiny::plotOutput(outputId = ns("qc_p_rsd")))
+      shiny::p("QC page imported data wil be shown here!"),
     ),
     shiny::fluidRow(
-      shiny::column(width = 6,
-                    shiny::plotOutput(outputId = ns("qc_c_trend"))),
-      shiny::column(width = 6,
-                    shiny::plotOutput(outputId = ns("qc_p_trend")))
+      shiny::column(width = 5,
+                    shiny::plotOutput(outputId = ns("qc_c_imp_rsd"))),
+      shiny::column(width = 2),
+      shiny::column(width = 5,
+                    shiny::plotOutput(outputId = ns("qc_p_imp_rsd")))
+    ),
+    shiny::fluidRow(
+      shiny::column(width = 5,
+                    shiny::plotOutput(outputId = ns("qc_c_imp_trend"))),
+      shiny::column(width = 2),
+      shiny::column(width = 5,
+                    shiny::plotOutput(outputId = ns("qc_p_imp_trend")))
     )
   )
+
 }
 
 #----------------------------------------------------------- QC server ----
@@ -33,20 +35,15 @@ qc_server = function(id, module_controler) {
       # Get lipidomics r6 object
       r6 <- module_controler$r6_exp
 
-      print("Rico: r6")
-      print("Meta")
-      print(colnames(r6$tables$imp_meta))
-      print("Data")
-      print(rownames(r6$tables$imp_data))
-      print(r6$tables$imp_data$ID)
       # rownames(r6$tables$imp_data) contains the names om the samples (sampleId)
       # QC_C is the QC cells
       # QC_P is the QC plasma
 
-      output$qc_c_rsd <- shiny::renderPlot({
+      ## imported data
+      output$qc_c_imp_rsd <- shiny::renderPlot({
         ## QC cells histogram
 
-        # req(r6$tables$imp_data)
+        req(r6$tables$imp_data)
 
         qc_data <- r6$tables$imp_data[grepl(x = r6$tables$imp_data$ID,
                                             pattern = "^QC_C.*"), ] |>
@@ -64,10 +61,10 @@ qc_server = function(id, module_controler) {
         return(p)
       })
 
-      output$qc_p_rsd <- shiny::renderPlot({
+      output$qc_p_imp_rsd <- shiny::renderPlot({
         ## QC plasma histogram
 
-        # req(r6$tables$imp_data)
+        req(r6$tables$imp_data)
 
         qc_data <- r6$tables$imp_data[grepl(x = r6$tables$imp_data$ID,
                                             pattern = "^QC_P.*"), ] |>
@@ -85,10 +82,10 @@ qc_server = function(id, module_controler) {
         return(p)
       })
 
-      output$qc_c_trend <- shiny::renderPlot({
+      output$qc_c_imp_trend <- shiny::renderPlot({
         ## QC cells trend
 
-        # req(r6$tables$imp_data)
+        req(r6$tables$imp_data)
 
         qc_data <- r6$tables$imp_data[grepl(x = r6$tables$imp_data$ID,
                                             pattern = "^QC_C.*"), ] |>
@@ -115,10 +112,10 @@ qc_server = function(id, module_controler) {
       })
 
 
-      output$qc_p_trend <- shiny::renderPlot({
+      output$qc_p_imp_trend <- shiny::renderPlot({
         ## QC plasma trend
 
-        # req(r6$tables$imp_data)
+        req(r6$tables$imp_data)
 
         qc_data <- r6$tables$imp_data[grepl(x = r6$tables$imp_data$ID,
                                             pattern = "^QC_P.*"), ] |>
@@ -145,6 +142,8 @@ qc_server = function(id, module_controler) {
 
         return(NULL)
       })
+
+
     }
   )
 }
