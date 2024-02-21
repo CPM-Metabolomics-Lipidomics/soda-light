@@ -1,6 +1,9 @@
 dev <- FALSE
 
 if(dev) {
+  library(ggplot2)
+  library(tidyr)
+
   work_dir <- "/home/ricoderks/Documents/LUMC/Projects/soda-light/"
   feature_table <- read.csv(file = file.path(work_dir, "240220_features.csv"),
                             row.names = 1,
@@ -96,11 +99,36 @@ if(dev) {
   }))
   names(tot_lipids) <- lipid_classes
 
-  #   return(tot_lipids)
-  # }
 
+  # plotting
+  SI_data <- vector(mode = "list",
+                    length = length(lipid_classes))
+  names(SI_data) <- lipid_classes
+  for(a in lipid_classes) {
+    SI_data[[a]] <- tapply(tot_lipids[, a], meta_table$genoType, function(x) {
+      data.frame("mean" = mean(x, na.rm = TRUE),
+                 "sd" = sd(x, na.rm = TRUE))
+    })
+  }
+  SI_data <- do.call("cbind.data.frame", SI_data)
+  SI_data$genoType <- rownames(SI_data)
+  SI_data <- SI_data |>
+    pivot_longer(cols = -genoType,
+                 names_to = "lipidClass",
+                 values_to = "value")
+  SI_data <- unnest(SI_data,
+                    cols = value)
 
-
-
-
+  SI_data |>
+    ggplot(aes(x = genoType,
+               y = mean,
+               fill = genoType)) +
+    geom_col() +
+    geom_errorbar(aes(ymin = mean - sd,
+                      ymax = mean + sd),
+                  width = 0.2) +
+    facet_wrap(. ~ lipidClass,
+               scales = "free") +
+    theme_minimal() +
+    theme(legend.position = "none")
 }
