@@ -1498,7 +1498,7 @@ iv_check_numeric_range <- function(value, check_range, name_plot, message) {
   }
 }
 
-#--------------------------------------------------------- QC stuff ------- ----
+#--------------------------------------------------------- QC stuff ------------
 qc_histogram <- function(data = NULL,
                          title = NULL) {
   p <- data |>
@@ -1531,6 +1531,28 @@ qc_trend_plot <- function(data = NULL,
     ggplot2::theme_minimal()
 
   return(p)
+}
+
+qc_prep_trend <- function(data = NULL,
+                          ids = NULL) {
+  qc_data <- data[data$ID %in% ids, ] |>
+    tidyr::pivot_longer(cols = -ID,
+                        names_to = "lipid",
+                        values_to = "value")
+
+  ref_qc <- qc_data[qc_data$ID == sort(ids)[1], ]
+  colnames(ref_qc)[3] <- "ref_value"
+
+  qc_data <- merge(
+    x = qc_data,
+    y = ref_qc[, c("lipid", "ref_value")],
+    by = "lipid",
+    all.x = TRUE
+  )
+
+  qc_data$log2fc <- log2(qc_data$value / qc_data$ref_value)
+
+  return(qc_data)
 }
 #--------------------------------------------------------- Example datasets ----
 example_lipidomics = function(name,

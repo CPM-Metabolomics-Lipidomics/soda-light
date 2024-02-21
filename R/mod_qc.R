@@ -94,7 +94,7 @@ qc_server = function(id, module_controler) {
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality contol cells
+        # get the sample id's of the quality control cells
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
 
         # if nothing found
@@ -122,7 +122,7 @@ qc_server = function(id, module_controler) {
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality contol cells
+        # get the sample id's of the quality control plasma
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
 
         # if nothing found
@@ -140,7 +140,7 @@ qc_server = function(id, module_controler) {
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality contol cells
+        # get the sample id's of the quality control cells
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
 
         # if nothing found
@@ -148,22 +148,9 @@ qc_server = function(id, module_controler) {
           return(NULL)
         }
 
-        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
-          tidyr::pivot_longer(cols = -ID,
-                              names_to = "lipid",
-                              values_to = "value")
-
-        ref_qc <- qc_data[qc_data$ID == sort(qc_ids)[1], ]
-        colnames(ref_qc)[3] <- "ref_value"
-
-        qc_data <- merge(
-          x = qc_data,
-          y = ref_qc[, c("lipid", "ref_value")],
-          by = "lipid",
-          all.x = TRUE
-        )
-
-        qc_data$log2fc <- log2(qc_data$value / qc_data$ref_value)
+        # prepare the trend data
+        qc_data <- qc_prep_trend(data = r6$tables$imp_data,
+                                 ids = qc_ids)
 
         p <- qc_trend_plot(data = qc_data,
                            title = "Trend plot QC cells")
@@ -178,7 +165,7 @@ qc_server = function(id, module_controler) {
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality contol cells
+        # get the sample id's of the quality control plasma
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
 
         # if nothing found
@@ -186,22 +173,9 @@ qc_server = function(id, module_controler) {
           return(NULL)
         }
 
-        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
-          tidyr::pivot_longer(cols = -ID,
-                              names_to = "lipid",
-                              values_to = "value")
-
-        ref_qc <- qc_data[qc_data$ID == sort(qc_ids)[1], ]
-        colnames(ref_qc)[3] <- "ref_value"
-
-        qc_data <- merge(
-          x = qc_data,
-          y = ref_qc[, c("lipid", "ref_value")],
-          by = "lipid",
-          all.x = TRUE
-        )
-
-        qc_data$log2fc <- log2(qc_data$value / qc_data$ref_value)
+        # prepare the trend data
+        qc_data <- qc_prep_trend(data = r6$tables$imp_data,
+                                 ids = qc_ids)
 
         p <- qc_trend_plot(data = qc_data,
                            title = "Trend plot QC plasma")
