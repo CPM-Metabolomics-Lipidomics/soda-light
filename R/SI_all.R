@@ -25,7 +25,7 @@ if(dev) {
   # get the unique lipid classes
   lipid_classes <- unique(feature_table$lipid_class)
   # for now remove TG and PA
-  lipid_classes <- lipid_classes[!(lipid_classes %in% c("PA", "TG"))]
+  # lipid_classes <- lipid_classes[!(lipid_classes %in% c("PA", "TG"))]
 
   tot_lipids <- vector(mode = "list",
                        length = length(lipid_classes))
@@ -83,13 +83,18 @@ if(dev) {
 
     ## unsaturated
     lipid_data_unsat <- lipid_data[, colnames(lipid_data) %in% union(unsat_lipid, unsat_lipid_dbl), drop = FALSE]
+
+    # get the total unsaturation and multiply by the number of unsaturations
+    unsat_sum <- feature_table[union(unsat_lipid, unsat_lipid_dbl), "unsat_sum"]
+    lipid_data_unsat <- t(t(lipid_data_unsat) * unsat_sum)
+
     # if contains 2x unsaturated FA tail multiply by 2
-    lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] <- lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] * 2
+    # lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] <- lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] * 2
 
     # calculate the SI index
     tot_lipids[[a]][["tot_sat"]] <- rowSums(lipid_data_sat, na.rm = TRUE)
     tot_lipids[[a]][["tot_unsat"]] <- rowSums(lipid_data_unsat, na.rm = TRUE)
-    tot_lipids[[a]][["SI"]] <- tot_lipids[[a]][["tot_sat"]] / tot_lipids[[a]][["tot_unsat"]]
+    tot_lipids[[a]][["SI"]] <- tot_lipids[[a]][["tot_unsat"]] / tot_lipids[[a]][["tot_sat"]]
 
   }
 
@@ -131,4 +136,13 @@ if(dev) {
                scales = "free") +
     theme_minimal() +
     theme(legend.position = "none")
+
+
+  ######
+  x <- matrix(1:50, ncol = 10)
+  microbenchmark::microbenchmark(
+    t(t(x) * 1:10),
+    sweep(x, 2, 1:10, `*`)
+  )
+
 }
