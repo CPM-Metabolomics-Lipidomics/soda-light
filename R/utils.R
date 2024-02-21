@@ -1293,7 +1293,7 @@ satindex_calc_all <- function(data_table = NULL,
     # calculate the SI index
     tot_lipids[[a]][["tot_sat"]] <- rowSums(lipid_data_sat, na.rm = TRUE)
     tot_lipids[[a]][["tot_unsat"]] <- rowSums(lipid_data_unsat, na.rm = TRUE)
-    tot_lipids[[a]][["SI"]] <- tot_lipids[[a]][["tot_sat"]] / tot_lipids[[a]][["tot_unsat"]]
+    tot_lipids[[a]][["SI"]] <- tot_lipids[[a]][["tot_unsat"]] / tot_lipids[[a]][["tot_sat"]]
 
   }
 
