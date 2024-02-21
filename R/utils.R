@@ -1516,10 +1516,18 @@ qc_histogram <- function(data = NULL,
 
 qc_trend_plot <- function(data = NULL,
                           title = NULL) {
+  # get the lipid class
+  data$lipidclass <- gsub(x = data$lipid,
+                          pattern = "^([a-zA-Z]*) .*",
+                          replacement = "\\1")
+
+  print(unique(data$lipidclass))
+
   p <- data |>
     ggplot2::ggplot(ggplot2::aes(x = ID,
                                  y = log2fc,
-                                 group = lipid)) +
+                                 group = lipid,
+                                 color = lipidclass)) +
     ggplot2::geom_line(alpha = 0.3) +
     ggplot2::geom_point() +
     ggplot2::geom_hline(yintercept = c(-1, 1),
@@ -1528,7 +1536,11 @@ qc_trend_plot <- function(data = NULL,
     ggplot2::labs(title = title,
                   x = "Sample ID",
                   y = "log2(fold change)") +
-    ggplot2::theme_minimal()
+    ggplot2::guides(color = ggplot2::guide_legend(title = "Lipid class",
+                                                  nrow = 2,
+                                                  override.aes = list(alpha = 1))) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(legend.position = "bottom")
 
   return(p)
 }
