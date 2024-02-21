@@ -229,11 +229,12 @@ server = function(input, output, session) {
       # server stuff is created here, should the data be passed here?
       lipidomics_server(id = "mod_exp_1",
                         module_controler = module_controler)
+
+      # QC
+      qc_server(id = "mod_qc",
+                module_controler = module_controler)
     }
   })
-
-  # QC
-  qc_server(id = "mod_qc")
 
   # help
   about_server(id = 'mod_about', main_output = output)

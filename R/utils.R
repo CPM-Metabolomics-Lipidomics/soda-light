@@ -1497,6 +1497,41 @@ iv_check_numeric_range <- function(value, check_range, name_plot, message) {
     print_tm(name_plot, message)
   }
 }
+
+#--------------------------------------------------------- QC stuff ------- ----
+qc_histogram <- function(data = NULL,
+                         title = NULL) {
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = rsd)) +
+    ggplot2::geom_histogram(binwidth = 0.005) +
+    ggplot2::geom_vline(xintercept = 0.3,
+                        color = "red",
+                        linetype = 2) +
+    ggplot2::labs(title = title,
+                  x = "Relative standard deviation") +
+    ggplot2::theme_minimal()
+
+  return(p)
+}
+
+qc_trend_plot <- function(data = NULL,
+                          title = NULL) {
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = ID,
+                                 y = log2fc,
+                                 group = lipid)) +
+    ggplot2::geom_line(alpha = 0.3) +
+    ggplot2::geom_point() +
+    ggplot2::geom_hline(yintercept = c(-1, 1),
+                        color = "red",
+                        linetype = 2) +
+    ggplot2::labs(title = title,
+                  x = "Sample ID",
+                  y = "log2(fold change)") +
+    ggplot2::theme_minimal()
+
+  return(p)
+}
 #--------------------------------------------------------- Example datasets ----
 example_lipidomics = function(name,
                               id = NA,
