@@ -5,7 +5,7 @@ account: ricoderks
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10779576
-bundleId: 8284148
+bundleId: 8284301
 url: https://ricoderks.shinyapps.io/soda-light/
 version: 1
 asMultiple: FALSE
