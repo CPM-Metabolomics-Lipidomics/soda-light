@@ -20,6 +20,7 @@ library(ggupset)
 library(networkD3)
 library(igraph)
 library(ellipse)
+library(waiter)
 
 # text
 library(stringr)
@@ -107,7 +108,11 @@ sidebar_ui = function() {
         tabName = "data",
         icon = shiny::icon("l")
       ),
-
+      bs4Dash::menuItem(
+        text = "QC",
+        tabName = "qc",
+        icon = shiny::icon("q")
+      ),
       bs4Dash::menuItem(
         text = "About",
         tabName = "about",
@@ -130,6 +135,10 @@ body_ui = function() {
       bs4Dash::tabItem(
         tabName = "data",
         lipidomics_ui(id = 'mod_exp_1')
+      ),
+      bs4Dash::tabItem(
+        tabName = "qc",
+        qc_ui(id = 'mod_qc')
       ),
       bs4Dash::tabItem(
         tabName = "about",
@@ -195,7 +204,7 @@ server = function(input, output, session) {
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
       print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
-      if(!grepl(pattern = "^.{3}_2[123][0-9]{4}_[0-9]{2}$",
+      if(!grepl(pattern = "^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
                 x = query[["experimentId"]])) {
         query[["experimentId"]] <- NULL
       }
@@ -221,6 +230,10 @@ server = function(input, output, session) {
       # server stuff is created here, should the data be passed here?
       lipidomics_server(id = "mod_exp_1",
                         module_controler = module_controler)
+
+      # QC
+      qc_server(id = "mod_qc",
+                module_controler = module_controler)
     }
   })
 
