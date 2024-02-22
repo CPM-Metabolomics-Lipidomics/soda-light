@@ -1551,14 +1551,13 @@ qc_trend_plot <- function(data = NULL,
   return(ply)
 }
 
-qc_prep_trend <- function(data = NULL,
-                          ids = NULL) {
-  qc_data <- data[data$ID %in% ids, ] |>
+qc_prep_trend <- function(data = NULL) {
+  qc_data <- data |>
     tidyr::pivot_longer(cols = -ID,
                         names_to = "lipid",
                         values_to = "value")
 
-  ref_qc <- qc_data[qc_data$ID == sort(ids)[1], ]
+  ref_qc <- qc_data[qc_data$ID == sort(qc_data$ID)[1], ]
   colnames(ref_qc)[3] <- "ref_value"
 
   qc_data <- merge(
@@ -1673,7 +1672,9 @@ example_lipidomics = function(name,
 
   r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
 
+  # extract the blanks and the qc samples
   r6$get_blank_table()
+  r6$get_qc_table()
 
   r6$set_raw_data(apply_imputation = FALSE,
                   impute_before = FALSE,

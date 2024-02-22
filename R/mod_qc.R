@@ -52,11 +52,8 @@ qc_server = function(id, module_controler) {
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality contol cells
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
-
         # if nothing found
-        if(length(qc_ids) == 0) {
+        if(nrow(r6$tables$qc_cells_table) == 0) {
           return("No QC cell samples present!")
         } else {
           return(NULL)
@@ -66,19 +63,18 @@ qc_server = function(id, module_controler) {
 
       output$qc_c_imp_rsd <- plotly::renderPlotly({
         ## QC cells histogram
-
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality contol cells
+        # get the sample id's of the quality control cells
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
 
         # if nothing found
-        if(length(qc_ids) == 0) {
+        if(nrow(r6$tables$qc_cells_table) == 0) {
           return(NULL)
         }
 
-        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
+        qc_data <- r6$tables$qc_cells_table |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
                               values_to = "value")
@@ -95,18 +91,16 @@ qc_server = function(id, module_controler) {
 
 
       output$qc_c_imp_violin <- plotly::renderPlotly({
+        ## QC cells violin
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality contol cells
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
-
         # if nothing found
-        if(length(qc_ids) == 0) {
+        if(nrow(r6$tables$qc_cells_table) == 0) {
           return(NULL)
         }
 
-        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
+        qc_data <- r6$tables$qc_cells_table |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
                               values_to = "value")
@@ -125,21 +119,16 @@ qc_server = function(id, module_controler) {
 
       output$qc_c_imp_trend <- plotly::renderPlotly({
         ## QC cells trend
-
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality control cells
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
-
         # if nothing found
-        if(length(qc_ids) == 0) {
+        if(nrow(r6$tables$qc_cells_table) == 0) {
           return(NULL)
         }
 
         # prepare the trend data
-        qc_data <- qc_prep_trend(data = r6$tables$imp_data,
-                                 ids = qc_ids)
+        qc_data <- qc_prep_trend(data = r6$tables$qc_cells_table)
 
         p <- qc_trend_plot(data = qc_data,
                            title = "Trend plot QC cells")
@@ -153,11 +142,8 @@ qc_server = function(id, module_controler) {
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality control plasma
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
-
         # if nothing found
-        if(length(qc_ids) == 0) {
+        if(nrow(r6$tables$qc_plasma_table) == 0) {
           return("No QC plasma samples present!")
         } else {
           return(NULL)
@@ -167,19 +153,15 @@ qc_server = function(id, module_controler) {
 
       output$qc_p_imp_rsd <- plotly::renderPlotly({
         ## QC plasma histogram
-
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality control cells
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
-
         # if nothing found
-        if(length(qc_ids) == 0) {
+        if(nrow(r6$tables$qc_plasma_table) == 0) {
           return(NULL)
         }
 
-        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
+        qc_data <- r6$tables$qc_plasma_table |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
                               values_to = "value")
@@ -196,18 +178,16 @@ qc_server = function(id, module_controler) {
 
 
       output$qc_p_imp_violin <- plotly::renderPlotly({
+        ## QC plasma violin
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
-        # get the sample id's of the quality contol cells
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
-
         # if nothing found
-        if(length(qc_ids) == 0) {
+        if(nrow(r6$tables$qc_plasma_table) == 0) {
           return(NULL)
         }
 
-        qc_data <- r6$tables$imp_data[r6$tables$imp_data$ID %in% qc_ids, ] |>
+        qc_data <- r6$tables$qc_plasma_table |>
           tidyr::pivot_longer(cols = -ID,
                               names_to = "lipid",
                               values_to = "value")
@@ -226,7 +206,6 @@ qc_server = function(id, module_controler) {
 
       output$qc_p_imp_trend <- plotly::renderPlotly({
         ## QC plasma trend
-
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
@@ -234,13 +213,12 @@ qc_server = function(id, module_controler) {
         qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
 
         # if nothing found
-        if(length(qc_ids) == 0) {
+        if(nrow(r6$tables$qc_plasma_table) == 0) {
           return(NULL)
         }
 
         # prepare the trend data
-        qc_data <- qc_prep_trend(data = r6$tables$imp_data,
-                                 ids = qc_ids)
+        qc_data <- qc_prep_trend(data = r6$tables$qc_plasma_table)
 
         p <- qc_trend_plot(data = qc_data,
                            title = "Trend plot QC plasma")
