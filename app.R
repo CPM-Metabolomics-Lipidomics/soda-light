@@ -6,19 +6,16 @@ library(shinyjs)
 library(bs4Dash)
 library(shinyWidgets)
 library(shinybrowser)
-library(shinymanager)
+# library(shinymanager)
 library(shinyvalidate)
 
 # Plotting
 library(ggplot2)
 library(gridExtra)
 library(plotly)
-library(visNetwork)
 library(heatmaply)
 library(ggpubr)
 library(ggupset)
-library(networkD3)
-library(igraph)
 library(ellipse)
 library(waiter)
 
@@ -26,7 +23,6 @@ library(waiter)
 library(stringr)
 
 # Tables
-library(DT)
 library(readxl)
 
 # Colors
@@ -38,24 +34,10 @@ library(stats)
 library(glmnet)
 library(pcaMethods)
 
-# Omics
-library(org.Hs.eg.db)
-library(clusterProfiler)
-library(enrichplot)
-library(ggridges)
-library(MOFA2)
-library(basilisk)
-library(SNFtool)
-
 # General
 library(reshape2)
 library(dplyr)
 library(tidyr)
-
-
-# reticulate::use_condaenv(condaenv = 'mofa_1')
-
-
 
 #------------------------------------------------------------- Setup header ----
 header_ui = function() {
