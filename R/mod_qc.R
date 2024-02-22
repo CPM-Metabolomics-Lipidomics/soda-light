@@ -3,26 +3,28 @@
 qc_ui = function(id){
   ns = shiny::NS(id)
   shiny::fluidPage(
-    shiny::fluidRow(
-      shiny::p("QC page imported data wil be shown here!"),
-    ),
+    # shiny::fluidRow(
+    #   shiny::p("QC page imported data wil be shown here!"),
+    # ),
     shiny::fluidRow(
       shiny::column(width = 4,
                     shiny::textOutput(outputId = ns("qc_c_imp_rsd_text")),
-                    shiny::plotOutput(outputId = ns("qc_c_imp_rsd"))),
+                    plotly::plotlyOutput(outputId = ns("qc_c_imp_rsd"))),
       shiny::column(width = 4,
-                    shiny::plotOutput(outputId = ns("qc_c_imp_violin"))),
+                    plotly::plotlyOutput(outputId = ns("qc_c_imp_violin"))),
       shiny::column(width = 4,
-                    shiny::plotOutput(outputId = ns("qc_c_imp_trend")))
+                    plotly::plotlyOutput(outputId = ns("qc_c_imp_trend")))
     ),
+    shiny::fluidRow(shiny::column(width = 12),
+                    shiny::hr(width = "75%")),
     shiny::fluidRow(
       shiny::column(width = 4,
                     shiny::textOutput(outputId = ns("qc_p_imp_rsd_text")),
-                    shiny::plotOutput(outputId = ns("qc_p_imp_rsd"))),
+                    plotly::plotlyOutput(outputId = ns("qc_p_imp_rsd"))),
       shiny::column(width = 4,
-                    shiny::plotOutput(outputId = ns("qc_p_imp_violin"))),
+                    plotly::plotlyOutput(outputId = ns("qc_p_imp_violin"))),
       shiny::column(width = 4,
-                    shiny::plotOutput(outputId = ns("qc_p_imp_trend")))
+                    plotly::plotlyOutput(outputId = ns("qc_p_imp_trend")))
     )
   )
 
@@ -61,7 +63,7 @@ qc_server = function(id, module_controler) {
       })
 
 
-      output$qc_c_imp_rsd <- shiny::renderPlot({
+      output$qc_c_imp_rsd <- plotly::renderPlotly({
         ## QC cells histogram
 
         req(r6$tables$imp_data,
@@ -91,7 +93,7 @@ qc_server = function(id, module_controler) {
       })
 
 
-      output$qc_c_imp_violin <- renderPlot({
+      output$qc_c_imp_violin <- plotly::renderPlotly({
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
@@ -120,8 +122,33 @@ qc_server = function(id, module_controler) {
       })
 
 
+      output$qc_c_imp_trend <- plotly::renderPlotly({
+        ## QC cells trend
+
+        req(r6$tables$imp_data,
+            r6$tables$imp_meta)
+
+        # get the sample id's of the quality control cells
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
+
+        # if nothing found
+        if(length(qc_ids) == 0) {
+          return(NULL)
+        }
+
+        # prepare the trend data
+        qc_data <- qc_prep_trend(data = r6$tables$imp_data,
+                                 ids = qc_ids)
+
+        p <- qc_trend_plot(data = qc_data,
+                           title = "Trend plot QC cells")
+
+        return(p)
+      })
+
+
       ### Quality control plasma
-      output$qc_p_imp_rsd_text <- renderText({
+      output$qc_p_imp_rsd_text <- shiny::renderText({
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
@@ -137,7 +164,7 @@ qc_server = function(id, module_controler) {
       })
 
 
-      output$qc_p_imp_rsd <- shiny::renderPlot({
+      output$qc_p_imp_rsd <- plotly::renderPlotly({
         ## QC plasma histogram
 
         req(r6$tables$imp_data,
@@ -167,7 +194,7 @@ qc_server = function(id, module_controler) {
       })
 
 
-      output$qc_p_imp_violin <- renderPlot({
+      output$qc_p_imp_violin <- plotly::renderPlotly({
         req(r6$tables$imp_data,
             r6$tables$imp_meta)
 
@@ -196,32 +223,7 @@ qc_server = function(id, module_controler) {
       })
 
 
-      output$qc_c_imp_trend <- shiny::renderPlot({
-        ## QC cells trend
-
-        req(r6$tables$imp_data,
-            r6$tables$imp_meta)
-
-        # get the sample id's of the quality control cells
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
-
-        # if nothing found
-        if(length(qc_ids) == 0) {
-          return(NULL)
-        }
-
-        # prepare the trend data
-        qc_data <- qc_prep_trend(data = r6$tables$imp_data,
-                                 ids = qc_ids)
-
-        p <- qc_trend_plot(data = qc_data,
-                           title = "Trend plot QC cells")
-
-        return(p)
-      })
-
-
-      output$qc_p_imp_trend <- shiny::renderPlot({
+      output$qc_p_imp_trend <- plotly::renderPlotly({
         ## QC plasma trend
 
         req(r6$tables$imp_data,

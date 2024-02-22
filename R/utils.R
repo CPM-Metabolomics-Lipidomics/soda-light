@@ -1511,7 +1511,9 @@ qc_histogram <- function(data = NULL,
                   x = "Relative standard deviation") +
     ggplot2::theme_minimal()
 
-  return(p)
+  ply <- plotly::ggplotly(p)
+
+  return(ply)
 }
 
 qc_trend_plot <- function(data = NULL,
@@ -1527,7 +1529,8 @@ qc_trend_plot <- function(data = NULL,
                                  group = lipid,
                                  color = lipidclass)) +
     ggplot2::geom_line(alpha = 0.3) +
-    ggplot2::geom_point() +
+    ggplot2::geom_point(size = 1,
+                        alpha = 0.3) +
     ggplot2::geom_hline(yintercept = c(-1, 1),
                         color = "red",
                         linetype = 2) +
@@ -1540,7 +1543,12 @@ qc_trend_plot <- function(data = NULL,
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "bottom")
 
-  return(p)
+  ply <- plotly::ggplotly(p)
+
+  ply <- plotly::layout(ply,
+                        xaxis = list(tickangle = 45))
+
+  return(ply)
 }
 
 qc_prep_trend <- function(data = NULL,
@@ -1575,7 +1583,9 @@ qc_rsd_violin <- function(data = NULL,
     ggplot2::ggplot(ggplot2::aes(x = lipidclass,
                                  y = rsd)) +
     ggplot2::geom_violin() +
-    ggplot2::geom_jitter(width = 0.1) +
+    ggplot2::geom_jitter(size = 1,
+                         alpha = 0.5,
+                         width = 0.1) +
     ggplot2::geom_hline(yintercept = 0.3,
                         color = "red",
                         linetype = 2) +
@@ -1584,7 +1594,12 @@ qc_rsd_violin <- function(data = NULL,
                   y = "Relative standard deviation") +
   ggplot2::theme_minimal()
 
-  return(p)
+  ply <- plotly::ggplotly(p)
+
+  ply <- plotly::layout(ply,
+                        xaxis = list(tickangle = 45))
+
+  return(ply)
 }
 #--------------------------------------------------------- Example datasets ----
 example_lipidomics = function(name,
