@@ -1505,6 +1505,109 @@ iv_check_numeric_range <- function(value, check_range, name_plot, message) {
     print_tm(name_plot, message)
   }
 }
+
+#--------------------------------------------------------- QC stuff ------------
+qc_histogram <- function(data = NULL,
+                         title = NULL) {
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = rsd)) +
+    ggplot2::geom_histogram(binwidth = 0.005) +
+    ggplot2::geom_vline(xintercept = 0.3,
+                        color = "red",
+                        linetype = 2) +
+    ggplot2::labs(title = title,
+                  x = "Relative standard deviation") +
+    ggplot2::theme_minimal()
+
+  ply <- plotly::ggplotly(p)
+
+  return(ply)
+}
+
+qc_trend_plot <- function(data = NULL,
+                          title = NULL) {
+  # get the lipid class
+  data$lipidclass <- gsub(x = data$lipid,
+                          pattern = "^([a-zA-Z]*) .*",
+                          replacement = "\\1")
+
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = ID,
+                                 y = log2fc,
+                                 group = lipid,
+                                 color = lipidclass)) +
+    ggplot2::geom_line(alpha = 0.3) +
+    ggplot2::geom_point(size = 1,
+                        alpha = 0.3) +
+    ggplot2::geom_hline(yintercept = c(-1, 1),
+                        color = "red",
+                        linetype = 2) +
+    ggplot2::labs(title = title,
+                  x = "Sample ID",
+                  y = "log2(fold change)") +
+    ggplot2::guides(color = ggplot2::guide_legend(title = "Lipid class",
+                                                  nrow = 2,
+                                                  override.aes = list(alpha = 1))) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(legend.position = "bottom")
+
+  ply <- plotly::ggplotly(p)
+
+  ply <- plotly::layout(ply,
+                        xaxis = list(tickangle = 45))
+
+  return(ply)
+}
+
+qc_prep_trend <- function(data = NULL) {
+  qc_data <- data |>
+    tidyr::pivot_longer(cols = -ID,
+                        names_to = "lipid",
+                        values_to = "value")
+
+  ref_qc <- qc_data[qc_data$ID == sort(qc_data$ID)[1], ]
+  colnames(ref_qc)[3] <- "ref_value"
+
+  qc_data <- merge(
+    x = qc_data,
+    y = ref_qc[, c("lipid", "ref_value")],
+    by = "lipid",
+    all.x = TRUE
+  )
+
+  qc_data$log2fc <- log2(qc_data$value / qc_data$ref_value)
+
+  return(qc_data)
+}
+
+qc_rsd_violin <- function(data = NULL,
+                          title = NULL) {
+  data$lipidclass <- gsub(x = data$lipid,
+                          pattern = "^([a-zA-Z]*) .*",
+                          replacement = "\\1")
+
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = lipidclass,
+                                 y = rsd)) +
+    ggplot2::geom_violin() +
+    ggplot2::geom_jitter(size = 1,
+                         alpha = 0.5,
+                         width = 0.1) +
+    ggplot2::geom_hline(yintercept = 0.3,
+                        color = "red",
+                        linetype = 2) +
+    ggplot2::labs(title = title,
+                  x = "Lipid class",
+                  y = "Relative standard deviation") +
+  ggplot2::theme_minimal()
+
+  ply <- plotly::ggplotly(p)
+
+  ply <- plotly::layout(ply,
+                        xaxis = list(tickangle = 45))
+
+  return(ply)
+}
 #--------------------------------------------------------- Example datasets ----
 example_lipidomics = function(name,
                               id = NA,
@@ -1577,7 +1680,9 @@ example_lipidomics = function(name,
 
   r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
 
+  # extract the blanks and the qc samples
   r6$get_blank_table()
+  r6$get_qc_table()
 
   r6$set_raw_data(apply_imputation = FALSE,
                   impute_before = FALSE,

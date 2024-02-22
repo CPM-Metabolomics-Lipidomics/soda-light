@@ -314,6 +314,9 @@ Lips_exp = R6::R6Class(
 
       blank_table = NULL,
 
+      qc_cell_table = NULL,
+      qc_plasma_table = NULL,
+
       feature_table = NULL,
 
       # Group summaries
@@ -647,6 +650,17 @@ Lips_exp = R6::R6Class(
       self$tables$blank_table = as.matrix(blank_table)
     },
 
+    get_qc_table = function() {
+      id_cells <- self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control cells", "analystId"]
+      id_plasma <- self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+
+      qc_cells <- self$tables$imp_data[self$tables$imp_data$ID %in% id_cells, ]
+      qc_plasma <- self$tables$imp_data[self$tables$imp_data$ID %in% id_plasma, ]
+
+      # qc_table[, self$indices$id_col_data] <- NULL
+      self$tables$qc_cells_table <- qc_cells
+      self$tables$qc_plasma_table <- qc_plasma
+    },
 
     # Class normalisation
     normalise_class = function(){
