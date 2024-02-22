@@ -20,6 +20,7 @@ library(ggupset)
 library(networkD3)
 library(igraph)
 library(ellipse)
+library(waiter)
 
 # text
 library(stringr)
