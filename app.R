@@ -113,6 +113,8 @@ body_ui = function() {
     shinyjs::useShinyjs(),
     shinybrowser::detect(),
 
+    shiny::tags$style(".fa-bars {color:#0255e9}"),
+
     bs4Dash::tabItems(
       bs4Dash::tabItem(
         tabName = "data",
