@@ -5,9 +5,9 @@ account: ricoderks
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10779576
-bundleId: 8284301
+bundleId: 8303349
 url: https://ricoderks.shinyapps.io/soda-light/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: 240220_data.csv|240220_features.csv|240220_meta.csv|neurolipid_meta.csv
+ignoredFiles: .~lock.240220_features.csv#|240220_data.csv|240220_features.csv|240220_meta.csv|neurolipid_meta.csv
