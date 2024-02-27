@@ -1244,27 +1244,19 @@ satindex_calc_all <- function(data_table = NULL,
   tot_lipids <- lapply(tot_lipids, function(x) {
     setNames(vector(mode = "list",
                     length = 3),
-             c("tot_sat", "tot_unsat", "SI"))
+             c("weighted", "unweighted", "SI"))
   })
 
   for(a in lipid_classes) {
     # lipids with only one FA chain
     if(all(feature_table$carbons_2[feature_table$lipid_class == a] == 0) | a == "TG") {
-      if(a == "TG") {
-        sat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
-                                           feature_table$unsat_2 == 0]
-        unsat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
-                                             feature_table$unsat_2 != 0]
-        sat_lipid_dbl <- NULL
-        unsat_lipid_dbl <- NULL
-      } else {
-        sat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
-                                           feature_table$unsat_1 == 0]
-        unsat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
-                                             feature_table$unsat_1 != 0]
-        sat_lipid_dbl <- NULL
-        unsat_lipid_dbl <- NULL
-      }
+
+      sat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
+                                         feature_table$unsat_sum == 0]
+      unsat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
+                                           feature_table$unsat_sum != 0]
+      sat_lipid_dbl <- NULL
+      unsat_lipid_dbl <- NULL
     } else {
       # lipids with 2 FA chains
       sat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
@@ -1283,26 +1275,42 @@ satindex_calc_all <- function(data_table = NULL,
 
     ## get data per lipid class
     lipid_data <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a], drop = FALSE]
+    lipid_data_weighted <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a], drop = FALSE]
     ## saturated
-    lipid_data_sat <- lipid_data[, colnames(lipid_data) %in% union(sat_lipid, sat_lipid_dbl), drop = FALSE]
     # if contains 2x saturated FA tail multiply by 2
-    lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] <- lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] * 2
+    lipid_data_weighted[, colnames(lipid_data_weighted) %in% sat_lipid_dbl] <- lipid_data_weighted[, colnames(lipid_data_weighted) %in% sat_lipid_dbl] * 2
 
     ## unsaturated
-    lipid_data_unsat <- lipid_data[, colnames(lipid_data) %in% union(unsat_lipid, unsat_lipid_dbl), drop = FALSE]
-
     # get the total unsaturation and multiply by the number of unsaturations
-    unsat_sum <- feature_table[union(unsat_lipid, unsat_lipid_dbl), "unsat_sum"]
-    lipid_data_unsat <- t(t(lipid_data_unsat) * unsat_sum)
-
-    # if contains 2x unsaturated FA tail multiply by 2
-    # lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] <- lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] * 2
+    select_lipids <- union(
+      union(sat_lipid, sat_lipid_dbl),
+      union(unsat_lipid, unsat_lipid_dbl)
+    )
+    unsat_sum <- feature_table[feature_table$lipid_class == a, "unsat_sum"]
+    lipid_data_weighted[, colnames(lipid_data_weighted) %in% select_lipids] <- t(t(lipid_data_weighted[, colnames(lipid_data_weighted) %in% select_lipids]) * unsat_sum)
+    # correct the lipid classes where the totals where used, for the number of FA tails
+    lipid_data_weighted <- switch(
+      a,
+      "PA" = lipid_data_weighted / 2,
+      "TG" = lipid_data_weighted / 3,
+      lipid_data_weighted
+    )
+    # ## saturated
+    # lipid_data_sat <- lipid_data[, colnames(lipid_data) %in% union(sat_lipid, sat_lipid_dbl), drop = FALSE]
+    # # if contains 2x saturated FA tail multiply by 2
+    # lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] <- lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] * 2
+    # ## unsaturated
+    # lipid_data_unsat <- lipid_data[, colnames(lipid_data) %in% union(unsat_lipid, unsat_lipid_dbl), drop = FALSE]
+    # # get the total unsaturation and multiply by the number of unsaturations
+    # unsat_sum <- feature_table[union(unsat_lipid, unsat_lipid_dbl), "unsat_sum"]
+    # lipid_data_unsat <- t(t(lipid_data_unsat) * unsat_sum)
 
     # calculate the SI index
-    tot_lipids[[a]][["tot_sat"]] <- rowSums(lipid_data_sat, na.rm = TRUE)
-    tot_lipids[[a]][["tot_unsat"]] <- rowSums(lipid_data_unsat, na.rm = TRUE)
-    tot_lipids[[a]][["SI"]] <- tot_lipids[[a]][["tot_unsat"]] / tot_lipids[[a]][["tot_sat"]]
-
+    # tot_lipids[[a]][["tot_sat"]] <- rowSums(lipid_data_sat, na.rm = TRUE)
+    # tot_lipids[[a]][["tot_unsat"]] <- rowSums(lipid_data_unsat, na.rm = TRUE)
+    tot_lipids[[a]][["unweighted"]] <- rowSums(lipid_data, na.rm = TRUE)
+    tot_lipids[[a]][["weighted"]] <- rowSums(lipid_data_weighted, na.rm = TRUE)
+    tot_lipids[[a]][["SI"]] <- tot_lipids[[a]][["weighted"]] / tot_lipids[[a]][["unweighted"]]
   }
 
   # make data.frame
