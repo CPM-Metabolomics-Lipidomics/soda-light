@@ -26,3 +26,6 @@ data/Database/*/*
 
 # ignore sass cache key file
 .sass_cache_keys
+
+# ignore shinyapps.io
+soda-light.dcf
