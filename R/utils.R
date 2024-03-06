@@ -29,12 +29,12 @@ adjustment_title_switch = function(selection) {
 feature_table_cols_switch = function(col) {
   switch(EXPR = col,
          'Lipid class' = 'lipid_class',
-         'Double bonds (chain 1)' = 'unsat_1',
-         'Carbon count (chain 1)' = 'carbons_1',
-         'Double bonds (chain 2)' = 'unsat_2',
-         'Carbon count (chain 2)' = 'carbons_2',
-         'Double bonds (sum)' = 'unsat_sum',
-         'Carbon count (sum)' = 'carbons_sum'
+         'SN1 number of double bonds' = 'unsat_1',
+         'SN1 number of carbons' = 'carbons_1',
+         'SN2 number of double bonds' = 'unsat_2',
+         'SN2 number of carbons' = 'carbons_2',
+         'Total number of double bonds' = 'unsat_sum',
+         'Total number of carbons' = 'carbons_sum'
   )
 }
 

@@ -993,7 +993,7 @@ heatmap_server = function(r6, output, session) {
           width = 4,
           shinyWidgets::switchInput(inputId = ns("heatmap_impute"),
                                     label = "Impute missing",
-                                    value = r6$params$heatmap$imputation,
+                                    value = r6$params$heatmap$impute,
                                     onLabel = 'YES',
                                     offLabel = 'NO',
                                     labelWidth = '150px'
@@ -1025,7 +1025,7 @@ heatmap_server = function(r6, output, session) {
           width = 6,
           shiny::selectizeInput(
             inputId = ns("heatmap_map_rows"),
-            label = "Map sample data",
+            label = "Annotate samples",
             multiple = TRUE,
             choices = r6$hardcoded_settings$meta_column,
             selected = r6$params$heatmap$map_sample_data
@@ -1035,7 +1035,7 @@ heatmap_server = function(r6, output, session) {
           width = 6,
           shiny::selectizeInput(
             inputId = ns("heatmap_map_cols"),
-            label = "Map feature data",
+            label = "Annotate features",
             multiple = TRUE,
             choices = r6$hardcoded_settings$heatmap$map_cols,
             selected = r6$params$heatmap$map_feature_data
@@ -1060,7 +1060,7 @@ heatmap_server = function(r6, output, session) {
         shiny::column(
           width = 6,
           shiny::selectizeInput(inputId = ns("heatmap_group_col_da"),
-                                label = "Group column",
+                                label = "Group",
                                 choices = r6$hardcoded_settings$meta_column,
                                 selected = r6$params$heatmap$group_column_da,
                                 multiple = FALSE,
@@ -1075,7 +1075,10 @@ heatmap_server = function(r6, output, session) {
                              value = r6$params$heatmap$alpha_da,
                              step = 0.01,
                              width = "100%")
-        ),
+        )
+      ),
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::fluidRow(
         shiny::selectInput(
           inputId = ns('heatmap_colors_palette'),
           label = 'Color palette',
@@ -1153,11 +1156,11 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = r6$hardcoded_settings$meta_column,
                       name_plot = r6$name,
                       message = "Heatmap: Incorrect map sample data selected!")
-  iv_heatmap$add_rule("heatmap_map_cols",
-                      iv_check_select_input,
-                      choices = r6$hardcoded_settings$heatmap$map_cols,
-                      name_plot = r6$name,
-                      message = "Heatmap: Incorrect map feature data selected!")
+  # iv_heatmap$add_rule("heatmap_map_cols",
+  #                     iv_check_select_input,
+  #                     choices = r6$hardcoded_settings$heatmap$map_cols,
+  #                     name_plot = r6$name,
+  #                     message = "Heatmap: Incorrect map feature data selected!")
   iv_heatmap$add_rule("heatmap_apply_da",
                       iv_check_select_input,
                       choices = c(FALSE, TRUE),

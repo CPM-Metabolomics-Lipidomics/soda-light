@@ -58,11 +58,11 @@ Lips_exp = R6::R6Class(
       # Heatmap parameters self$params$heatmap$
       heatmap = list(
         dataset = 'Z-scored total normalized table',
-        impute = F,
-        cluster_samples = F,
-        cluster_features = F,
+        impute = TRUE,
+        cluster_samples = TRUE,
+        cluster_features = TRUE,
         map_sample_data = NULL,
-        map_feature_data = NULL,
+        map_feature_data = "lipid_class",
         group_column_da = NULL,
         apply_da = FALSE,
         alpha_da = 0.8,
@@ -118,14 +118,14 @@ Lips_exp = R6::R6Class(
       class_distribution = list(
         datasets = list(
           "Lipid classes (absolute conc.)" = "Class table",
-          "Lipid classes (normalized, % of total lipids)" = "Class table total normalized"
+          "Lipid classes (normalized, % of total lipid classes)" = "Class table total normalized"
         )
       ),
 
       class_comparison = list(
         datasets = list(
           "Lipid classes (absolute conc.)" = "Class table",
-          "Lipid classes (normalized, % of total lipids)" = "Class table total normalized"
+          "Lipid classes (normalized, % of total lipid classes)" = "Class table total normalized"
         )
       ),
 
@@ -165,18 +165,17 @@ Lips_exp = R6::R6Class(
 
       heatmap = list(
         datasets = list(
-          "Lipid species (z-scores)" = "Z-scored table",
-          "Lipid species (z-scores), (normalized, % of total lipids)" = "Z-scored total normalized table",
-          "Lipid classes (z-scores)" = "Class table z-scored"
+          "Lipid species" = "Z-scored table",
+          "Lipid species (normalized, % of total lipids)" = "Z-scored total normalized table",
+          "Lipid classes" = "Class table z-scored",
+          "Lipid classes (normalized, % of total lipid classes)" = "Class table z-scored total normalized"
         ),
         map_cols = list(
-          "Lipid class",
-          "Double bonds (chain 1)",
-          "Carbon count (chain 1)",
-          "Double bonds (chain 2)",
-          "Carbon count (chain 2)",
-          "Double bonds (sum)",
-          "Carbon count (sum)"
+          "Lipid classes" = "lipid_class",
+          "SN1 number of carbons" = "carbons_1",
+          "SN2 number of carbons" = "carbons_2",
+          "Total number of carbons" = "carbons_sum",
+          "Total number of double bonds" = "unsat_sum"
         )
       ),
       # samples_correlation = list(
@@ -674,11 +673,11 @@ Lips_exp = R6::R6Class(
                               img_format = "png")
 
       self$param_heatmap(dataset = 'Z-scored total normalized table',
-                         impute = F,
-                         cluster_samples = F,
-                         cluster_features = F,
-                         map_sample_data = NULL,
-                         map_feature_data = NULL,
+                         impute = TRUE,
+                         cluster_samples = TRUE,
+                         cluster_features = TRUE,
+                         map_sample_data = self$indices$group_col,
+                         map_feature_data = "lipid_class",
                          group_column_da = self$indices$group_col,
                          apply_da = FALSE,
                          alpha_da = 0.8,
@@ -1025,12 +1024,17 @@ Lips_exp = R6::R6Class(
       val_list = na.omit(val_list)
       val_list = sort(val_list)
 
-      zmax = min(c(abs(min(val_list)), max(val_list)))
-      zmin = -zmax
+      # I don't understand this
+      # zmax = min(c(abs(min(val_list)), max(val_list)))
+      # zmin = -zmax
 
+      zmin <- min(val_list)
+      zmax <- max(val_list)
+
+      # I don't understand this
       # Filter out the data
-      data_table[data_table > zmax] = zmax
-      data_table[data_table < zmin] = zmin
+      # data_table[data_table > zmax] = zmax
+      # data_table[data_table < zmin] = zmin
 
       # Annotations
       if (!is.null(row_annotations)) {
@@ -1050,19 +1054,9 @@ Lips_exp = R6::R6Class(
 
       if (!is.null(col_annotations)) {
         clean_names = col_annotations
-        if (length(col_annotations) == 1) {
-          col_annotations = feature_table_cols_switch(col_annotations)
-          col_annotations = as.data.frame(meta_table_features[, col_annotations],
-                                          row.names = rownames(meta_table_features))
-          colnames(col_annotations) = clean_names
-        } else {
-          new_cols = c()
-          for (i in 1:length(col_annotations)) {
-            new_cols = c(new_cols, feature_table_cols_switch(col_annotations[i]))
-          }
-          col_annotations = meta_table_features[, new_cols]
-          colnames(col_annotations) = clean_names
-        }
+        col_annotations = as.data.frame(meta_table_features[, col_annotations],
+                                        row.names = rownames(meta_table_features))
+        colnames(col_annotations) = clean_names
       }
 
       if (impute) {
@@ -1093,6 +1087,7 @@ Lips_exp = R6::R6Class(
                                                 col_side_colors = row_annotations,
                                                 row_side_colors = col_annotations,
                                                 dendrogram = dendrogram_list)
+      # use labCol to customise the labels for the samples
 
     },
 
