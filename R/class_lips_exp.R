@@ -534,7 +534,7 @@ Lips_exp = R6::R6Class(
                             val_threshold = 0.6,
                             blank_multiplier = 0.8,
                             sample_threshold = 0.8,
-                            group_threshold = 0.8,
+                            group_threshold = 0.6,
                             norm_col = "") {
       if (!is.na(self$indices$id_col_data) & !is.null(self$tables$imp_data) & !is.null(self$tables$raw_meta)){
         # Copy imported table
