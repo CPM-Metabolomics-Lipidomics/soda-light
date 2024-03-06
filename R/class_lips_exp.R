@@ -145,21 +145,20 @@ Lips_exp = R6::R6Class(
       # plot specific
       class_distribution = list(
         datasets = list(
-          "Class table",
-          "Class table total normalized"
+          "Lipid classes (absolute conc.)" = "Class table",
+          "Lipid classes (normalized, % of total lipids)" = "Class table total normalized"
         )
       ),
       class_comparison = list(
         datasets = list(
-          "Class table",
-          "Class table total normalized"
+          "Lipid classes (absolute conc.)" = "Class table",
+          "Lipid classes (normalized, % of total lipids)" = "Class table total normalized"
         )
       ),
       volcano_plot = list(
         datasets = list(
-          "Raw data table",
-          "Class normalized table",
-          "Total normalized table"
+          "Lipid species (normalized, % of total lipids within class)" = "Class normalized table",
+          "Lipid species (normalized, % of total lipids)" = "Total normalized table"
         ),
         calc_func = list(
           "median",
@@ -183,9 +182,9 @@ Lips_exp = R6::R6Class(
       ),
       heatmap = list(
         datasets = list(
-          'Z-scored table',
-          'Z-scored total normalized table',
-          'Class table z-scored'
+          "Lipid species (z-scores)" = "Z-scored table",
+          "Lipid species (z-scores), (normalized, % of total lipids)" = "Z-scored total normalized table",
+          "Lipid classes (z-scores)" = "Class table z-scored"
         ),
         map_cols = list(
           "Lipid class",
@@ -197,26 +196,26 @@ Lips_exp = R6::R6Class(
           "Carbon count (sum)"
         )
       ),
-      samples_correlation = list(
-        datasets = list(
-          "Raw data table",
-          "Total normalized table",
-          'Z-scored table',
-          'Z-scored total normalized table'
-        )
-      ),
-      feature_correlation = list(
-        datasets = list(
-          "Raw data table",
-          "Total normalized table",
-          'Z-scored table',
-          'Z-scored total normalized table'
-        )
-      ),
+      # samples_correlation = list(
+      #   datasets = list(
+      #     "Raw data table",
+      #     "Total normalized table",
+      #     'Z-scored table',
+      #     'Z-scored total normalized table'
+      #   )
+      # ),
+      # feature_correlation = list(
+      #   datasets = list(
+      #     "Raw data table",
+      #     "Total normalized table",
+      #     'Z-scored table',
+      #     'Z-scored total normalized table'
+      #   )
+      # ),
       pca = list(
         datasets = list(
-          'Z-scored table',
-          'Z-scored total normalized table'
+          "Lipid species (z-scores)" = "Z-scored table",
+          "Lipid species (z-scores), (normalized, % of total lipids)" = "Z-scored total normalized table"
         ),
         method = list(
           "svd",
@@ -234,42 +233,42 @@ Lips_exp = R6::R6Class(
           "variance"
         )
       ),
-      db_plot = list(
-        datasets = list(
-          "Raw data table",
-          "Class normalized table",
-          "Total normalized table"
-        ),
-        carbon_select = list(
-          "Carbon count (chain 1)",
-          "Carbon count (chain 2)",
-          "Carbon count (sum)"
-        ),
-        unsat_select = list(
-          "Double bonds (chain 1)",
-          "Double bonds (chain 2)",
-          "Double bonds (sum)"
-        ),
-        calc_func = list(
-          "median",
-          "mean"
-        ),
-        test_func = list(
-          "Wilcoxon",
-          "t-Test"
-        ),
-        adjustment_func = list(
-          "None",
-          "Benjamini-Hochberg"
-        )
-      ),
-      satindex = list(
-        method = list(
-          "(palmitate+stearate) / oleate ratio" ,
-          "use all FA tails",
-          "overall",
-          "double bond")
-      ),
+      # db_plot = list(
+      #   datasets = list(
+      #     "Raw data table",
+      #     "Class normalized table",
+      #     "Total normalized table"
+      #   ),
+      #   carbon_select = list(
+      #     "Carbon count (chain 1)",
+      #     "Carbon count (chain 2)",
+      #     "Carbon count (sum)"
+      #   ),
+      #   unsat_select = list(
+      #     "Double bonds (chain 1)",
+      #     "Double bonds (chain 2)",
+      #     "Double bonds (sum)"
+      #   ),
+      #   calc_func = list(
+      #     "median",
+      #     "mean"
+      #   ),
+      #   test_func = list(
+      #     "Wilcoxon",
+      #     "t-Test"
+      #   ),
+      #   adjustment_func = list(
+      #     "None",
+      #     "Benjamini-Hochberg"
+      #   )
+      # ),
+      # satindex = list(
+      #   method = list(
+      #     "(palmitate+stearate) / oleate ratio" ,
+      #     "use all FA tails",
+      #     "overall",
+      #     "double bond")
+      # ),
       fa_analysis = list(
         pathway = list(
           "SFA",
