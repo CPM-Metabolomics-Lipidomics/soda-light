@@ -9,8 +9,6 @@ plotbox_switch_ui_lips = function(selection_list){
                                           "select_volcano_plot" = volcano_plot_ui,
                                           "select_heatmap" = heatmap_ui,
                                           "select_pca" = pca_ui,
-                                          "select_double_bond_plot" = double_bonds_ui,
-                                          "select_satindex_plot" = satindex_ui,
                                           "select_fa_analysis_plot" = fa_analysis_ui
     )
     )
@@ -27,8 +25,6 @@ plotbox_switch_server_lips = function(selection_list){
                                                   "select_volcano_plot" = volcano_plot_server,
                                                   "select_heatmap" = heatmap_server,
                                                   "select_pca" = pca_server,
-                                                  "select_double_bond_plot" = double_bonds_server,
-                                                  "select_satindex_plot" = satindex_server,
                                                   "select_fa_analysis_plot" = fa_analysis_server
     )
     )
@@ -1343,8 +1339,6 @@ lipidomics_server = function(id, module_controler) {
       volcano_plot_events(r6, dimensions_obj, color_palette, input, output, session)
       heatmap_events(r6, dimensions_obj, color_palette, input, output, session)
       pca_events(r6, dimensions_obj, color_palette, input, output, session)
-      db_plot_events(r6, dimensions_obj, color_palette, input, output, session)
-      satindex_events(r6, dimensions_obj, color_palette, input, output, session)
       fa_analysis_events(r6, dimensions_obj, color_palette, input, output, session)
 
       session$userData[[id]]$showPlots = shiny::observeEvent(input$showPlots,{
