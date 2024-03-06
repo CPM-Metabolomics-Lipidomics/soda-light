@@ -663,12 +663,12 @@ Lips_exp = R6::R6Class(
 
     # Class normalisation
     normalise_class = function(){
-      self$tables$class_norm_data = normalise_lipid_class(self$tables$raw_data)
+      self$tables$class_norm_data = normalise_lipid_class(self$tables$raw_data) * 100
     },
 
     # Total or Row normalisation
     normalise_total = function(){
-      self$tables$total_norm_data = self$tables$raw_data/rowSums(self$tables$raw_data, na.rm = T)
+      self$tables$total_norm_data = self$tables$raw_data/rowSums(self$tables$raw_data, na.rm = T) * 100
     },
 
     # Z-score normalisation
@@ -1017,7 +1017,7 @@ Lips_exp = R6::R6Class(
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
                                 name = col, color = colors[col], type  = "bar")
         fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                             yaxis = list(title = "Concentration"))
+                             yaxis = list(title = "%"))
         i = i + 1
       }
 
@@ -1044,7 +1044,7 @@ Lips_exp = R6::R6Class(
       x_step = 1/x_dim
       y_step = 1/y_dim
 
-      x = x_step/2
+      x = x_step / 2
       y = 0.97 - y_step
       i = 1
 
@@ -1066,8 +1066,8 @@ Lips_exp = R6::R6Class(
           x = x_step/2
           y = y - y_step}
       }
-      annotations[[i]] = list(x = -0.08, y = 0.5, text = "Concentration",
-                              font = list(size = 10),
+      annotations[[i]] = list(x = -0.045, y = 0.5, text = "%",
+                              font = list(size = 12),
                               textangle = 270, showarrow = FALSE, xref='paper',
                               yref='paper')
 
