@@ -465,12 +465,20 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
 
   for (group in sort_group) {
     subset_data = data[data$groups == group, ]
+    # get the significant ones
+    idx_signif <- subset_data$p_values <= p_val_threshold
+
+    # divide the data
+    subset_signif <- subset_data[idx_signif, ]
+    subset_not_signif <- subset_data[!idx_signif, ]
+
+    # significant data
     main_plot = plotly::add_trace(
       main_plot,
-      x = subset_data$log2_fold_change,
-      y = subset_data$log10_p_values,
-      text = subset_data$names,
-      color = I(subset_data$color),
+      x = subset_signif$log2_fold_change,
+      y = subset_signif$log10_p_values,
+      text = subset_signif$names,
+      color = I(subset_signif$color),
       type = "scatter",
       mode = "markers",
       marker = list(size = marker_size,
@@ -479,6 +487,23 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
       legendgroup = group,
       name = group,
       showlegend = TRUE,
+      hoverinfo = 'text'
+    )
+    # not significant data
+    main_plot = plotly::add_trace(
+      main_plot,
+      x = subset_not_signif$log2_fold_change,
+      y = subset_not_signif$log10_p_values,
+      text = subset_not_signif$names,
+      color = I(subset_not_signif$color),
+      type = "scatter",
+      mode = "markers",
+      marker = list(size = marker_size,
+                    opacity = 0.6 * opacity,
+                    line = list(width = 0.5, color = 'white')),
+      legendgroup = group,
+      name = group,
+      showlegend = FALSE,
       hoverinfo = 'text'
     )
   }

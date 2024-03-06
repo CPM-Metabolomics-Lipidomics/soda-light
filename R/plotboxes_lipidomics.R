@@ -403,7 +403,7 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('volcano_plot_feature_metadata'),
         label = "Feature metadata",
-        choices = c('None', colnames(r6$tables$feature_table)),
+        choices = r6$hardcoded_settings$volcano_plot$feature_metadata,
         selected = r6$params$volcano_plot$feature_metadata,
         multiple = FALSE
       ),
@@ -414,13 +414,6 @@ volcano_plot_server = function(r6, output, session) {
       #   selected = NULL,
       #   multiple = TRUE
       # ),
-      shinyWidgets::materialSwitch(
-        inputId = ns('volcano_plot_keep_significant'),
-        label = 'Keep only significant data',
-        value = r6$params$volcano_plot$keep_significant,
-        right = TRUE,
-        status = "success"
-      ),
       shiny::selectizeInput(
         inputId = ns('volcano_plot_color_palette'),
         label = "Feature metadata colors",
@@ -525,7 +518,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_feature_metadata", shinyvalidate::sv_required())
-  iv_volcano_plot$add_rule("volcano_plot_keep_significant", shinyvalidate::sv_optional())
   iv_volcano_plot$add_rule("volcano_plot_function", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_test", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_adjustment", shinyvalidate::sv_required())
@@ -570,11 +562,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                            choices = c("None", unique(colnames(r6$tables$feature_table))),
                            name_plot = r6$name,
                            message = "Volcano plot: Incorrect feature metadata selected!")
-  iv_volcano_plot$add_rule("volcano_plot_keep_significant",
-                           iv_check_select_input,
-                           choices = c(FALSE, TRUE),
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect keep significant selected!")
   iv_volcano_plot$add_rule("volcano_plot_function",
                            iv_check_select_input,
                            choices = r6$hardcoded_settings$volcano_plot$calc_func,
@@ -655,7 +642,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_displayed_plot,
       input$volcano_plot_feature_metadata,
       # input$volcano_plot_annotation_terms,
-      input$volcano_plot_keep_significant,
       input$volcano_plot_color_palette,
       input$volcano_plot_p_val_threshold,
       input$volcano_plot_fc_threshold,
@@ -691,7 +677,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                             group_1 = input$volcano_plot_metagroup[1],
                             group_2 = input$volcano_plot_metagroup[2],
                             feature_metadata = input$volcano_plot_feature_metadata,
-                            keep_significant = input$volcano_plot_keep_significant,
                             color_palette = input$volcano_plot_color_palette,
                             displayed_plot = input$volcano_plot_displayed_plot,
                             p_val_threshold = input$volcano_plot_p_val_threshold,

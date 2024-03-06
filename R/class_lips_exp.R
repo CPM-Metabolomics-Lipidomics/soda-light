@@ -43,12 +43,11 @@ Lips_exp = R6::R6Class(
         group_col = NULL,
         group_1 = NULL,
         group_2 = NULL,
-        feature_metadata = 'None',
-        keep_significant = F,
-        displayed_plot = 'main',
+        feature_metadata = "lipid_class",
+        displayed_plot = "all",
         p_val_threshold = 0.05,
         fc_threshold = 2,
-        marker_size = 6,
+        marker_size = 8,
         opacity = 1,
         color_palette = 'Spectral',
         selected_function = "mean",
@@ -99,7 +98,7 @@ Lips_exp = R6::R6Class(
        img_format = "png"
      )
     ),
-
+    #----------------------------------------------------Hard coded settings----
     hardcoded_settings = list(
       # general
       meta_column = c(
@@ -114,6 +113,7 @@ Lips_exp = R6::R6Class(
                         "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
                         "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
       image_format = c("png", "svg", "jpeg", "webp"),
+
       # plot specific
       class_distribution = list(
         datasets = list(
@@ -121,12 +121,14 @@ Lips_exp = R6::R6Class(
           "Lipid classes (normalized, % of total lipids)" = "Class table total normalized"
         )
       ),
+
       class_comparison = list(
         datasets = list(
           "Lipid classes (absolute conc.)" = "Class table",
           "Lipid classes (normalized, % of total lipids)" = "Class table total normalized"
         )
       ),
+
       volcano_plot = list(
         datasets = list(
           "Lipid species (normalized, % of total lipids within class)" = "Class normalized table",
@@ -141,8 +143,8 @@ Lips_exp = R6::R6Class(
           "Wilcoxon"
         ),
         adjustment_func = list(
-          "None",
-          "BH"
+          "None" = "None",
+          "Benjamini & Hochberg" = "BH"
         ),
         display_plot = list(
           "main",
@@ -150,8 +152,17 @@ Lips_exp = R6::R6Class(
           "left",
           "right",
           "top"
+        ),
+        feature_metadata = list(
+          "None" = "None",
+          "Lipid classes" = "lipid_class",
+          "SN1 number of carbons" = "carbons_1",
+          "SN2 number of carbons" = "carbons_2",
+          "Total number of carbons" = "carbons_sum",
+          "Total number of double bonds" = "unsat_sum"
         )
       ),
+
       heatmap = list(
         datasets = list(
           "Lipid species (z-scores)" = "Z-scored table",
@@ -349,7 +360,7 @@ Lips_exp = R6::R6Class(
       self$params$class_comparison$img_format = img_format
     },
 
-    param_volcano_plot = function(auto_refresh, data_table, adjustment, group_col, group_1, group_2, feature_metadata, keep_significant, displayed_plot,
+    param_volcano_plot = function(auto_refresh, data_table, adjustment, group_col, group_1, group_2, feature_metadata, displayed_plot,
                                   p_val_threshold, fc_threshold, marker_size, opacity, color_palette, selected_function, selected_test, img_format) {
 
       self$params$volcano_plot$auto_refresh = auto_refresh
@@ -359,7 +370,6 @@ Lips_exp = R6::R6Class(
       self$params$volcano_plot$group_1 = group_1
       self$params$volcano_plot$group_2 = group_2
       self$params$volcano_plot$feature_metadata = feature_metadata
-      self$params$volcano_plot$keep_significant = keep_significant
       self$params$volcano_plot$displayed_plot = displayed_plot
       self$params$volcano_plot$p_val_threshold = p_val_threshold
       self$params$volcano_plot$fc_threshold = fc_threshold
@@ -652,12 +662,11 @@ Lips_exp = R6::R6Class(
                               group_col = self$indices$group_col,
                               group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
                               group_2 = unique(self$tables$raw_meta[,self$indices$group_col])[2],
-                              feature_metadata = 'None',
-                              keep_significant = F,
-                              displayed_plot = 'main',
+                              feature_metadata = "lipid_class",
+                              displayed_plot = "all",
                               p_val_threshold = 0.05,
                               fc_threshold = 2,
-                              marker_size = 6,
+                              marker_size = 8,
                               opacity = 1,
                               color_palette = 'Spectral',
                               selected_function = "mean",
@@ -713,7 +722,6 @@ Lips_exp = R6::R6Class(
                                  test = self$params$volcano_plot$selected_test,
                                  group_1 = self$params$volcano_plot$group_1,
                                  group_2 = self$params$volcano_plot$group_2) {
-
       rownames_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_1]
       rownames_group_2 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_2]
       all_rownames = sort(unique(c(rownames_group_1, rownames_group_2)))
@@ -759,95 +767,6 @@ Lips_exp = R6::R6Class(
       self$tables$volcano_table = volcano_table
     },
 
-    # Double bond plot table
-    get_dbplot_table_single = function(data_table = self$tables[[self$params$db_plot$dataset]],
-                                       dbplot_table = self$tables$feature_table,
-                                       col_group = self$params$db_plot$group_column,
-                                       used_function = self$params$db_plot$selected_function,
-                                       group_1 = self$params$db_plot$selected_groups[1]){
-
-      # Set the averaging function
-      if (used_function == "median") {
-        av_function = function(x) {return(median(x, na.rm = T))}
-      } else {
-        av_function = function(x) {return(mean(x, na.rm = T))}
-      }
-
-      # Get the rownames for each group
-      idx_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, col_group] == group_1]
-
-      # Remove empty columns
-      dead_features = colnames(data_table)
-      data_table = remove_empty_cols(table = data_table)
-      dead_features = setdiff(dead_features, colnames(data_table))
-
-      if (length(dead_features) > 0) {
-        dead_features = which(rownames(dbplot_table) %in% dead_features)
-        dbplot_table = dbplot_table[-dead_features,]
-      }
-
-
-      averages = apply(data_table,2,av_function)
-      dbplot_table[, "averages"] = averages
-
-      lips = rownames(dbplot_table)
-      txt_medians = as.character(round(dbplot_table[,"averages"],5))
-      dbplot_table$text = paste0(lips, " | ", used_function, ": ", txt_medians)
-
-      self$tables$dbplot_table = dbplot_table
-    },
-
-    get_dbplot_table_double = function(data_table,
-                                       dbplot_table = self$tables$feature_table,
-                                       col_group = self$params$db_plot$group_column,
-                                       used_function = self$params$db_plot$selected_function,
-                                       test = self$params$db_plot$selected_test,
-                                       group_1 = self$params$db_plot$selected_groups[1],
-                                       group_2 = self$params$db_plot$selected_groups[2]) {
-
-      rownames_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, col_group] == group_1]
-      rownames_group_2 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, col_group] == group_2]
-      all_rownames = sort(unique(c(rownames_group_1, rownames_group_2)))
-
-      # Filter data to keep only the two groups
-      data_table = data_table[all_rownames,]
-
-      # Get the indices for each group
-      idx_group_1 = which(rownames(data_table) %in% rownames_group_1)
-      idx_group_2 = which(rownames(data_table) %in% rownames_group_2)
-
-      # Get all row names from both groups
-      idx_all = c(idx_group_1, idx_group_2)
-      idx_all = sort(unique(idx_all))
-      # Filter data to keep only the two groups
-      data_table = data_table[idx_all,]
-      # Remove empty columns
-      dead_features = colnames(data_table)
-      data_table = remove_empty_cols(table = data_table)
-      dead_features = setdiff(dead_features, colnames(data_table))
-      if (length(dead_features) > 0) {
-        dead_features = which(rownames(dbplot_table) %in% dead_features)
-        dbplot_table = dbplot_table[-dead_features,]
-      }
-      # Collect fold change and p-values
-      dbplot_table$fold_change = get_fold_changes(data_table = data_table,
-                                                  idx_group_1 = idx_group_1,
-                                                  idx_group_2 = idx_group_2,
-                                                  used_function = used_function)
-      dbplot_table$p_val = get_p_val(data_table = data_table,
-                                     idx_group_1 = idx_group_1,
-                                     idx_group_2 = idx_group_2,
-                                     used_function = test)
-      dbplot_table$q_val_bh = stats::p.adjust(dbplot_table$p_val, method = "BH")
-      dbplot_table$minus_log10_p_value = -log10(dbplot_table$p_val)
-      dbplot_table$log2_fold_change = log2(dbplot_table$fold_change)
-      dbplot_table$minus_log10_p_value_bh_adj = -log10(dbplot_table$q_val_bh)
-      lips = rownames(dbplot_table)
-      fc = as.character(round(dbplot_table[,"log2_fold_change"],2))
-      pval = as.character(round(dbplot_table[,"minus_log10_p_value_bh_adj"],2))
-      dbplot_table$text = paste0(lips, " | log2(fc): ", fc, " | -log10(bh(pval)): ", pval)
-      self$tables$dbplot_table = dbplot_table
-    },
 
     #----------------------------------------------------- Plotting methods ----
     # Class distribution
@@ -1007,7 +926,6 @@ Lips_exp = R6::R6Class(
                             group_1 = self$params$volcano_plot$group_1,
                             group_2 = self$params$volcano_plot$group_2,
                             feature_metadata = self$params$volcano_plot$feature_metadata,
-                            keep_significant = self$params$volcano_plot$keep_significant,
                             displayed_plot = self$params$volcano_plot$displayed_plot,
                             p_val_threshold = self$params$volcano_plot$p_val_threshold,
                             fc_threshold = self$params$volcano_plot$fc_threshold,
@@ -1024,17 +942,9 @@ Lips_exp = R6::R6Class(
       opacity = as.numeric(opacity)
 
       if (adjustment == 'BH') {
-        if (keep_significant) {
-          data_table = data_table[data_table$q_val_bh <= p_val_threshold,]
-          data_table = data_table[(data_table$log2_fold_change >= log2(fc_threshold)) | (data_table$log2_fold_change <= -log2(fc_threshold)),]
-        }
         p_vals = data_table$q_val_bh
         y_label = '-Log10(BH(p-value))'
       } else {
-        if (keep_significant) {
-          data_table = data_table[data_table$p_val <= p_val_threshold,]
-          data_table = data_table[(data_table$log2_fold_change >= log2(fc_threshold)) | (data_table$log2_fold_change <= -log2(fc_threshold)),]
-        }
         p_vals = data_table$p_val
         y_label = '-Log10(p-value)'
       }
