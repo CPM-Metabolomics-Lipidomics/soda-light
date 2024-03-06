@@ -1021,7 +1021,7 @@ Lips_exp = R6::R6Class(
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
                                 name = col, color = colors[col], type  = "bar")
         fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                             yaxis = list(title = "%"))
+                             yaxis = list(title = "%", tickformat = "digits"))
         i = i + 1
       }
 
@@ -1114,8 +1114,9 @@ Lips_exp = R6::R6Class(
                                           legendgroup=i, showlegend = FALSE,
                                           text = s,
                                           hoverinfo = "text")
-          subplot = subplot %>% layout(xaxis= list(showticklabels = FALSE),
-                                       yaxis = list(tickfont = list(size = 8)))
+          subplot = subplot %>% layout(xaxis = list(showticklabels = FALSE),
+                                       yaxis = list(tickfont = list(size = 8),
+                                                    tickformat = "digits"))
           i = i + 1
         }
         plot_list[[j]] = plotly_build(subplot)
