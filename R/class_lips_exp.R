@@ -1096,6 +1096,7 @@ Lips_exp = R6::R6Class(
                                                   midpoint = 0,
                                                   limits = c(zmin, zmax)
                                                 ),
+                                                fontsize_row = 6,
                                                 width = width,
                                                 height = factor_height * height,
                                                 limits = c(zmin, zmax),
