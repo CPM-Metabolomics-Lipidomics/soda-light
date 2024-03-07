@@ -1082,21 +1082,27 @@ Lips_exp = R6::R6Class(
       # Get the color palette
       color_count = colors_switch(color_palette)
       color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      color_palette = c(color_palette[1], color_palette[round(color_count/2)] , color_palette[color_count])
+      # color_palette = c(color_palette[1], color_palette[round(color_count/2)] , color_palette[color_count])
       if (reverse_palette) {
         color_palette = base::rev(color_palette)
       }
 
       # Plot the data
       self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
-                                                scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
-                                                  low = color_palette[3],
-                                                  mid = color_palette[2],
-                                                  high = color_palette[1],
-                                                  midpoint = 0,
-                                                  limits = c(zmin, zmax)
-                                                ),
+                                                # scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+                                                #   low = color_palette[3],
+                                                #   mid = color_palette[2],
+                                                #   high = color_palette[1],
+                                                #   midpoint = 0,
+                                                #   limits = c(zmin, zmax)
+                                                # ),
+                                                colors = color_palette,
                                                 fontsize_row = 6,
+                                                plot_method = "plotly",
+                                                colorbar_len = 0.3 / factor_height,
+                                                colorbar_yanchor = "top",
+                                                colorbar_xpos = 1.15,
+                                                colorbar_ypos = 1,
                                                 width = width,
                                                 height = factor_height * height,
                                                 limits = c(zmin, zmax),
