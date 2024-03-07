@@ -40,6 +40,11 @@ library(dplyr)
 library(tidyr)
 
 #-------------------------------------------------------- Tool tip settings ----
+# Set up for showing tooltips.
+# Use as: shiny::span(your shiny element,
+#                     `data-toggle` = "tooltip",
+#                     `data-placement` = "right",
+#                     title = "Text of tooltip.")
 css <- "
 .tooltip {
   pointer-events: none;
