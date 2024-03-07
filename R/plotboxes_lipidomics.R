@@ -1229,8 +1229,28 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     if(input$heatmap_dataset == "Class table z-scored" |
        input$heatmap_dataset == "Class table z-scored total normalized") {
       shinyjs::disable(id = "heatmap_map_cols")
+
+      # update numeric input for factor height
+      shiny::updateNumericInput(
+        inputId = "heatmap_factor_height",
+        label = "Height heatmap multiplication",
+        value = 1,
+        min = 1,
+        max = 5,
+        step = 0.1
+      )
     } else {
       shinyjs::enable(id = "heatmap_map_cols")
+
+      # update numeric input for factor height
+      shiny::updateNumericInput(
+        inputId = "heatmap_factor_height",
+        label = "Height heatmap multiplication",
+        value = 2,
+        min = 1,
+        max = 5,
+        step = 0.1
+      )
     }
   })
 
