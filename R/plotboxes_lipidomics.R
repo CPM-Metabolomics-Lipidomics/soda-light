@@ -1088,20 +1088,37 @@ heatmap_server = function(r6, output, session) {
       ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::fluidRow(
-        shiny::selectInput(
-          inputId = ns('heatmap_colors_palette'),
-          label = 'Color palette',
-          choices = r6$hardcoded_settings$color_palette,
-          selected = r6$params$heatmap$color_palette,
-          width = '100%'
-        ),
-        shinyWidgets::materialSwitch(
-          inputId = ns('heatmap_reverse_palette'),
-          label = 'Reverse palette',
-          value = r6$params$heatmap$reverse_palette,
-          right = TRUE,
-          status = "primary"
-        ),
+        shiny::column(
+          width = 12,
+          shiny::span(
+            shiny::numericInput(
+              inputId = ns("heatmap_factor_height"),
+              label = "Height heatmap multiplication",
+              value = 2,
+              min = 1,
+              max = 5,
+              step = 0.1,
+              width = "100%"
+            ),
+            `data-toggle` = "tooltip",
+            `data-placement` = "right",
+            title = "Multiply the height of the heatmap by this factor to increase the height. 1 means the height of the box."
+          ),
+          shiny::selectInput(
+            inputId = ns('heatmap_colors_palette'),
+            label = 'Color palette',
+            choices = r6$hardcoded_settings$color_palette,
+            selected = r6$params$heatmap$color_palette,
+            width = '100%'
+          ),
+          shinyWidgets::materialSwitch(
+            inputId = ns('heatmap_reverse_palette'),
+            label = 'Reverse palette',
+            value = r6$params$heatmap$reverse_palette,
+            right = TRUE,
+            status = "primary"
+          )
+        )
       ),
 
       shiny::actionButton(
@@ -1140,6 +1157,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   iv_heatmap$add_rule("heatmap_colors_palette", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_reverse_palette", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_img_format", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_factor_height", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_dataset",
                       iv_check_select_input,
                       choices = r6$hardcoded_settings$heatmap$datasets,
@@ -1200,6 +1218,11 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = r6$hardcoded_settings$image_format,
                       name_plot = r6$name,
                       message = "Heatmap: Incorrect image format selected!")
+  iv_heatmap$add_rule("heatmap_factor_height",
+                      iv_check_numeric_input,
+                      check_range = c(1, 5),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect multiplication factor for the height!")
 
   shiny::observeEvent(input$heatmap_dataset, {
     # disable feature annotation when a lipid class table is selected
@@ -1242,6 +1265,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                      alpha_da = input$heatmap_alpha_da,
                      color_palette = input$heatmap_colors_palette,
                      reverse_palette = input$heatmap_reverse_palette,
+                     factor_height = input$heatmap_factor_height,
                      img_format = input$heatmap_img_format)
 
     base::tryCatch({

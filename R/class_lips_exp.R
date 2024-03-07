@@ -66,6 +66,7 @@ Lips_exp = R6::R6Class(
         group_column_da = NULL,
         apply_da = FALSE,
         alpha_da = 0.8,
+        factor_height = 2,
         img_format = "png"
       ),
 
@@ -381,7 +382,7 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, img_format) {
+    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, factor_height, img_format) {
       self$params$heatmap$dataset = dataset
       self$params$heatmap$impute = impute
       self$params$heatmap$cluster_samples = cluster_samples
@@ -393,6 +394,7 @@ Lips_exp = R6::R6Class(
       self$params$heatmap$alpha_da = alpha_da
       self$params$heatmap$color_palette = color_palette
       self$params$heatmap$reverse_palette = reverse_palette
+      self$params$heatmap$factor_height = factor_height
       self$params$heatmap$img_format = img_format
     },
 
@@ -683,6 +685,7 @@ Lips_exp = R6::R6Class(
                          alpha_da = 0.8,
                          color_palette = 'RdYlBu',
                          reverse_palette = FALSE,
+                         factor_height = 2,
                          img_format = "png")
 
       self$param_pca(auto_refresh = TRUE,
@@ -992,6 +995,7 @@ Lips_exp = R6::R6Class(
                             alpha_da = self$params$heatmap$alpha_da,
                             color_palette = self$params$heatmap$color_palette,
                             reverse_palette = self$params$heatmap$reverse_palette,
+                            factor_height = self$params$heatmap$factor_height,
                             width = NULL,
                             height = NULL) {
       data_table = self$table_check_convert(data_table)
@@ -1028,7 +1032,8 @@ Lips_exp = R6::R6Class(
       # get the relative sizes for the subplots
       subplot_sizes <- calc_subplot_size(dendrogram = dendrogram_list,
                                          cluster_rows = row_annotations,
-                                         cluster_columns = col_annotations)
+                                         cluster_columns = col_annotations,
+                                         factor_height = factor_height)
 
       val_list = as.vector(data_table)
       val_list = na.omit(val_list)
@@ -1092,7 +1097,7 @@ Lips_exp = R6::R6Class(
                                                   limits = c(zmin, zmax)
                                                 ),
                                                 width = width,
-                                                height = height,
+                                                height = factor_height * height,
                                                 limits = c(zmin, zmax),
                                                 subplot_widths = subplot_sizes$width,
                                                 subplot_heights = subplot_sizes$height,

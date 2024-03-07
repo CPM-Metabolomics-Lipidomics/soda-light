@@ -1165,14 +1165,15 @@ get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, 
 #------------------------------------------------------------ heatmap stuff ----
 calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
                               cluster_rows = NULL,
-                              cluster_columns = NULL) {
+                              cluster_columns = NULL,
+                              factor_height = 1) {
   subplot <- vector(mode = "list",
                     length = 2)
   names(subplot) <- c("width", "height")
 
   # define width and height for the color annotation bars
   width_ann <- 0.02
-  height_ann <- 0.04
+  height_ann <- 0.04 / factor_height
 
   # define width and height for the dendrograms
   width_dend <- switch(
@@ -1184,9 +1185,9 @@ calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
   )
   height_dend <- switch(
     dendrogram,
-    "both" = 0.075,
+    "both" = 0.075 / factor_height,
     "row" = 0,
-    "column" = 0.075,
+    "column" = 0.075 / factor_height,
     "none" = 0
   )
 
