@@ -1012,13 +1012,23 @@ Lips_exp = R6::R6Class(
       # Set the clustering
       if (cluster_rows & cluster_cols) {
         dendrogram_list = "both"
+        # subplot_width <- c(0.85, 0.075, 0.075)
+        # subplot_height <- c(0.075, 0.075, 0.85)
       } else if (cluster_rows) {
+        # only samples
         dendrogram_list = "column" # Because of the transpose, rows => cols
+        print("Rico: cluster rows")
       } else if (cluster_cols) {
+        # only features
         dendrogram_list = "row" # Because of the transpose, cols => rows
       } else {
         dendrogram_list = "none"
       }
+
+      # get the relative sizes for the subplots
+      subplot_sizes <- calc_subplot_size(dendrogram = dendrogram_list,
+                                         cluster_rows = row_annotations,
+                                         cluster_columns = col_annotations)
 
       val_list = as.vector(data_table)
       val_list = na.omit(val_list)
@@ -1084,6 +1094,8 @@ Lips_exp = R6::R6Class(
                                                 width = width,
                                                 height = height,
                                                 limits = c(zmin, zmax),
+                                                subplot_widths = subplot_sizes$width,
+                                                subplot_heights = subplot_sizes$height,
                                                 col_side_colors = row_annotations,
                                                 row_side_colors = col_annotations,
                                                 dendrogram = dendrogram_list)

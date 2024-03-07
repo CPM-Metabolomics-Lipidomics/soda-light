@@ -1161,6 +1161,51 @@ get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, 
               "p_value_bh_adj" = p_value_bh_adj))
 }
 
+
+#------------------------------------------------------------ heatmap stuff ----
+calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
+                              cluster_rows = NULL,
+                              cluster_columns = NULL) {
+  subplot <- vector(mode = "list",
+                    length = 2)
+  names(subplot) <- c("width", "height")
+
+  # define width and height for the color annotation bars
+  width_ann <- 0.02
+  height_ann <- 0.04
+
+  # define width and height for the dendrograms
+  width_dend <- switch(
+    dendrogram,
+    "both" = 0.05,
+    "row" = 0.05,
+    "column" = 0,
+    "none" = 0
+  )
+  height_dend <- switch(
+    dendrogram,
+    "both" = 0.075,
+    "row" = 0,
+    "column" = 0.075,
+    "none" = 0
+  )
+
+  # calculate the size of the subplots
+  subplot$width <- c(1 - width_dend - (length(cluster_columns) * width_ann),
+                     length(cluster_columns) * width_ann,
+                     width_dend)
+  subplot$height <- c(height_dend,
+                      length(cluster_rows) * height_ann,
+                      1 - height_dend - (length(cluster_rows) * height_ann))
+
+  # remove any zero's
+  subplot$width <- subplot$width[subplot$width != 0]
+  subplot$height <- subplot$height[subplot$height != 0]
+
+  return(subplot)
+}
+
+
 #------------------------------------------------------ Fatty acid analysis ----
 fa_analysis_calc <- function(data_table = NULL,
                              feature_table = NULL,
