@@ -991,12 +991,17 @@ heatmap_server = function(r6, output, session) {
       shiny::fluidRow(
         shiny::column(
           width = 4,
-          shinyWidgets::switchInput(inputId = ns("heatmap_impute"),
-                                    label = "Impute missing",
-                                    value = r6$params$heatmap$impute,
-                                    onLabel = 'YES',
-                                    offLabel = 'NO',
-                                    labelWidth = '150px'
+          shiny::span(
+            shinyWidgets::switchInput(inputId = ns("heatmap_impute"),
+                                      label = "Impute missing",
+                                      value = r6$params$heatmap$impute,
+                                      onLabel = "YES",
+                                      offLabel = "NO",
+                                      labelWidth = "125px"
+            ),
+            `data-toggle` = "tooltip",
+            `data-placement` = "right",
+            title = "Missing values will be imputed with the minimum value."
           )
         ),
         shiny::column(

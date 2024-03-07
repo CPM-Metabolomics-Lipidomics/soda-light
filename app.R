@@ -39,6 +39,34 @@ library(reshape2)
 library(dplyr)
 library(tidyr)
 
+#-------------------------------------------------------- Tool tip settings ----
+css <- "
+.tooltip {
+  pointer-events: none;
+}
+.tooltip > .tooltip-inner {
+  pointer-events: none;
+  background-color: #73AD21;
+  color: #FFFFFF;
+  border: 1px solid green;
+  padding: 10px;
+  font-size: 25px;
+  font-style: italic;
+  text-align: justify;
+  margin-left: 0;
+  max-width: 1000px;
+}
+.tooltip > .arrow::before {
+  border-right-color: #73AD21;
+}
+"
+
+js <- "
+$(function () {
+  $('[data-toggle=tooltip]').tooltip()
+})
+"
+
 #------------------------------------------------------------- Setup header ----
 header_ui = function() {
 
