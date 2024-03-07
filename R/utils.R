@@ -360,6 +360,7 @@ get_plotly_box = function(id, label, dimensions_obj, session) {
         outputId = ns(paste0(id, "_sidebar_ui"))
       )
     ),
+    shiny::textOutput(outputId = ns(paste0(id, "_message"))),
     plotly::plotlyOutput(
       outputId = ns(paste0(id, "_plot")),
       width = dimensions_obj$xpx * dimensions_obj$x_plot,

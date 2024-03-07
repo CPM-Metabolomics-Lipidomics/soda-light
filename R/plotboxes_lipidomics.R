@@ -965,7 +965,6 @@ heatmap_spawn = function(r6, format, output) {
 
 
 heatmap_ui = function(dimensions_obj, session) {
-
   get_plotly_box(id = "heatmap",
                  label = "Heatmap",
                  dimensions_obj = dimensions_obj,
@@ -1225,6 +1224,8 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
       map_feature_data <- input$heatmap_map_cols
     }
 
+    shinyjs::hide(id = "heatmap_message")
+
     # disable run button
     shinyjs::disable(id = "heatmap_run")
     print_tm(r6$name, "Heatmap: Updating params...")
@@ -1255,6 +1256,9 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     shinyjs::enable("heatmap_run")
   })
 
+  output$heatmap_message <- shiny::renderText({
+    "To generate a heatmap, go to the settings menu and click the generate heatmap button."
+  })
 
   # Download associated table
   output$download_heatmap_table = shiny::downloadHandler(
