@@ -1016,12 +1016,9 @@ Lips_exp = R6::R6Class(
       # Set the clustering
       if (cluster_rows & cluster_cols) {
         dendrogram_list = "both"
-        # subplot_width <- c(0.85, 0.075, 0.075)
-        # subplot_height <- c(0.075, 0.075, 0.85)
       } else if (cluster_rows) {
         # only samples
         dendrogram_list = "column" # Because of the transpose, rows => cols
-        print("Rico: cluster rows")
       } else if (cluster_cols) {
         # only features
         dendrogram_list = "row" # Because of the transpose, cols => rows
@@ -1035,21 +1032,8 @@ Lips_exp = R6::R6Class(
                                          cluster_columns = col_annotations,
                                          factor_height = factor_height)
 
-      val_list = as.vector(data_table)
-      val_list = na.omit(val_list)
-      val_list = sort(val_list)
-
-      # I don't understand this
-      # zmax = min(c(abs(min(val_list)), max(val_list)))
-      # zmin = -zmax
-
-      zmin <- min(val_list)
-      zmax <- max(val_list)
-
-      # I don't understand this
-      # Filter out the data
-      # data_table[data_table > zmax] = zmax
-      # data_table[data_table < zmin] = zmin
+      zmin <- min(data_table, na.rm = TRUE)
+      zmax <- max(data_table, na.rm = TRUE)
 
       # Annotations
       if (!is.null(row_annotations)) {
@@ -1076,28 +1060,20 @@ Lips_exp = R6::R6Class(
 
       if (impute) {
         print('Imputing NAs')
-        data_table[is.na(data_table)] = zmin
+        data_table[is.na(data_table)] <- min(data_table, na.rm = TRUE)
       }
 
       # Get the color palette
       color_count = colors_switch(color_palette)
       color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      # color_palette = c(color_palette[1], color_palette[round(color_count/2)] , color_palette[color_count])
       if (reverse_palette) {
         color_palette = base::rev(color_palette)
       }
 
       # Plot the data
       self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
-                                                # scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
-                                                #   low = color_palette[3],
-                                                #   mid = color_palette[2],
-                                                #   high = color_palette[1],
-                                                #   midpoint = 0,
-                                                #   limits = c(zmin, zmax)
-                                                # ),
-                                                colors = color_palette,
-                                                fontsize_row = 6,
+                                                colors = base::rev(color_palette),
+                                                fontsize_row = 7,
                                                 plot_method = "plotly",
                                                 colorbar_len = 0.3 / factor_height,
                                                 colorbar_yanchor = "top",
