@@ -1073,13 +1073,18 @@ heatmap_server = function(r6, output, session) {
         ),
         shiny::column(
           width = 6,
-          shiny::sliderInput(inputId = ns("heatmap_alpha_da"),
-                             label = "Alpha",
-                             min = 0,
-                             max = 0.99,
-                             value = r6$params$heatmap$alpha_da,
-                             step = 0.01,
-                             width = "100%")
+          shiny::span(
+            shiny::sliderInput(inputId = ns("heatmap_alpha_da"),
+                               label = "Alpha",
+                               min = 0,
+                               max = 0.99,
+                               value = r6$params$heatmap$alpha_da,
+                               step = 0.01,
+                               width = "100%")
+          ),
+          `data-toggle` = "tooltip",
+          `data-placement` = "right",
+          title = "A higher value for alpha will result in a smaller amount of lipid species."
         )
       ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
@@ -1197,10 +1202,31 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       name_plot = r6$name,
                       message = "Heatmap: Incorrect image format selected!")
 
+  shiny::observeEvent(input$heatmap_dataset, {
+    # disable feature annotation when a lipid class table is selected
+    if(input$heatmap_dataset == "Class table z-scored" |
+       input$heatmap_dataset == "Class table z-scored total normalized") {
+      shinyjs::disable(id = "heatmap_map_cols")
+    } else {
+      shinyjs::enable(id = "heatmap_map_cols")
+    }
+  })
+
   shiny::observeEvent(c(input$heatmap_run,
                         input$heatmap_img_format), {
     req(input$heatmap_run)
-    shinyjs::disable("heatmap_run")
+
+    # make sure no feature annotations will be supplied to heatmap when
+    # a lipid class table is selected
+    if(input$heatmap_dataset == "Class table z-scored" |
+       input$heatmap_dataset == "Class table z-scored total normalized") {
+      map_feature_data <- NULL
+    } else {
+      map_feature_data <- input$heatmap_map_cols
+    }
+
+    # disable run button
+    shinyjs::disable(id = "heatmap_run")
     print_tm(r6$name, "Heatmap: Updating params...")
 
     r6$param_heatmap(dataset = input$heatmap_dataset,
@@ -1208,7 +1234,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                      cluster_samples = input$heatmap_cluster_samples,
                      cluster_features = input$heatmap_cluster_features,
                      map_sample_data = input$heatmap_map_rows,
-                     map_feature_data = input$heatmap_map_cols,
+                     map_feature_data = map_feature_data,
                      group_column_da = input$heatmap_group_col_da,
                      apply_da = input$heatmap_apply_da,
                      alpha_da = input$heatmap_alpha_da,
