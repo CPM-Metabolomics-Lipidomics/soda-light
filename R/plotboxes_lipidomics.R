@@ -1225,6 +1225,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     }
 
     shinyjs::hide(id = "heatmap_message")
+    output$heatmap_message <- shiny::renderText({return(NULL)})
 
     # disable run button
     shinyjs::disable(id = "heatmap_run")
@@ -1247,6 +1248,15 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
       heatmap_generate(r6, color_palette, dimensions_obj, input)
       heatmap_spawn(r6, input$heatmap_img_format, output)
     },error=function(e){
+      shinyjs::show(id = "heatmap_message")
+      output$heatmap_message <- shiny::renderText({
+        if(grepl(x = e,
+                 pattern = "hclustfun\\(dist\\): NA\\/NaN\\/Inf")) {
+          return("There are missing values in the data! Use imputation!")
+        } else {
+          return("An error occurred! Can not generate heatmap!")
+        }
+      })
       print_tm(r6$name, 'Heatmap: ERROR.')
       print(e)
       shinyjs::enable("heatmap_run")
