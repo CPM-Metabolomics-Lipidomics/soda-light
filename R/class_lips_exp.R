@@ -197,7 +197,7 @@ Lips_exp = R6::R6Class(
       # ),
       pca = list(
         datasets = list(
-          "Lipid species (z-scores)" = "Z-scored table",
+          # "Lipid species (z-scores)" = "Z-scored table",
           "Lipid species (z-scores), (normalized, % of total lipids)" = "Z-scored total normalized table"
         ),
         method = list(
