@@ -162,7 +162,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                            fc_threshold = fc_threshold,
                            opacity = opacity,
                            y_axis_title = y_label,
-                           show_y_title = F)
+                           show_y_title = T)
 
   # Blank plot
   blank_plot = plotly::plot_ly(type = 'scatter', mode = 'markers')
@@ -200,6 +200,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       main_plot,
       nrows = 2,
       shareX = TRUE,
+      titleY = TRUE,
       heights = c(0.1, 0.9)
     )
 
