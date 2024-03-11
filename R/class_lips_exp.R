@@ -1142,9 +1142,6 @@ Lips_exp = R6::R6Class(
 
       sample_groups = meta_table[rownames(data_table), sample_groups_col]
       sample_groups_shape <- meta_table[rownames(data_table), sample_groups_col_shape]
-      print("Rico:")
-      print(sample_groups)
-      print(sample_groups_shape)
 
       if (apply_da) {
         data_table = apply_discriminant_analysis(data_table = data_table,

@@ -210,9 +210,6 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
     return(plot)
 
   } else if (!is.null(groups) & (type == "scores")) { # Score plot with groups
-    print("Rico: pca function")
-    print(groups_shape)
-
     data_table = data.frame(
       x = x,
       y = y,

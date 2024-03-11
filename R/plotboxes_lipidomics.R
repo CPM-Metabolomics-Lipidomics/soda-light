@@ -1617,9 +1617,6 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                         input$pca_img_format), {
     shiny::req(iv_pca$is_valid())
 
-    print("Rico: check DA")
-    print(input$pca_apply_da)
-
     if (!input$pca_auto_refresh) {
       r6$params$pca$auto_refresh = input$pca_auto_refresh
       return()
