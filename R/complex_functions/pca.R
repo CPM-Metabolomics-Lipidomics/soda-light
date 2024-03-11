@@ -48,7 +48,7 @@ pca_main = function(data_table, sample_groups = NULL, feature_groups = NULL, nPc
                         type = 'scores',
                         groups = sample_groups,
                         colors = colors_palette,
-                        marker_size = 5,
+                        marker_size = 8,
                         width = width,
                         height = height)
 
