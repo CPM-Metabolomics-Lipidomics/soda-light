@@ -94,7 +94,6 @@ Lips_exp = R6::R6Class(
        feature_meta = NULL,
        sample_meta = "Raw meta table",
        group_col = NULL,
-       pathway = NULL,
        selected_lipidclass = "All",
        color_palette = 'Spectral',
        img_format = "png"
@@ -218,12 +217,6 @@ Lips_exp = R6::R6Class(
         )
       ),
       fa_analysis = list(
-        pathway = list(
-          "SFA",
-          "MUFA",
-          "PUFA(n-6)",
-          "PUFA(n-3)"
-        )
       )
     ),
 
@@ -418,12 +411,11 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, pathway, selected_lipidclass, color_palette, img_format) {
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, selected_lipidclass, color_palette, img_format) {
       self$params$fa_analysis_plot$data_table = data_table
       self$params$fa_analysis_plot$feature_meta = feature_meta
       self$params$fa_analysis_plot$sample_meta = sample_meta
       self$params$fa_analysis_plot$group_col = group_col
-      self$params$fa_analysis_plot$pathway = pathway
       self$params$fa_analysis_plot$selected_lipidclass = selected_lipidclass
       self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
@@ -711,7 +703,6 @@ Lips_exp = R6::R6Class(
                                   sample_meta = self$tables$raw_meta,
                                   group_col = self$indices$group_col,
                                   selected_lipidclass = self$indices$selected_lipidclass,
-                                  pathway = NULL,
                                   color_palette = 'Spectral',
                                   img_format = "png")
 
@@ -1191,7 +1182,6 @@ Lips_exp = R6::R6Class(
                                 feature_table = self$tables$feature_table,
                                 sample_meta = self$tables$raw_meta,
                                 group_col = self$params$fa_analysis_plot$group_col,
-                                pathway = self$params$fa_analysis_plot$pathway,
                                 selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
                                 color_palette = self$params$fa_analysis_plot$color_palette,
                                 width = NULL,
@@ -1228,25 +1218,6 @@ Lips_exp = R6::R6Class(
 
       plot_table <- do.call(rbind.data.frame, plot_table)
 
-      # filter plot_table based on pathway selection
-      pathway_fa <- c(
-        paste(seq(16, 26, 2), 0, sep = ":"),
-        paste(seq(16, 24, 2), 1, sep = ":"),
-        c("18:2", "18:3", "20:2", "20:3", "20:4",
-          "22:4", "22:5","24:4", "24:5"),
-        c("18:3", "18:4", "20:3", "20:4", "20:5",
-           "22:5", "22:6", "24:5", "24:6")
-      )
-      names(pathway_fa) <- c(rep("SFA", 6),
-                             rep("MUFA", 5),
-                             rep("PUFA(n-6)", 9),
-                             rep("PUFA(n-3)", 9))
-
-      if(!is.null(pathway)) {
-        selected_pathway_fa <- unique(pathway_fa[names(pathway_fa) %in% pathway])
-        plot_table <- plot_table[plot_table$fa_chain %in% selected_pathway_fa, ]
-      }
-
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
 
@@ -1254,6 +1225,13 @@ Lips_exp = R6::R6Class(
       colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
       colors = colorRampPalette(colors)(length(group_list))
       colors = setNames(colors, group_list)
+
+      # set the main title
+      if(selected_lipidclass == "All") {
+        main_title <- "All lipid classes"
+      } else {
+        main_title <- paste0("Lipid class: ", selected_lipidclass)
+      }
 
       # plotting
       i <- 1
@@ -1288,7 +1266,10 @@ Lips_exp = R6::R6Class(
                               yanchor = "auto",
                               xshift = 0,
                               yshift = 0,
-                              font = list(size = 10))
+                              font = list(size = 10)),
+                       title = list(text = main_title,
+                                    x = 0.1,
+                                    xanchor = "left")
         )
       fig
 
