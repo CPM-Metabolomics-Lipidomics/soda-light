@@ -1032,8 +1032,11 @@ Lips_exp = R6::R6Class(
                                          cluster_columns = col_annotations,
                                          factor_height = factor_height)
 
-      zmin <- min(data_table, na.rm = TRUE)
-      zmax <- max(data_table, na.rm = TRUE)
+      # make sure the color scale is symmetrical
+      zmax <- max(c(min(data_table, na.rm = TRUE),
+                    max(data_table, na.rm = TRUE)))
+      zmin <- -zmax
+
 
       # Annotations
       if (!is.null(row_annotations)) {
