@@ -506,6 +506,9 @@ get_lipid_class_table = function(table){
                      }
   )
 
+  # Fix the TG, sum needs to be divided by 3, because they are measured 3 times.
+  out_table[, "TG"] <- out_table[, "TG"] / 3
+
   return(out_table)
 }
 
