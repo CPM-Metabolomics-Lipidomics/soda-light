@@ -1069,9 +1069,6 @@ Lips_exp = R6::R6Class(
 
       # customise the x-axis labels
       # use group name and the last 3 number of the sample name
-      print("Rico: customise x-axis labels")
-      print(head(meta_table))
-      print(meta_table[, c(self$indices$group_col)])
       group_names <- meta_table[, c(self$indices$group_col)]
       names(group_names) <- rownames(meta_table)
       xlabels <- paste0(group_names,
@@ -1228,7 +1225,9 @@ Lips_exp = R6::R6Class(
 
       # set the main title
       if(selected_lipidclass == "All") {
-        main_title <- "All lipid classes"
+        main_title <- "All lipid classes (incl. TG)"
+      } else if(selected_lipidclass == "All_noTG") {
+        main_title <- "All lipid classes (excl. TG)"
       } else {
         main_title <- paste0("Lipid class: ", selected_lipidclass)
       }
@@ -1268,7 +1267,7 @@ Lips_exp = R6::R6Class(
                               yshift = 0,
                               font = list(size = 10)),
                        title = list(text = main_title,
-                                    x = 0.1,
+                                    x = 0,
                                     xanchor = "left")
         )
       fig

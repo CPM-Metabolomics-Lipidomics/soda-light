@@ -1219,7 +1219,10 @@ fa_analysis_calc <- function(data_table = NULL,
   feature_table$lipid <- rownames(feature_table)
 
   if(selected_lipidclass == "All") {
-    # all lipids, but remove PA and TG
+    # all lipids, but remove PA
+    sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA"))]
+  } else if(selected_lipidclass == "All_noTG") {
+    # all lipids, but remove PA
     sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA", "TG"))]
   } else {
     sel_feat_idx <- feature_table$lipid[feature_table$lipid_class %in% selected_lipidclass]
@@ -1231,10 +1234,10 @@ fa_analysis_calc <- function(data_table = NULL,
   sel_data_table <- data_table[, sel_feat_idx]
 
   # get the unique chain lengths and unsaturation
-  uniq_carbon <- sort(union(unique(sel_feature_table$carbons_1),
+  uniq_carbon <- sort(union(unique(sel_feature_table$carbons_1[sel_feature_table$lipid_class != "TG"]),
                             unique(sel_feature_table$carbons_2)))
   uniq_carbon <- uniq_carbon[uniq_carbon != 0]
-  uniq_unsat <- sort(union(unique(sel_feature_table$unsat_1),
+  uniq_unsat <- sort(union(unique(sel_feature_table$unsat_1[sel_feature_table$lipid_class != "TG"]),
                            unique(sel_feature_table$unsat_2)))
 
   # Initialize results data.frame

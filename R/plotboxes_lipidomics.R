@@ -807,7 +807,9 @@ fa_analysis_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("fa_analysis_selected_lipidclass"),
         label = "Select lipid class",
-        choices = c("All", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA", "TG"))]),
+        choices = c("All (incl. TG)" = "All",
+                    "All (excl. TG)" = "All_noTG",
+                    unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA"))]),
         selected = r6$params$fa_analysis$selected_lipidclass,
         multiple = FALSE
       ),
@@ -847,9 +849,9 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                           message = "FA analysis: Incorrect group column selected!")
   iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass",
                           iv_check_select_input,
-                          choices = c("All", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA", "TG"))]),
+                          choices = c("All", "All_noTG", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA"))]),
                           name_plot = r6$name,
-                          message = "FA analysis: Incorrect pathway(s) selected!")
+                          message = "FA analysis: Incorrect lipid class selected!")
   iv_fa_analysis$add_rule("fa_analysis_color_palette",
                           iv_check_select_input,
                           choices = r6$hardcoded_settings$color_palette,
