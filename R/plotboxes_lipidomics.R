@@ -1407,9 +1407,15 @@ pca_server = function(r6, output, session) {
       ),
       shiny::selectInput(
         inputId = ns("pca_sample_groups_col"),
-        label = "Sample group column",
+        label = "Sample group column (color)",
         choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$pca$sample_groups_col
+      ),
+      shiny::selectInput(
+        inputId = ns("pca_sample_groups_col_shape"),
+        label = "Sample group column (shape)",
+        choices = c("", r6$hardcoded_settings$meta_column),
+        selected = r6$params$pca$sample_groups_col_shape
       ),
       shiny::selectInput(
         inputId = ns("pca_feature_group"),
@@ -1463,10 +1469,17 @@ pca_server = function(r6, output, session) {
         value = r6$params$pca$displayed_pc_2,
         width = '100%'
       ),
-      shinyWidgets::prettySwitch(
-        inputId = ns('pca_completeObs'),
-        label = 'Complete observations',
-        value = r6$params$pca$completeObs
+      shiny::span(
+        shinyWidgets::materialSwitch(
+          inputId = ns('pca_completeObs'),
+          label = 'Complete observations',
+          status = "success",
+          right = TRUE,
+          value = r6$params$pca$completeObs
+        ),
+        `data-toggle` = "tooltip",
+        `data-placement` = "right",
+        title = "Missing values will be replaced by estimated values."
       ),
       shiny::selectInput(
         inputId = ns('pca_displayed_plots'),
@@ -1591,6 +1604,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
   shiny::observeEvent(c(input$pca_auto_refresh,
                         input$pca_data_table,
                         input$pca_sample_groups_col,
+                        input$pca_sample_groups_col_shape,
                         input$pca_feature_group,
                         input$pca_apply_da,
                         input$pca_alpha_da,
@@ -1617,6 +1631,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
     r6$param_pca(auto_refresh = input$pca_auto_refresh,
                  data_table = input$pca_data_table,
                  sample_groups_col = input$pca_sample_groups_col,
+                 sample_groups_col_shape = input$pca_sample_groups_col_shape,
                  feature_groups_col = input$pca_feature_group,
                  apply_da = input$pca_apply_da,
                  alpha_da = input$pca_alpha_da,
@@ -1634,6 +1649,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
       pca_spawn(r6, input$pca_img_format, output)
     },error=function(e){
       print_tm(r6$name, 'PCA: ERROR.')
+      print(e)
     },finally={}
     )
 

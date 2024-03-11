@@ -74,6 +74,7 @@ Lips_exp = R6::R6Class(
       pca = list(
         data_table = 'z_scored_total_norm_data',
         sample_groups_col = NULL,
+        sample_groups_col_shape = NULL,
         feature_groups_col = NULL,
         apply_da = FALSE,
         alpha_da = 0.8,
@@ -398,10 +399,11 @@ Lips_exp = R6::R6Class(
       self$params$heatmap$img_format = img_format
     },
 
-    param_pca = function(auto_refresh, data_table, sample_groups_col, feature_groups_col, apply_da, alpha_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, img_format) {
+    param_pca = function(auto_refresh, data_table, sample_groups_col, sample_groups_col_shape, feature_groups_col, apply_da, alpha_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, img_format) {
       self$params$pca$auto_refresh = auto_refresh
       self$params$pca$data_table = data_table
       self$params$pca$sample_groups_col = sample_groups_col
+      self$params$pca$sample_groups_col_shape = sample_groups_col_shape
       self$params$pca$feature_groups_col = feature_groups_col
       self$params$pca$apply_da = apply_da
       self$params$pca$alpha_da = alpha_da
@@ -691,6 +693,7 @@ Lips_exp = R6::R6Class(
       self$param_pca(auto_refresh = TRUE,
                      data_table = 'z_scored_total_norm_data',
                      sample_groups_col = self$indices$group_col,
+                     sample_groups_col_shape = "",
                      feature_groups_col = NULL,
                      apply_da = FALSE,
                      alpha_da = 0.8,
@@ -1112,6 +1115,7 @@ Lips_exp = R6::R6Class(
                         meta_table = self$tables$raw_meta,
                         feature_table = self$tables$feature_table,
                         sample_groups_col = self$params$pca$sample_groups_col,
+                        sample_groups_col_shape = self$params$pca$sample_groups_col_shape,
                         feature_groups_col = self$params$pca$feature_groups_col,
                         apply_da = self$params$pca$apply_da,
                         alpha_da = self$params$pca$alpha_da,
@@ -1136,7 +1140,12 @@ Lips_exp = R6::R6Class(
         data_table = self$tables[[data_table]]
       }
 
-      sample_groups = meta_table[rownames(data_table),sample_groups_col]
+      sample_groups = meta_table[rownames(data_table), sample_groups_col]
+      sample_groups_shape <- meta_table[rownames(data_table), sample_groups_col_shape]
+      print("Rico:")
+      print(sample_groups)
+      print(sample_groups_shape)
+
       if (apply_da) {
         data_table = apply_discriminant_analysis(data_table = data_table,
                                                  group_list = sample_groups,
@@ -1164,6 +1173,7 @@ Lips_exp = R6::R6Class(
 
       pca_out = pca_main(data_table = data_table,
                          sample_groups = sample_groups,
+                         sample_groups_shape = sample_groups_shape,
                          feature_groups = feature_groups,
                          nPcs = nPcs,
                          displayed_pc_1 = displayed_pc_1,
@@ -1174,14 +1184,9 @@ Lips_exp = R6::R6Class(
                          colors_palette = colors_palette,
                          return_data = return_data)
 
-
-
-
-
       self$tables$pca_scores_table = pca_out$pca_data@scores
       self$tables$pca_loadings_table = pca_out$pca_data@loadings
       self$plots$pca_plot = pca_out$fig
-
     },
 
     ## FA analysis

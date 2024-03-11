@@ -1,4 +1,4 @@
-pca_main = function(data_table, sample_groups = NULL, feature_groups = NULL, nPcs = 2, displayed_pc_1 = 1, displayed_pc_2 = 2, pca_method = 'svd', completeObs = T, displayed_plots = "both", colors_palette = "Spectral", return_data = FALSE, width = NULL, height = NULL) {
+pca_main = function(data_table, sample_groups = NULL, sample_groups_shape = NULL, feature_groups = NULL, nPcs = 2, displayed_pc_1 = 1, displayed_pc_2 = 2, pca_method = 'svd', completeObs = T, displayed_plots = "both", colors_palette = "Spectral", return_data = FALSE, width = NULL, height = NULL) {
 
   # Check if arguments are valid
   if (!(pca_method %in% pcaMethods::listPcaMethods())){
@@ -47,6 +47,7 @@ pca_main = function(data_table, sample_groups = NULL, feature_groups = NULL, nPc
                         names = rownames(data_table),
                         type = 'scores',
                         groups = sample_groups,
+                        groups_shape = sample_groups_shape,
                         colors = colors_palette,
                         marker_size = 8,
                         width = width,
@@ -99,6 +100,7 @@ pca_main = function(data_table, sample_groups = NULL, feature_groups = NULL, nPc
                    names = rownames(data_table),
                    type = 'scores',
                    groups = sample_groups,
+                   groups_shape = sample_groups_shape,
                    colors = colors_palette,
                    marker_size = 8,
                    width = width,
@@ -122,7 +124,7 @@ pca_main = function(data_table, sample_groups = NULL, feature_groups = NULL, nPc
 }
 
 
-plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, groups = NULL, colors = "Spectral", marker_size = 5, width = NULL, height = NULL) {
+plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, groups = NULL, groups_shape = NULL, colors = "Spectral", marker_size = 5, width = NULL, height = NULL) {
 
   if (!(type %in% c("scores", "loadings"))) {
     print('Error: type must either be scores or loadings.')
@@ -208,6 +210,8 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
     return(plot)
 
   } else if (!is.null(groups) & (type == "scores")) { # Score plot with groups
+    print("Rico: pca function")
+    print(groups_shape)
 
     data_table = data.frame(
       x = x,
@@ -216,24 +220,46 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
       groups = as.factor(groups)
     )
 
+    if(!is.null(groups_shape)) {
+      data_table$groups_shape <- as.factor(groups_shape)
+    }
+
     conf_ellipse = ellipse::ellipse(x = stats::cov(cbind(data_table$x, data_table$y)),
                                     centre = c(mean(data_table$x), mean(data_table$y)),
                                     level = 0.95)
 
-    plot = plotly::plot_ly(data = data_table, width = width, height = height) %>%
+    plot = plotly::plot_ly(data = data_table, width = width, height = height)
 
-      add_markers(
-        x = ~x,
-        y = ~y,
-        text = ~names,
-        mode = "markers+text",
-        marker = list(size = marker_size),
-        color = ~groups,
-        colors = colors,
-        legendgroup = ~groups,
-        showlegend = TRUE
-      ) %>%
+    if(is.null(groups_shape)) {
+      plot <- plot %>%
+        add_markers(
+          x = ~x,
+          y = ~y,
+          text = ~names,
+          mode = "markers+text",
+          marker = list(size = marker_size),
+          color = ~groups,
+          colors = colors,
+          legendgroup = ~groups,
+          showlegend = TRUE
+        )
+    } else {
+      plot <- plot %>%
+        add_markers(
+          x = ~x,
+          y = ~y,
+          text = ~names,
+          mode = "markers+text",
+          marker = list(size = marker_size),
+          color = ~groups,
+          symbol = ~groups_shape,
+          colors = colors,
+          legendgroup = ~groups,
+          showlegend = TRUE
+        )
+    }
 
+    plot <- plot %>%
       add_trace(
         data = as.data.frame(conf_ellipse),
         x = ~x,
@@ -245,8 +271,7 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
         name = "Hotelling T2 (95%)",
         showlegend = TRUE,
         type = "scatter"
-      )%>%
-
+      ) %>%
       layout(
         title = "PCA Scores Plot",
         xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
