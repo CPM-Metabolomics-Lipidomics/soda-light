@@ -1511,6 +1511,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
   iv_pca$add_rule("pca_auto_refresh", shinyvalidate::sv_required())
   iv_pca$add_rule("pca_data_table", shinyvalidate::sv_required())
   iv_pca$add_rule("pca_sample_groups_col", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_sample_groups_col_shape", shinyvalidate::sv_optional())
   iv_pca$add_rule("pca_feature_group", shinyvalidate::sv_required())
   iv_pca$add_rule("pca_apply_da", shinyvalidate::sv_required())
   iv_pca$add_rule("pca_alpha_da", shinyvalidate::sv_required())
@@ -1537,6 +1538,11 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                   choices = r6$hardcoded_settings$meta_column,
                   name_plot = r6$name,
                   message = "PCA plot: Incorrect group column selected!")
+  iv_pca$add_rule("pca_sample_groups_col_shape",
+                  iv_check_select_input,
+                  choices = c("", r6$hardcoded_settings$meta_column),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect group column selected for shape!")
   iv_pca$add_rule("pca_feature_group",
                   iv_check_select_input,
                   choices =  unique(colnames(r6$tables$feature_table)),
@@ -1611,7 +1617,6 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
 
     print_tm(r6$name, "PCA: Updating params...")
 
-    print(input$pca_data_table)
     r6$param_pca(auto_refresh = input$pca_auto_refresh,
                  data_table = input$pca_data_table,
                  sample_groups_col = input$pca_sample_groups_col,
