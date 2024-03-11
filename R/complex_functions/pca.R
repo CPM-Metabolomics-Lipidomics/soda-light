@@ -100,7 +100,7 @@ pca_main = function(data_table, sample_groups = NULL, feature_groups = NULL, nPc
                    type = 'scores',
                    groups = sample_groups,
                    colors = colors_palette,
-                   marker_size = 5,
+                   marker_size = 8,
                    width = width,
                    height = height)
   } else if (displayed_plots == 'variance') {
@@ -158,7 +158,7 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
         line = list(color = 'gray',
                     width = 1),
         inherit = FALSE,
-        name = 'Hotelling',
+        name = "Hotelling T2 (95%)",
         showlegend = TRUE,
         type = "scatter"
       ) %>%
@@ -242,7 +242,7 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
         line = list(color = 'gray',
                     width = 1),
         inherit = FALSE,
-        name = 'Hotelling',
+        name = "Hotelling T2 (95%)",
         showlegend = TRUE,
         type = "scatter"
       )%>%
