@@ -39,7 +39,7 @@ class_distribution_ui = function(dimensions_obj, session) {
 }
 
 
-class_distribution_server = function(r6, output, session) {
+class_distribution_server = function(r6, input, output, session) {
   ns = session$ns
   print_tm(r6$name, "Class distribution : START.")
 
@@ -196,7 +196,7 @@ class_comparison_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-class_comparison_server = function(r6, output, session) {
+class_comparison_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "Class comparison: START.")
@@ -365,7 +365,7 @@ volcano_plot_ui = function(dimensions_obj, session) {
 }
 
 
-volcano_plot_server = function(r6, output, session) {
+volcano_plot_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "Volcano plot: START.")
@@ -791,7 +791,7 @@ fa_analysis_ui = function(dimensions_obj, session) {
                  session = session)
 }
 
-fa_analysis_server = function(r6, output, session) {
+fa_analysis_server = function(r6, input, output, session) {
   ns = session$ns
   print_tm(r6$name, "Fatty acid analysis index: START.")
 
@@ -805,14 +805,14 @@ fa_analysis_server = function(r6, output, session) {
         selected = r6$params$fa_analysis_plot$group_col
       ),
       shiny::selectizeInput(
-        inputId = ns("fa_analysis_selected_lipidclass"),
-        label = "Select lipid class",
-        choices = c("All (incl. TG)" = "All",
-                    "All (excl. TG)" = "All_noTG",
-                    unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA"))]),
-        selected = r6$params$fa_analysis$selected_lipidclass,
+        inputId = ns("fa_analysis_selected_view"),
+        label = "Select view",
+        choices = c("FA overview per lipid class" = "lipidclass",
+                    "Lipid class overview per FA" = "fa"),
+        selected = r6$params$fa_analysis$selected_view,
         multiple = FALSE
       ),
+      shiny::uiOutput(outputId = ns("fa_analysis_selected_view_ui")),
       shiny::selectizeInput(
         inputId = ns('fa_analysis_color_palette'),
         label = "Color palette",
@@ -834,12 +834,51 @@ fa_analysis_server = function(r6, output, session) {
       )
     )
   })
+
+  output$fa_analysis_selected_view_ui <- shiny::renderUI({
+    req(input$fa_analysis_selected_view)
+
+    selected_view <- input$fa_analysis_selected_view
+
+    # get unique FA's, ignore PA
+    feature_table <- r6$tables$feature_table[r6$tables$feature_table$lipid_class != "PA", ]
+    fa_tails <- c(
+      paste0(feature_table$carbons_1[feature_table$lipid_class != "TG"], ":", feature_table$unsat_1[feature_table$lipid_class != "TG"]),
+      paste0(feature_table$carbons_2, ":", feature_table$unsat_2)
+    )
+
+    fa_tails <- unique(fa_tails)
+    fa_tails <- sort(fa_tails[fa_tails != "0:0"])
+
+    if(selected_view == "lipidclass") {
+      shiny::selectizeInput(
+        inputId = ns("fa_analysis_selected_lipidclass"),
+        label = "Select lipid class",
+        choices = c("All (incl. TG)" = "All",
+                    "All (excl. TG)" = "All_noTG",
+                    unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA"))]),
+        selected = r6$params$fa_analysis$selected_lipidclass,
+        multiple = FALSE
+      )
+    } else if(selected_view == "fa") {
+      shiny::selectizeInput(
+        inputId = ns("fa_analysis_selected_fa"),
+        label = "Select fatty acid",
+        choices = fa_tails,
+        selected = r6$params$fa_analysis$selected_fa,
+        multiple = TRUE
+      )
+    }
+  })
 }
+
 
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   iv_fa_analysis <- shinyvalidate::InputValidator$new()
   iv_fa_analysis$add_rule("fa_analysis_metacol", shinyvalidate::sv_required())
-  iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_selected_view", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass", shinyvalidate::sv_optional())
+  iv_fa_analysis$add_rule("fa_analysis_selected_fa", shinyvalidate::sv_optional())
   iv_fa_analysis$add_rule("fa_analysis_color_palette", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_img_format", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_metacol",
@@ -865,10 +904,17 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
 
   # Generate the plot
   shiny::observeEvent(c(input$fa_analysis_metacol,
+                        input$fa_analysis_selected_view,
                         input$fa_analysis_selected_lipidclass,
+                        input$fa_analysis_selected_fa,
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
     shiny::req(iv_fa_analysis$is_valid())
+    if(input$fa_analysis_selected_view == "lipidclass") {
+      shiny::req(input$fa_analysis_selected_lipidclass)
+    } else if(input$fa_analysis_selected_view == "fa") {
+      shiny::req(input$fa_analysis_selected_fa)
+    }
 
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
@@ -876,7 +922,9 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                               feature_meta = r6$tables$feature_table,
                               sample_meta = r6$tables$raw_meta,
                               group_col = input$fa_analysis_metacol,
+                              selected_view = input$fa_analysis_selected_view,
                               selected_lipidclass = input$fa_analysis_selected_lipidclass,
+                              selected_fa = input$fa_analysis_selected_fa,
                               color_palette = input$fa_analysis_color_palette,
                               img_format = input$fa_analysis_img_format)
 
@@ -960,7 +1008,7 @@ heatmap_ui = function(dimensions_obj, session) {
 }
 
 
-heatmap_server = function(r6, output, session) {
+heatmap_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "Heatmap: START.")
@@ -1372,7 +1420,7 @@ pca_ui = function(dimensions_obj, session) {
 }
 
 
-pca_server = function(r6, output, session) {
+pca_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "PCA: START.")

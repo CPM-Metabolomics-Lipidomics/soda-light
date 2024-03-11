@@ -46,7 +46,7 @@ plot_one_lips = function(r6, dimensions_obj, selection_list, input, output, sess
 
   plot_servers = plotbox_switch_server_lips(selection_list = input$showPlots)
   for (server_function in plot_servers) {
-    server_function(r6, output, session)
+    server_function(r6, input, output, session)
   }
 }
 
@@ -65,7 +65,7 @@ plot_two_lips = function(r6, dimensions_obj, selection_list, input, output, sess
 
   plot_servers = plotbox_switch_server_lips(selection_list = input$showPlots)
   for (server_function in plot_servers) {
-    server_function(r6, output, session)
+    server_function(r6, input, output, session)
   }
 }
 
@@ -84,7 +84,7 @@ plot_three_lips = function(r6, dimensions_obj, selection_list, input, output, se
 
   plot_servers = plotbox_switch_server_lips(selection_list = input$showPlots)
   for (server_function in plot_servers) {
-    server_function(r6, output, session)
+    server_function(r6, input, output, session)
   }
 }
 
@@ -104,7 +104,7 @@ plot_four_lips = function(r6, dimensions_obj, selection_list, input, output, ses
 
   plot_servers = plotbox_switch_server_lips(selection_list = input$showPlots)
   for (server_function in plot_servers) {
-    server_function(r6, output, session)
+    server_function(r6, input, output, session)
   }
 }
 
