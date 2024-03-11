@@ -874,6 +874,16 @@ fa_analysis_server = function(r6, input, output, session) {
 
 
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # get unique FA's, ignore PA
+  feature_table <- r6$tables$feature_table[r6$tables$feature_table$lipid_class != "PA", ]
+  fa_tails <- c(
+    paste0(feature_table$carbons_1[feature_table$lipid_class != "TG"], ":", feature_table$unsat_1[feature_table$lipid_class != "TG"]),
+    paste0(feature_table$carbons_2, ":", feature_table$unsat_2)
+  )
+
+  fa_tails <- unique(fa_tails)
+  fa_tails <- sort(fa_tails[fa_tails != "0:0"])
+
   iv_fa_analysis <- shinyvalidate::InputValidator$new()
   iv_fa_analysis$add_rule("fa_analysis_metacol", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_selected_view", shinyvalidate::sv_required())
@@ -886,11 +896,21 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                           choices = r6$hardcoded_settings$meta_column,
                           name_plot = r6$name,
                           message = "FA analysis: Incorrect group column selected!")
+  iv_fa_analysis$add_rule("fa_analysis_selected_view",
+                          iv_check_select_input,
+                          choices = c("lipidclass", "fa"),
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect view selected!")
   iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass",
                           iv_check_select_input,
                           choices = c("All", "All_noTG", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA"))]),
                           name_plot = r6$name,
                           message = "FA analysis: Incorrect lipid class selected!")
+  iv_fa_analysis$add_rule("fa_analysis_selected_fa",
+                          iv_check_select_input,
+                          choices = fa_tails,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect fatty acid tail selected!")
   iv_fa_analysis$add_rule("fa_analysis_color_palette",
                           iv_check_select_input,
                           choices = r6$hardcoded_settings$color_palette,
