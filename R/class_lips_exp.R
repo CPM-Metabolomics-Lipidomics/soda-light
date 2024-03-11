@@ -1193,10 +1193,22 @@ Lips_exp = R6::R6Class(
 
       ## At the moment this function is using the raw data table
       # do the calculations
+      if(selected_view == "lipidclass") {
       res <- fa_analysis_calc(data_table = data_table,
                               feature_table = feature_table,
                               sample_meta = sample_meta,
                               selected_lipidclass = selected_lipidclass)
+      # column names are fa tail names, rownames sample names
+      } else if(selected_view == "fa") {
+        res <- fa_analysis_rev_calc(data_table = data_table,
+                                    feature_table = feature_table,
+                                    sample_meta = sample_meta,
+                                    selected_fa = selected_fa)
+      }
+
+      print("Rico")
+      # print(res)
+
 
 
       # Produce the class x group table

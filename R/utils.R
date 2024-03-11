@@ -1278,6 +1278,77 @@ fa_analysis_calc <- function(data_table = NULL,
 }
 
 
+fa_analysis_rev_calc <- function(data_table = NULL,
+                                 feature_table = NULL,
+                                 sample_meta = NULL,
+                                 selected_fa = NULL) {
+  uniq_lipid_classes <- unique(feature_table$lipid_class[!(feature_table$lipid_class %in% c("PA"))])
+
+  ## Features
+  feature_table$lipid <- rownames(feature_table)
+
+  sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA"))]
+  sel_feature_table <- feature_table[feature_table$lipid %in% sel_feat_idx, ]
+
+  ## Data
+  # select the correct data
+  sel_data_table <- data_table[, sel_feat_idx]
+
+  # get the unique chain lengths and unsaturation
+  split_fa <-  matrix(as.numeric(unlist(strsplit(selected_fa,
+                                                 split = ":",
+                                                 fixed = TRUE))),
+                                 ncol = 2,
+                                 byrow = TRUE)
+  uniq_carbon <- sort(unique(split_fa[, 1]))
+  uniq_unsat <- sort(unique(split_fa[, 2]))
+
+  # Initialize results data.frame
+  fa_chains <- expand.grid(uniq_unsat, uniq_carbon)
+  fa_chains <- paste(fa_chains[, 2], fa_chains[, 1], sep = ":")
+  res <- as.data.frame(matrix(ncol = length(fa_chains),
+                              nrow = nrow(sel_data_table)))
+  colnames(res) <- fa_chains
+  rownames(res) <- rownames(sel_data_table)
+  print(str(sel_feature_table))
+  # do the calculations
+  for(lipid_class in uniq_lipid_classes) {
+    print(lipid_class)
+    for(a in uniq_carbon) {
+      for(b in uniq_unsat) {
+        sel_fa_chain <- paste(a, b, sep = ":")
+        print(sel_fa_chain)
+        sel_lipids <- sel_feature_table$lipid[sel_feature_table$lipid == lipid_class &
+                                                ((sel_feature_table$carbons_1 == a &
+                                                 sel_feature_table$unsat_1 == b) |
+                                                (sel_feature_table$carbons_2 == a &
+                                                   sel_feature_table$unsat_2 == b))]
+        sel_lipids_double <- sel_feature_table$lipid[sel_feature_table$lipid == lipid_class &
+                                                       (sel_feature_table$carbons_1 == a &
+                                                        sel_feature_table$unsat_1 == b) &
+                                                       (sel_feature_table$carbons_2 == a &
+                                                          sel_feature_table$unsat_2 == b)]
+
+        print(sel_lipids)
+        print(sel_lipids_double)
+
+        res[, sel_fa_chain] <- `+`(
+          rowSums(sel_data_table[, sel_lipids, drop = FALSE], na.rm = TRUE),
+          rowSums(sel_data_table[, sel_lipids_double, drop = FALSE], na.rm = TRUE)
+        )
+      } # end b
+    } # end a
+  } # end lipid_class
+
+  # remove empty columns
+  empty_idx <- apply(res, 2, function(x) {
+    all(x == 0)
+  })
+  res <- res[, !empty_idx]
+
+  return(res)
+}
+
 #--------------------------------------------------------- Input validation ----
 iv_check_select_input <- function(value, choices, name_plot, message) {
   if(!all(value %in% choices)) {
