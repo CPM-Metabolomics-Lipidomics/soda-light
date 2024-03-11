@@ -1073,6 +1073,20 @@ Lips_exp = R6::R6Class(
         color_palette = base::rev(color_palette)
       }
 
+      # customise the x-axis labels
+      # use group name and the last 3 number of the sample name
+      print("Rico: customise x-axis labels")
+      print(head(meta_table))
+      print(meta_table[, c(self$indices$group_col)])
+      group_names <- meta_table[, c(self$indices$group_col)]
+      names(group_names) <- rownames(meta_table)
+      xlabels <- paste0(group_names,
+                        "_",
+                        gsub(x = names(group_names),
+                             pattern = ".*([0-9]{3})$",
+                             replacement = "\\1"))
+
+
       # Plot the data
       self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
                                                 colors = base::rev(color_palette),
@@ -1089,9 +1103,8 @@ Lips_exp = R6::R6Class(
                                                 subplot_heights = subplot_sizes$height,
                                                 col_side_colors = row_annotations,
                                                 row_side_colors = col_annotations,
-                                                dendrogram = dendrogram_list)
-      # use labCol to customise the labels for the samples
-
+                                                dendrogram = dendrogram_list,
+                                                labCol = xlabels)
     },
 
     ## PCA scores and loading plots
