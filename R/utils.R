@@ -1214,7 +1214,8 @@ calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
 fa_analysis_calc <- function(data_table = NULL,
                              feature_table = NULL,
                              sample_meta = NULL,
-                             selected_lipidclass = NULL) {
+                             selected_lipidclass = NULL,
+                             fa_norm = FALSE) {
   ## Features
   feature_table$lipid <- rownames(feature_table)
 
@@ -1279,6 +1280,11 @@ fa_analysis_calc <- function(data_table = NULL,
   })
   res <- res[, !empty_idx]
 
+  # normalise by total FA's
+  if(fa_norm) {
+    res <- res / rowSums(res, na.rm = TRUE)
+  }
+
   return(res)
 }
 
@@ -1286,7 +1292,8 @@ fa_analysis_calc <- function(data_table = NULL,
 fa_analysis_rev_calc <- function(data_table = NULL,
                                  feature_table = NULL,
                                  sample_meta = NULL,
-                                 selected_fa = NULL) {
+                                 selected_fa = NULL,
+                                 fa_norm = FALSE) {
   uniq_lipid_classes <- unique(feature_table$lipid_class[!(feature_table$lipid_class %in% c("PA"))])
 
   ## Features
@@ -1304,7 +1311,9 @@ fa_analysis_rev_calc <- function(data_table = NULL,
                               nrow = nrow(sel_data_table)))
   colnames(res) <- uniq_lipid_classes
   rownames(res) <- rownames(sel_data_table)
+
   # do the calculations
+  fa_norm_tot <- 0
   for(lipid_class in uniq_lipid_classes) {
     for(fa_tail in selected_fa) {
       split_fa <- as.numeric(unlist(strsplit(fa_tail,
@@ -1315,16 +1324,13 @@ fa_analysis_rev_calc <- function(data_table = NULL,
                                                   sel_feature_table$unsat_1 == split_fa[2]) |
                                                  (sel_feature_table$carbons_2 == split_fa[1] &
                                                     sel_feature_table$unsat_2 == split_fa[2]))]
-          sel_lipids_double <- sel_feature_table$lipid[sel_feature_table$lipid == lipid_class &
-                                                         (sel_feature_table$carbons_1 == split_fa[1] &
-                                                          sel_feature_table$unsat_1 == split_fa[2]) &
-                                                         (sel_feature_table$carbons_2 == split_fa[1] &
-                                                            sel_feature_table$unsat_2 == split_fa[2])]
+      sel_lipids_double <- sel_feature_table$lipid[sel_feature_table$lipid == lipid_class &
+                                                     (sel_feature_table$carbons_1 == split_fa[1] &
+                                                        sel_feature_table$unsat_1 == split_fa[2]) &
+                                                     (sel_feature_table$carbons_2 == split_fa[1] &
+                                                        sel_feature_table$unsat_2 == split_fa[2])]
 
-          res[, lipid_class] <- `+`(
-            rowSums(sel_data_table[, sel_lipids, drop = FALSE], na.rm = TRUE),
-            rowSums(sel_data_table[, sel_lipids_double, drop = FALSE], na.rm = TRUE)
-          )
+      res[, lipid_class] <- rowSums(sel_data_table[, c(sel_lipids, sel_lipids_double), drop = FALSE], na.rm = TRUE)
     } # end selected_fa
   } # end lipid_class
 
@@ -1336,6 +1342,14 @@ fa_analysis_rev_calc <- function(data_table = NULL,
     all(x == 0)
   })
   res <- res[, !empty_idx]
+
+  # get rid of the zero's
+  res[res == 0] <- NA
+
+  # normalise by total FA's
+  if(fa_norm) {
+    res <- res / rowSums(res, na.rm = TRUE)
+  }
 
   return(res)
 }

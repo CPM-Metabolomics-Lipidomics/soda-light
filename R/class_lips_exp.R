@@ -96,6 +96,7 @@ Lips_exp = R6::R6Class(
        group_col = NULL,
        selected_view = "lipidclass",
        selected_lipidclass = "All",
+       fa_norm = FALSE,
        color_palette = 'Spectral',
        img_format = "png"
      )
@@ -412,7 +413,7 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, selected_view, selected_lipidclass, selected_fa, color_palette, img_format) {
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, selected_view, selected_lipidclass, selected_fa, fa_norm, color_palette, img_format) {
       self$params$fa_analysis_plot$data_table = data_table
       self$params$fa_analysis_plot$feature_meta = feature_meta
       self$params$fa_analysis_plot$sample_meta = sample_meta
@@ -420,6 +421,7 @@ Lips_exp = R6::R6Class(
       self$params$fa_analysis_plot$selected_view = selected_view
       self$params$fa_analysis_plot$selected_lipidclass = selected_lipidclass
       self$params$fa_analysis_plot$selected_fa = selected_fa
+      self$params$fa_analysis_plot$fa_norm = fa_norm
       self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
     },
@@ -708,6 +710,7 @@ Lips_exp = R6::R6Class(
                                   selected_view = self$params$fa_analysis_plot$selected_view,
                                   selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
                                   selected_fa = self$params$fa_analysis_plot$selected_fa,
+                                  fa_norm = self$params$fa_analysis_plot$fa_norm,
                                   color_palette = 'Spectral',
                                   img_format = "png")
 
@@ -1187,23 +1190,25 @@ Lips_exp = R6::R6Class(
                                 selected_view = self$params$fa_analysis_plot$selected_view,
                                 selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
                                 selected_fa = self$params$fa_analysis_plot$selected_fa,
+                                fa_norm = self$params$fa_analysis_plot$fa_norm,
                                 color_palette = self$params$fa_analysis_plot$color_palette,
                                 width = NULL,
                                 height = NULL) {
-
       ## At the moment this function is using the raw data table
       # do the calculations
       if(selected_view == "lipidclass") {
       res <- fa_analysis_calc(data_table = data_table,
                               feature_table = feature_table,
                               sample_meta = sample_meta,
-                              selected_lipidclass = selected_lipidclass)
+                              selected_lipidclass = selected_lipidclass,
+                              fa_norm = fa_norm)
       # column names are fa tail names, rownames sample names
       } else if(selected_view == "fa") {
         res <- fa_analysis_rev_calc(data_table = data_table,
                                     feature_table = feature_table,
                                     sample_meta = sample_meta,
-                                    selected_fa = selected_fa)
+                                    selected_fa = selected_fa,
+                                    fa_norm = fa_norm)
       }
 
       # Produce the class x group table
@@ -1249,6 +1254,12 @@ Lips_exp = R6::R6Class(
         xlabel <- "Fatty acid chain"
       }
 
+      if(fa_norm) {
+        ylabel <- "%"
+      } else {
+        ylabel <- "Concentration"
+      }
+
       # set the main title for lipid class overview per fatty acids
       if(selected_view == "fa") {
         main_title <- paste0("FA tails: ", paste(selected_fa, collapse = ", "))
@@ -1273,7 +1284,7 @@ Lips_exp = R6::R6Class(
                                        xanchor = "center",
                                        x = 0.5),
                          xaxis = list(title = xlabel),
-                         yaxis = list(title = "Concentration"))
+                         yaxis = list(title = ylabel))
         i <- i + 1
       }
       fig <- fig |>

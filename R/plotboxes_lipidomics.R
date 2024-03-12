@@ -813,6 +813,18 @@ fa_analysis_server = function(r6, input, output, session) {
         multiple = FALSE
       ),
       shiny::uiOutput(outputId = ns("fa_analysis_selected_view_ui")),
+      shiny::span(
+        shinyWidgets::materialSwitch(
+          inputId = ns("fa_analysis_fa_norm"),
+          label = "Fatty acid normalisation",
+          status = "success",
+          right = TRUE,
+          value = r6$params$fa_analysis_plot$fa_norm
+        ),
+        `data-toggle` = "tooltip",
+        `data-placement` = "right",
+        title = "Normalize the data by the total of the fatty acids."
+      ),
       shiny::selectizeInput(
         inputId = ns('fa_analysis_color_palette'),
         label = "Color palette",
@@ -927,6 +939,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                         input$fa_analysis_selected_view,
                         input$fa_analysis_selected_lipidclass,
                         input$fa_analysis_selected_fa,
+                        input$fa_analysis_fa_norm,
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
     shiny::req(iv_fa_analysis$is_valid())
@@ -945,6 +958,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                               selected_view = input$fa_analysis_selected_view,
                               selected_lipidclass = input$fa_analysis_selected_lipidclass,
                               selected_fa = input$fa_analysis_selected_fa,
+                              fa_norm = input$fa_analysis_fa_norm,
                               color_palette = input$fa_analysis_color_palette,
                               img_format = input$fa_analysis_img_format)
 
