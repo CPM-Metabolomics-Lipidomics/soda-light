@@ -1360,39 +1360,12 @@ Lips_exp = R6::R6Class(
                             height = NULL) {
       print("Rico")
 
-      ## samples
-      idx_samples1 <- rownames(sample_meta)[sample_meta[, group_col] == group_1]
-      left_hm_data <- data_table[idx_samples1, ]
-
-      ## features
-      feature_table$lipid <- rownames(feature_table)
-      selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
-      # get the unique chain lengths and unsaturation
-      uniq_carbon <- sort(unique(selected_features$carbons_sum))
-      uniq_unsat <- sort(unique(selected_features$unsat_sum))
-
-      ## calculations
-      # initialize result matrix
-      res <- matrix(ncol = length(uniq_carbon),
-                    nrow = length(uniq_unsat))
-      colnames(res) <- as.character(uniq_carbon)
-      rownames(res) <- as.character(uniq_unsat)
-
-      for(a in rownames(res)) { # unsaturation
-        for(b in colnames(res)) { # carbons
-          idx_lipids <- selected_features$lipid[selected_features$carbons_sum == b &
-                                                  selected_features$unsat_sum == a]
-          print(idx_lipids)
-          if(length(idx_lipids) > 0) {
-            res[a, b] <- sum(left_hm_data[, idx_lipids], na.rm = TRUE)
-          } else {
-            res[a, b] <- 0
-          }
-        }
-      }
-
-      # calculate the proportion
-      res <- res / sum(res)
+      res <- fa_comp_calc(data_table = data_table,
+                          sample_meta = sample_meta,
+                          feature_table = feature_table,
+                          group_col = group_col,
+                          selected_group = group_1,
+                          selected_lipidclass = selected_lipidclass)
 
       print(res)
 
