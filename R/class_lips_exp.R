@@ -97,7 +97,20 @@ Lips_exp = R6::R6Class(
        selected_view = "lipidclass",
        selected_lipidclass = "All",
        fa_norm = FALSE,
-       color_palette = 'Spectral',
+       color_palette = "Spectral",
+       img_format = "png"
+     ),
+
+     # Fatty acid analysis heatmap
+     fa_comp_plot = list(
+       data_table = "Total normalized table",
+       sample_meta = "Raw meta table",
+       feature_meta = NULL,
+       group_col = NULL,
+       group_1 = NULL,
+       group_2 = NULL,
+       selected_lipidclass = "CE",
+       color_palette = "Spectral",
        img_format = "png"
      )
     ),
@@ -337,7 +350,8 @@ Lips_exp = R6::R6Class(
       pca_plot = NULL,
       double_bond_plot = NULL,
       satindex_plot = NULL,
-      fa_analysis_plot = NULL
+      fa_analysis_plot = NULL,
+      fa_comp_plot = NULL
     ),
 
     #---------------------------------------------------- Parameter methods ----
@@ -424,6 +438,18 @@ Lips_exp = R6::R6Class(
       self$params$fa_analysis_plot$fa_norm = fa_norm
       self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
+    },
+
+    param_fa_comp_plot = function(data_table, sample_meta, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
+      self$params$fa_comp_plot$data_table = data_table
+      self$params$fa_comp_plot$sample_meta = sample_meta
+      self$params$fa_comp_plot$feature_meta = feature_meta
+      self$params$fa_comp_plot$group_col = group_col
+      self$params$fa_comp_plot$group_1 = group_1
+      self$params$fa_comp_plot$group_2 = group_2
+      self$params$fa_comp_plot$group_2 = group_2
+      self$params$fa_comp_plot$selected_lipidclass = selected_lipidclass
+      self$params$fa_comp_plot$img_format = img_format
     },
 
     #-------------------------------------------------------- Table methods ----
@@ -713,6 +739,18 @@ Lips_exp = R6::R6Class(
                                   fa_norm = self$params$fa_analysis_plot$fa_norm,
                                   color_palette = 'Spectral',
                                   img_format = "png")
+
+      self$param_fa_comp_plot(
+        data_table = self$tables$total_norm_data,
+        sample_meta = self$tables$raw_meta,
+        feature_meta = self$tables$feature_table,
+        group_col = self$indices$group_col,
+        group_1 = unique(self$tables$raw_meta[, self$indices$group_col])[1],
+        group_2 = unique(self$tables$raw_meta[, self$indices$group_col])[2],
+        selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+        color_palette = "Spectral",
+        img_format = "png"
+      )
 
     },
 
@@ -1307,6 +1345,69 @@ Lips_exp = R6::R6Class(
       fig
 
       self$plots$fa_analysis_plot <- fig
+    },
+
+    # plot Fatty acid composition heatmaps
+    plot_fa_comp = function(data_table = self$tables$total_norm_data,
+                            sample_meta = self$tables$raw_meta,
+                            feature_table = self$tables$feature_table,
+                            group_col = self$params$fa_comp_plot$group_col,
+                            group_1 = self$params$fa_comp_plot$group_1,
+                            group_2 = self$params$fa_comp_plot$group_2,
+                            selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+                            color_palette = self$params$fa_comp_plot$color_palette,
+                            width = NULL,
+                            height = NULL) {
+      print("Rico")
+
+      ## samples
+      idx_samples1 <- rownames(sample_meta)[sample_meta[, group_col] == group_1]
+      left_hm_data <- data_table[idx_samples1, ]
+
+      ## features
+      feature_table$lipid <- rownames(feature_table)
+      selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
+      # get the unique chain lengths and unsaturation
+      uniq_carbon <- sort(unique(selected_features$carbons_sum))
+      uniq_unsat <- sort(unique(selected_features$unsat_sum))
+
+      ## calculations
+      # initialize result matrix
+      res <- matrix(ncol = length(uniq_carbon),
+                    nrow = length(uniq_unsat))
+      colnames(res) <- as.character(uniq_carbon)
+      rownames(res) <- as.character(uniq_unsat)
+
+      for(a in rownames(res)) { # unsaturation
+        for(b in colnames(res)) { # carbons
+          idx_lipids <- selected_features$lipid[selected_features$carbons_sum == b &
+                                                  selected_features$unsat_sum == a]
+          print(idx_lipids)
+          if(length(idx_lipids) > 0) {
+            res[a, b] <- sum(left_hm_data[, idx_lipids], na.rm = TRUE)
+          } else {
+            res[a, b] <- 0
+          }
+        }
+      }
+
+      # calculate the proportion
+      res <- res / sum(res)
+
+      print(res)
+
+      ## plot
+      fig <- heatmaply::heatmaply(
+        x = res,
+        dendrogram = "none",
+        scale = "none",
+        plot_method = "plotly"
+      )
+      fig
+
+      self$plots$fa_comp_plot <- fig
     }
+
+
   )
 )

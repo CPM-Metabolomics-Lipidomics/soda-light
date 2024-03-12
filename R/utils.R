@@ -112,7 +112,8 @@ lipidomics_plot_list = function() {
                 "PCA" = "select_pca",
                 # "Double bond plot" = "select_double_bond_plot",
                 # "Saturation index" = "select_satindex_plot",
-                "Fatty acid analysis" = "select_fa_analysis_plot"
+                "Fatty acid analysis" = "select_fa_analysis_plot",
+                "Fatty acid composition" = "select_fa_composition"
   )
   return(plot_list)
 }
@@ -1353,6 +1354,11 @@ fa_analysis_rev_calc <- function(data_table = NULL,
 
   return(res)
 }
+
+#--------------------------------------------------------- FA composition   ----
+
+
+
 
 #--------------------------------------------------------- Input validation ----
 iv_check_select_input <- function(value, choices, name_plot, message) {
