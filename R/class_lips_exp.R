@@ -1206,28 +1206,23 @@ Lips_exp = R6::R6Class(
                                     selected_fa = selected_fa)
       }
 
-      print("Rico")
-      # print(res)
-
-
-
       # Produce the class x group table
       # add ID's, group's and make long
       res$ID <- rownames(res)
       res$group <- sample_meta[res$ID, group_col]
       res_long <- res |>
         tidyr::pivot_longer(cols = -c(ID, group),
-                            names_to = "fa_chain",
+                            names_to = "names",
                             values_to = "value")
 
       # calculate mean and stdev per group
-      plot_table <- tapply(as.data.frame(res_long), list(res_long$group, res_long$fa_chain), function(x) {
+      plot_table <- tapply(as.data.frame(res_long), list(res_long$group, res_long$names), function(x) {
         avg <- mean(x[, "value"], na.rm = TRUE)
         stdev <- sd(x[, "value"], na.rm = TRUE)
 
         return(list(avg = avg,
                     stdev = stdev,
-                    fa_chain = x[1, "fa_chain"],
+                    names = x[1, "names"],
                     group = x[1, "group"]))
         # print(x)
       })
@@ -1242,13 +1237,22 @@ Lips_exp = R6::R6Class(
       colors = colorRampPalette(colors)(length(group_list))
       colors = setNames(colors, group_list)
 
-      # set the main title
-      if(selected_lipidclass == "All") {
-        main_title <- "All lipid classes (incl. TG)"
-      } else if(selected_lipidclass == "All_noTG") {
-        main_title <- "All lipid classes (excl. TG)"
-      } else {
-        main_title <- paste0("Lipid class: ", selected_lipidclass)
+      # set the main title for FA overview per lipid class
+      if(selected_view == "lipidclass") {
+        if(selected_lipidclass == "All") {
+          main_title <- "All lipid classes (incl. TG)"
+        } else if(selected_lipidclass == "All_noTG") {
+          main_title <- "All lipid classes (excl. TG)"
+        } else {
+          main_title <- paste0("Lipid class: ", selected_lipidclass)
+        }
+        xlabel <- "Fatty acid chain"
+      }
+
+      # set the main title for lipid class overview per fatty acids
+      if(selected_view == "fa") {
+        main_title <- paste0("FA tails: ", paste(selected_fa, collapse = ", "))
+        xlabel <- "Lipid classes"
       }
 
       # plotting
@@ -1257,7 +1261,7 @@ Lips_exp = R6::R6Class(
       for (grp in unique(plot_table$group)) {
         fig <- fig |>
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
-                            x = ~fa_chain,
+                            x = ~names,
                             y = ~avg,
                             color = colors[i],
                             type = "bar",
@@ -1268,7 +1272,7 @@ Lips_exp = R6::R6Class(
           plotly::layout(legend = list(orientation = 'h',
                                        xanchor = "center",
                                        x = 0.5),
-                         xaxis = list(title = "Fatty acid chain"),
+                         xaxis = list(title = xlabel),
                          yaxis = list(title = "Concentration"))
         i <- i + 1
       }
