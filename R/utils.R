@@ -1218,6 +1218,11 @@ fa_analysis_calc <- function(data_table = NULL,
   ## Features
   feature_table$lipid <- rownames(feature_table)
 
+  # fix TG's
+  idx_tg <- feature_table$lipid[feature_table$lipid_class == "TG"]
+  data_table[, idx_tg] <- data_table[, idx_tg] / 3
+
+  # get the species from the selected lipid classes
   if(selected_lipidclass == "All") {
     # all lipids, but remove PA
     sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA"))]
@@ -1322,6 +1327,9 @@ fa_analysis_rev_calc <- function(data_table = NULL,
           )
     } # end selected_fa
   } # end lipid_class
+
+  # fix the TG's
+  res[, "TG"] <- res[, "TG"] / 3
 
   # remove empty columns
   empty_idx <- apply(res, 2, function(x) {
