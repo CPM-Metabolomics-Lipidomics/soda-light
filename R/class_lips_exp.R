@@ -1099,8 +1099,8 @@ Lips_exp = R6::R6Class(
                                                 subplot_heights = subplot_sizes$height,
                                                 col_side_colors = row_annotations,
                                                 row_side_colors = col_annotations,
-                                                dendrogram = dendrogram_list,
-                                                labCol = xlabels)
+                                                dendrogram = dendrogram_list)
+                                                # labCol = xlabels)
     },
 
     ## PCA scores and loading plots
