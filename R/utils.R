@@ -1356,12 +1356,12 @@ fa_analysis_rev_calc <- function(data_table = NULL,
 }
 
 #--------------------------------------------------------- FA composition   ----
-fa_comp_calc <- function(data_table = NULL,
-                         feature_table = NULL,
-                         group_col = NULL,
-                         selected_group = NULL,
-                         sample_meta = NULL,
-                         selected_lipidclass = NULL) {
+fa_comp_hm_calc <- function(data_table = NULL,
+                            feature_table = NULL,
+                            group_col = NULL,
+                            selected_group = NULL,
+                            sample_meta = NULL,
+                            selected_lipidclass = NULL) {
   ## samples
   idx_samples <- rownames(sample_meta)[sample_meta[, group_col] == selected_group]
   hm_data <- data_table[idx_samples, ]
@@ -1370,21 +1370,20 @@ fa_comp_calc <- function(data_table = NULL,
   feature_table$lipid <- rownames(feature_table)
   selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
   # get the unique chain lengths and unsaturation
-  uniq_carbon <- sort(unique(selected_features$carbons_sum))
-  uniq_unsat <- sort(unique(selected_features$unsat_sum))
+  uniq_carbon <- c(min(selected_features$carbons_sum), max(selected_features$carbons_sum))
+  uniq_unsat <- c(min(selected_features$unsat_sum), max(selected_features$unsat_sum))
 
   ## calculations
   # initialize result matrix
-  res <- matrix(ncol = length(uniq_carbon),
-                nrow = length(uniq_unsat))
-  colnames(res) <- as.character(uniq_carbon)
-  rownames(res) <- as.character(uniq_unsat)
+  res <- matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+                nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+  colnames(res) <- uniq_carbon[1]:uniq_carbon[2]
+  rownames(res) <- uniq_unsat[1]:uniq_unsat[2]
 
   for(a in rownames(res)) { # unsaturation
     for(b in colnames(res)) { # carbons
       idx_lipids <- selected_features$lipid[selected_features$carbons_sum == b &
                                               selected_features$unsat_sum == a]
-      print(idx_lipids)
       if(length(idx_lipids) > 0) {
         res[a, b] <- sum(hm_data[, idx_lipids], na.rm = TRUE)
       } else {
@@ -1400,6 +1399,9 @@ fa_comp_calc <- function(data_table = NULL,
 }
 
 
+# fa_comp_heatmap <- function(data = NULL) {
+#
+# }
 
 #--------------------------------------------------------- Input validation ----
 iv_check_select_input <- function(value, choices, name_plot, message) {

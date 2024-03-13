@@ -1358,25 +1358,121 @@ Lips_exp = R6::R6Class(
                             color_palette = self$params$fa_comp_plot$color_palette,
                             width = NULL,
                             height = NULL) {
-      print("Rico")
 
-      res <- fa_comp_calc(data_table = data_table,
-                          sample_meta = sample_meta,
-                          feature_table = feature_table,
-                          group_col = group_col,
-                          selected_group = group_1,
-                          selected_lipidclass = selected_lipidclass)
+      ## left side
+      # heatmap
+      hm_left_data <- fa_comp_hm_calc(data_table = data_table,
+                                      sample_meta = sample_meta,
+                                      feature_table = feature_table,
+                                      group_col = group_col,
+                                      selected_group = group_1,
+                                      selected_lipidclass = selected_lipidclass)
+      # bar left top
+      bar_top_left_data <- data.frame(x = colnames(hm_left_data),
+                                      y = colSums(hm_left_data))
+      # bar left
+      bar_left_data <- data.frame(x = rownames(hm_left_data),
+                                  y = rowSums(hm_left_data))
 
-      print(res)
 
-      ## plot
-      fig <- heatmaply::heatmaply(
-        x = res,
+      ## right side
+      # heatmap
+      hm_right_data <- fa_comp_hm_calc(data_table = data_table,
+                                       sample_meta = sample_meta,
+                                       feature_table = feature_table,
+                                       group_col = group_col,
+                                       selected_group = group_2,
+                                       selected_lipidclass = selected_lipidclass)
+      # bar right top
+      bar_top_right_data <- data.frame(x = colnames(hm_right_data),
+                                       y = colSums(hm_right_data))
+      # bar right
+      bar_right_data <- data.frame(x = rownames(hm_right_data),
+                                   y = rowSums(hm_right_data))
+
+      ## plots
+      # left side
+      fig_hm_left <- heatmaply::heatmaply(
+        x = hm_left_data,
         dendrogram = "none",
-        scale = "none",
-        plot_method = "plotly"
+        scale = "none"
+        # plot_method = "plotly"
       )
-      fig
+      fig_hm_left <- plotly::layout(
+        fig_hm_left,
+        list(
+          shapes = list(
+            type = "line",
+            x0 = 18,
+            x1 = 18,
+            y0 = 0,
+            y1 = 6,
+            line = list(color = "black",
+                        width = 1,
+                        dash = "dot")
+        )))
+      fig_bar_top_left <- plotly::plot_ly(
+        data = bar_top_left_data,
+        x = ~x,
+        y = ~y,
+        type = "bar",
+        showlegend = FALSE
+      )
+      fig_bar_left <- plotly::plot_ly(
+        data = bar_left_data,
+        x = ~y,
+        y = ~x,
+        type = "bar",
+        showlegend = FALSE,
+        orientation = "h"
+      ) |>
+        plotly::layout(xaxis = list(autorange = "reversed"))
+
+      # right side
+      fig_hm_right <- heatmaply::heatmaply(
+        x = hm_right_data,
+        dendrogram = "none",
+        scale = "none"
+        # plot_method = "plotly"
+      )
+      fig_bar_top_right <- plotly::plot_ly(
+        data = bar_top_right_data,
+        x = ~x,
+        y = ~y,
+        type = "bar",
+        showlegend = FALSE
+      )
+      fig_bar_right <- plotly::plot_ly(
+        data = bar_right_data,
+        x = ~y,
+        y = ~x,
+        type = "bar",
+        showlegend = FALSE,
+        orientation = "h"
+      )
+
+      # blank plot
+      blank <- plotly::plot_ly(type = "scatter", mode = "markers")
+      blank <- plotly::layout(blank,
+                              xaxis = list(zeroline = FALSE,
+                                           showticklabels = FALSE,
+                                           showgrid = FALSE),
+                              yaxis = list(zeroline = FALSE,
+                                           showticklabels = FALSE,
+                                           showgrid = FALSE))
+
+      # combine plots
+      fig_top <- plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),
+                                 nrows = 1,
+                                 widths = c(0.1, 0.4, 0.4, 0.1))
+
+      fig_bottom <- plotly::subplot(list(fig_bar_left, fig_hm_left, fig_hm_right, fig_bar_right),
+                                    nrows = 1,
+                                    widths = c(0.1, 0.4, 0.4, 0.1))
+
+      fig <- plotly::subplot(list(fig_top, fig_bottom),
+                             nrows = 2,
+                             heights = c(0.2, 0.8))
 
       self$plots$fa_comp_plot <- fig
     }
