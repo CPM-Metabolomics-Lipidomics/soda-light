@@ -1368,10 +1368,14 @@ Lips_exp = R6::R6Class(
                                       selected_group = group_1,
                                       selected_lipidclass = selected_lipidclass)
       # bar left top
-      bar_top_left_data <- data.frame(x = colnames(hm_left_data),
+      bar_top_left_data <- data.frame(x = factor(colnames(hm_left_data),
+                                                 levels = sort(as.numeric(colnames(hm_left_data))),
+                                                 labels = sort(as.numeric(colnames(hm_left_data)))),
                                       y = colSums(hm_left_data))
       # bar left
-      bar_left_data <- data.frame(x = rownames(hm_left_data),
+      bar_left_data <- data.frame(x = factor(rownames(hm_left_data),
+                                             levels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE),
+                                             labels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE)),
                                   y = rowSums(hm_left_data))
 
 
@@ -1384,10 +1388,14 @@ Lips_exp = R6::R6Class(
                                        selected_group = group_2,
                                        selected_lipidclass = selected_lipidclass)
       # bar right top
-      bar_top_right_data <- data.frame(x = colnames(hm_right_data),
+      bar_top_right_data <- data.frame(x = factor(colnames(hm_right_data),
+                                                  levels = sort(as.numeric(colnames(hm_right_data))),
+                                                  labels = sort(as.numeric(colnames(hm_right_data)))),
                                        y = colSums(hm_right_data))
       # bar right
-      bar_right_data <- data.frame(x = rownames(hm_right_data),
+      bar_right_data <- data.frame(x = factor(rownames(hm_right_data),
+                                              levels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE),
+                                              labels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE)),
                                    y = rowSums(hm_right_data))
 
       ## plots
