@@ -1424,7 +1424,8 @@ Lips_exp = R6::R6Class(
         x = ~x,
         y = ~y,
         type = "bar",
-        showlegend = FALSE
+        showlegend = FALSE,
+        color = I("gray")
       )
       fig_bar_left <- plotly::plot_ly(
         data = bar_left_data,
@@ -1432,7 +1433,8 @@ Lips_exp = R6::R6Class(
         y = ~x,
         type = "bar",
         showlegend = FALSE,
-        orientation = "h"
+        orientation = "h",
+        color = I("gray")
       ) |>
         plotly::layout(xaxis = list(autorange = "reversed"))
 
@@ -1448,7 +1450,8 @@ Lips_exp = R6::R6Class(
         x = ~x,
         y = ~y,
         type = "bar",
-        showlegend = FALSE
+        showlegend = FALSE,
+        color = I("gray")
       )
       fig_bar_right <- plotly::plot_ly(
         data = bar_right_data,
@@ -1456,7 +1459,8 @@ Lips_exp = R6::R6Class(
         y = ~x,
         type = "bar",
         showlegend = FALSE,
-        orientation = "h"
+        orientation = "h",
+        color = I("gray")
       )
 
       # blank plot
