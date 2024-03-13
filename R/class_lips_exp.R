@@ -1372,11 +1372,15 @@ Lips_exp = R6::R6Class(
                                                  levels = sort(as.numeric(colnames(hm_left_data))),
                                                  labels = sort(as.numeric(colnames(hm_left_data)))),
                                       y = colSums(hm_left_data))
+      avg_carbon_left <- weighted.mean(x = as.numeric(as.character(bar_top_left_data$x)),
+                                       w = bar_top_left_data$y)
       # bar left
       bar_left_data <- data.frame(x = factor(rownames(hm_left_data),
                                              levels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE),
                                              labels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE)),
                                   y = rowSums(hm_left_data))
+      avg_unsat_left <- weighted.mean(x = as.numeric(as.character(bar_left_data$x)),
+                                      w = bar_left_data$y)
 
 
       ## right side
@@ -1392,33 +1396,27 @@ Lips_exp = R6::R6Class(
                                                   levels = sort(as.numeric(colnames(hm_right_data))),
                                                   labels = sort(as.numeric(colnames(hm_right_data)))),
                                        y = colSums(hm_right_data))
+      avg_carbon_right <- weighted.mean(x = as.numeric(as.character(bar_top_right_data$x)),
+                                        w = bar_top_right_data$y)
       # bar right
       bar_right_data <- data.frame(x = factor(rownames(hm_right_data),
                                               levels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE),
                                               labels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE)),
                                    y = rowSums(hm_right_data))
+      avg_unsat_right <- weighted.mean(x = as.numeric(as.character(bar_right_data$x)),
+                                      w = bar_right_data$y)
+
+
+      # get the min and max value for the heatmap colorbar
+      min_value <- min(c(min(hm_left_data), min(hm_right_data)))
+      max_value <- max(c(max(hm_left_data), max(hm_right_data)))
 
       ## plots
       # left side
-      fig_hm_left <- heatmaply::heatmaply(
-        x = hm_left_data,
-        dendrogram = "none",
-        scale = "none"
-        # plot_method = "plotly"
-      )
-      fig_hm_left <- plotly::layout(
-        fig_hm_left,
-        list(
-          shapes = list(
-            type = "line",
-            x0 = 18,
-            x1 = 18,
-            y0 = 0,
-            y1 = 6,
-            line = list(color = "black",
-                        width = 1,
-                        dash = "dot")
-        )))
+      fig_hm_left <- fa_comp_heatmap(data = hm_left_data,
+                                     vline = avg_carbon_left,
+                                     hline = avg_unsat_left,
+                                     color_limits = c(min_value, max_value))
       fig_bar_top_left <- plotly::plot_ly(
         data = bar_top_left_data,
         x = ~x,
@@ -1426,7 +1424,8 @@ Lips_exp = R6::R6Class(
         type = "bar",
         showlegend = FALSE,
         color = I("gray")
-      )
+      ) |>
+        plotly::layout(xaxis = list(showticklabels = FALSE))
       fig_bar_left <- plotly::plot_ly(
         data = bar_left_data,
         x = ~y,
@@ -1436,15 +1435,17 @@ Lips_exp = R6::R6Class(
         orientation = "h",
         color = I("gray")
       ) |>
-        plotly::layout(xaxis = list(autorange = "reversed"))
+        plotly::layout(
+          xaxis = list(autorange = "reversed"),
+          yaxis = list(showticklabels = FALSE)
+        )
 
       # right side
-      fig_hm_right <- heatmaply::heatmaply(
-        x = hm_right_data,
-        dendrogram = "none",
-        scale = "none"
-        # plot_method = "plotly"
-      )
+      fig_hm_right <- fa_comp_heatmap(data = hm_right_data,
+                                      vline = avg_carbon_right,
+                                      hline = avg_unsat_right,
+                                      color_limits = c(min_value, max_value),
+                                      showlegend = TRUE)
       fig_bar_top_right <- plotly::plot_ly(
         data = bar_top_right_data,
         x = ~x,
@@ -1452,7 +1453,8 @@ Lips_exp = R6::R6Class(
         type = "bar",
         showlegend = FALSE,
         color = I("gray")
-      )
+      )|>
+        plotly::layout(xaxis = list(showticklabels = FALSE))
       fig_bar_right <- plotly::plot_ly(
         data = bar_right_data,
         x = ~y,
@@ -1461,7 +1463,8 @@ Lips_exp = R6::R6Class(
         showlegend = FALSE,
         orientation = "h",
         color = I("gray")
-      )
+      ) |>
+        plotly::layout(yaxis = list(showticklabels = FALSE))
 
       # blank plot
       blank <- plotly::plot_ly(type = "scatter", mode = "markers")

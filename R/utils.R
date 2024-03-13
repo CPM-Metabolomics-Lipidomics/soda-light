@@ -1399,9 +1399,75 @@ fa_comp_hm_calc <- function(data_table = NULL,
 }
 
 
-# fa_comp_heatmap <- function(data = NULL) {
-#
-# }
+fa_comp_heatmap <- function(data = NULL,
+                            hline = NULL,
+                            vline = NULL,
+                            color_limits = NULL,
+                            showlegend = FALSE) {
+  # prepare data
+  data_df <- as.data.frame(data)
+  data_df$row <- rownames(data)
+
+  data_df <- data_df |>
+    tidyr::pivot_longer(cols = -row,
+                        names_to = "col",
+                        values_to = "value")
+  data_df$row <- as.numeric(data_df$row)
+  data_df$col <- as.numeric(data_df$col)
+
+  # make heatmap
+  fig <- plotly::plot_ly(data = data_df,
+          x = ~col,
+          y = ~row,
+          z = ~value,
+          type = "heatmap") |>
+    plotly::colorbar(limits = color_limits)
+
+  if(!showlegend) {
+    fig <- fig |>
+      plotly::hide_colorbar()
+  }
+    fig <- fig |>
+    # vertical line
+    plotly::add_segments(
+      x = vline,
+      xend = vline,
+      y = min(data_df$row) - 0.5,
+      yend = max(data_df$row) + 0.5,
+      inherit = FALSE,
+      line = list(color = "purple",
+                  width = 2,
+                  dash = "dot"),
+      showlegend = FALSE
+    ) |>
+    # horizotal line
+    plotly::add_segments(
+      x = min(data_df$col) - 0.5,
+      xend = max(data_df$col) + 0.5,
+      y = hline,
+      yend = hline,
+      inherit = FALSE,
+      line = list(color = "orange",
+                  width = 2,
+                  dash = "dot"),
+      showlegend = FALSE
+    ) |>
+    plotly::layout(
+      xaxis = list(
+        tick0 = 1,
+        dtick = 1,
+        showgrid = FALSE
+      ),
+      yaxis = list(
+        tick0 = 1,
+        dtick = 1,
+        showgrid = FALSE,
+        range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5)
+      )
+    )
+
+  return(fig)
+}
 
 #--------------------------------------------------------- Input validation ----
 iv_check_select_input <- function(value, choices, name_plot, message) {
