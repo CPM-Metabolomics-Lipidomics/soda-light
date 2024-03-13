@@ -1404,6 +1404,7 @@ fa_comp_heatmap <- function(data = NULL,
                             vline = NULL,
                             color_limits = NULL,
                             color_palette = NULL,
+                            y_pos_right = FALSE,
                             showlegend = FALSE) {
   # prepare data
   data_df <- as.data.frame(data)
@@ -1418,18 +1419,18 @@ fa_comp_heatmap <- function(data = NULL,
 
   # make heatmap
   fig <- plotly::plot_ly(data = data_df,
-          x = ~col,
-          y = ~row,
-          z = ~value,
-          type = "heatmap",
-          colors = color_palette) |>
+                         x = ~col,
+                         y = ~row,
+                         z = ~value,
+                         type = "heatmap",
+                         colors = color_palette) |>
     plotly::colorbar(limits = color_limits)
 
   if(!showlegend) {
     fig <- fig |>
       plotly::hide_colorbar()
   }
-    fig <- fig |>
+  fig <- fig |>
     # vertical line
     plotly::add_segments(
       x = vline,
@@ -1460,15 +1461,33 @@ fa_comp_heatmap <- function(data = NULL,
         dtick = 1,
         showgrid = FALSE,
         fixedrange = TRUE
-      ),
-      yaxis = list(
-        tick0 = 1,
-        dtick = 1,
-        showgrid = FALSE,
-        range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
-        fixedrange = TRUE
       )
     )
+
+  if(y_pos_right) {
+    fig <- fig |>
+      plotly::layout(
+        yaxis = list(
+          tick0 = 1,
+          dtick = 1,
+          showgrid = FALSE,
+          range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+          side = "right",
+          fixedrange = TRUE
+        )
+      )
+  } else {
+    fig <- fig |>
+      plotly::layout(
+        yaxis = list(
+          tick0 = 1,
+          dtick = 1,
+          showgrid = FALSE,
+          range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+          fixedrange = TRUE
+        )
+      )
+  }
 
   return(fig)
 }
@@ -1589,7 +1608,7 @@ qc_rsd_violin <- function(data = NULL,
     ggplot2::labs(title = title,
                   x = "Lipid class",
                   y = "Relative standard deviation") +
-  ggplot2::theme_minimal()
+    ggplot2::theme_minimal()
 
   ply <- plotly::ggplotly(p)
 

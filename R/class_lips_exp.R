@@ -1458,6 +1458,7 @@ Lips_exp = R6::R6Class(
                                       hline = avg_unsat_right,
                                       color_limits = c(min_value, max_value),
                                       color_palette = color_palette,
+                                      y_pos_right = TRUE,
                                       showlegend = TRUE)
       fig_bar_top_right <- plotly::plot_ly(
         data = bar_top_right_data,
@@ -1469,7 +1470,8 @@ Lips_exp = R6::R6Class(
       )|>
         plotly::layout(xaxis = list(showticklabels = FALSE,
                                     fixedrange = TRUE),
-                       yaxis = list(fixedrange = TRUE))
+                       yaxis = list(fixedrange = TRUE,
+                                    side = "right"))
       fig_bar_right <- plotly::plot_ly(
         data = bar_right_data,
         x = ~y,
