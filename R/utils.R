@@ -1403,6 +1403,7 @@ fa_comp_heatmap <- function(data = NULL,
                             hline = NULL,
                             vline = NULL,
                             color_limits = NULL,
+                            color_palette = NULL,
                             showlegend = FALSE) {
   # prepare data
   data_df <- as.data.frame(data)
@@ -1420,7 +1421,8 @@ fa_comp_heatmap <- function(data = NULL,
           x = ~col,
           y = ~row,
           z = ~value,
-          type = "heatmap") |>
+          type = "heatmap",
+          colors = color_palette) |>
     plotly::colorbar(limits = color_limits)
 
   if(!showlegend) {
@@ -1435,7 +1437,7 @@ fa_comp_heatmap <- function(data = NULL,
       y = min(data_df$row) - 0.5,
       yend = max(data_df$row) + 0.5,
       inherit = FALSE,
-      line = list(color = "purple",
+      line = list(color = "black",
                   width = 2,
                   dash = "dot"),
       showlegend = FALSE
@@ -1447,7 +1449,7 @@ fa_comp_heatmap <- function(data = NULL,
       y = hline,
       yend = hline,
       inherit = FALSE,
-      line = list(color = "orange",
+      line = list(color = "black",
                   width = 2,
                   dash = "dot"),
       showlegend = FALSE
@@ -1456,13 +1458,15 @@ fa_comp_heatmap <- function(data = NULL,
       xaxis = list(
         tick0 = 1,
         dtick = 1,
-        showgrid = FALSE
+        showgrid = FALSE,
+        fixedrange = TRUE
       ),
       yaxis = list(
         tick0 = 1,
         dtick = 1,
         showgrid = FALSE,
-        range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5)
+        range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+        fixedrange = TRUE
       )
     )
 

@@ -449,6 +449,7 @@ Lips_exp = R6::R6Class(
       self$params$fa_comp_plot$group_2 = group_2
       self$params$fa_comp_plot$group_2 = group_2
       self$params$fa_comp_plot$selected_lipidclass = selected_lipidclass
+      self$params$fa_comp_plot$color_palette = color_palette
       self$params$fa_comp_plot$img_format = img_format
     },
 
@@ -1358,6 +1359,12 @@ Lips_exp = R6::R6Class(
                             color_palette = self$params$fa_comp_plot$color_palette,
                             width = NULL,
                             height = NULL) {
+      # Get the color palette
+      color_count = colors_switch(color_palette)
+      color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+      # if (reverse_palette) {
+      #   color_palette = base::rev(color_palette)
+      # }
 
       ## left side
       # heatmap
@@ -1416,7 +1423,8 @@ Lips_exp = R6::R6Class(
       fig_hm_left <- fa_comp_heatmap(data = hm_left_data,
                                      vline = avg_carbon_left,
                                      hline = avg_unsat_left,
-                                     color_limits = c(min_value, max_value))
+                                     color_limits = c(min_value, max_value),
+                                     color_palette = color_palette)
       fig_bar_top_left <- plotly::plot_ly(
         data = bar_top_left_data,
         x = ~x,
@@ -1425,7 +1433,9 @@ Lips_exp = R6::R6Class(
         showlegend = FALSE,
         color = I("gray")
       ) |>
-        plotly::layout(xaxis = list(showticklabels = FALSE))
+        plotly::layout(xaxis = list(showticklabels = FALSE,
+                                    fixedrange = TRUE),
+                       yaxis = list(fixedrange = TRUE))
       fig_bar_left <- plotly::plot_ly(
         data = bar_left_data,
         x = ~y,
@@ -1436,8 +1446,10 @@ Lips_exp = R6::R6Class(
         color = I("gray")
       ) |>
         plotly::layout(
-          xaxis = list(autorange = "reversed"),
-          yaxis = list(showticklabels = FALSE)
+          xaxis = list(autorange = "reversed",
+                       fixedrange = TRUE),
+          yaxis = list(showticklabels = FALSE,
+                       fixedrange = TRUE)
         )
 
       # right side
@@ -1445,6 +1457,7 @@ Lips_exp = R6::R6Class(
                                       vline = avg_carbon_right,
                                       hline = avg_unsat_right,
                                       color_limits = c(min_value, max_value),
+                                      color_palette = color_palette,
                                       showlegend = TRUE)
       fig_bar_top_right <- plotly::plot_ly(
         data = bar_top_right_data,
@@ -1454,7 +1467,9 @@ Lips_exp = R6::R6Class(
         showlegend = FALSE,
         color = I("gray")
       )|>
-        plotly::layout(xaxis = list(showticklabels = FALSE))
+        plotly::layout(xaxis = list(showticklabels = FALSE,
+                                    fixedrange = TRUE),
+                       yaxis = list(fixedrange = TRUE))
       fig_bar_right <- plotly::plot_ly(
         data = bar_right_data,
         x = ~y,
@@ -1464,17 +1479,21 @@ Lips_exp = R6::R6Class(
         orientation = "h",
         color = I("gray")
       ) |>
-        plotly::layout(yaxis = list(showticklabels = FALSE))
+        plotly::layout(yaxis = list(showticklabels = FALSE,
+                                    fixedrange = TRUE),
+                       xaxis = list(fixedrange = TRUE))
 
       # blank plot
       blank <- plotly::plot_ly(type = "scatter", mode = "markers")
       blank <- plotly::layout(blank,
                               xaxis = list(zeroline = FALSE,
                                            showticklabels = FALSE,
-                                           showgrid = FALSE),
+                                           showgrid = FALSE,
+                                           fixedrange = TRUE),
                               yaxis = list(zeroline = FALSE,
                                            showticklabels = FALSE,
-                                           showgrid = FALSE))
+                                           showgrid = FALSE,
+                                           fixedrange = TRUE))
 
       # combine plots
       fig_top <- plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),
@@ -1487,7 +1506,8 @@ Lips_exp = R6::R6Class(
 
       fig <- plotly::subplot(list(fig_top, fig_bottom),
                              nrows = 2,
-                             heights = c(0.2, 0.8))
+                             heights = c(0.2, 0.8)) |>
+        plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d"))
 
       self$plots$fa_comp_plot <- fig
     }
