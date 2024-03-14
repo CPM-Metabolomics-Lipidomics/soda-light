@@ -1498,6 +1498,29 @@ Lips_exp = R6::R6Class(
                                            fixedrange = TRUE))
 
       # combine plots
+      annotations <- list(
+        list(
+          x = 0.3,
+          y = 0.975,
+          text = paste0("<b>", group_1, "</b>"),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        ),
+        list(
+          x = 0.7,
+          y = 0.975,
+          text = paste0("<b>", group_2, "</b>"),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        )
+      )
+
       fig_top <- plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),
                                  nrows = 1,
                                  widths = c(0.1, 0.4, 0.4, 0.1))
@@ -1508,7 +1531,9 @@ Lips_exp = R6::R6Class(
 
       fig <- plotly::subplot(list(fig_top, fig_bottom),
                              nrows = 2,
-                             heights = c(0.2, 0.8)) |>
+                             heights = c(0.2, 0.75)) |>
+        plotly::layout(title = list(text = paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
+                       annotations = annotations) |>
         plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d"))
 
       self$plots$fa_comp_plot <- fig
