@@ -1424,7 +1424,8 @@ fa_comp_heatmap <- function(data = NULL,
                          z = ~value,
                          type = "heatmap",
                          colors = color_palette) |>
-    plotly::colorbar(limits = color_limits)
+    plotly::colorbar(limits = color_limits,
+                     title = "Proportion")
 
   if(!showlegend) {
     fig <- fig |>
