@@ -129,6 +129,11 @@ sidebar_ui = function() {
         icon = shiny::icon("q")
       ),
       bs4Dash::menuItem(
+        text = "Help",
+        icon = shiny::icon("question"),
+        tabName = 'help_single_omics'
+      ),
+      bs4Dash::menuItem(
         text = "About",
         tabName = "about",
         icon = shiny::icon("question")
@@ -156,6 +161,10 @@ body_ui = function() {
       bs4Dash::tabItem(
         tabName = "qc",
         qc_ui(id = 'mod_qc')
+      ),
+      bs4Dash::tabItem(
+        tabName = "help_single_omics",
+        help_single_omics_ui(id = 'mod_help_single_omics')
       ),
       bs4Dash::tabItem(
         tabName = "about",
