@@ -1762,3 +1762,159 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
   })
 
 }
+
+
+#-----------------------------------------------------------FA composition  ----
+fa_comp_generate = function(r6, colour_list, dimensions_obj, input) {
+  print_tm(r6$name, "Fatty acid composition analysis: generating plot.")
+
+  if (input$fa_comp_plotbox$maximized){
+    width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
+    height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+  } else {
+    width = dimensions_obj$xpx * dimensions_obj$x_plot
+    height = dimensions_obj$ypx * dimensions_obj$y_plot
+  }
+
+  r6$plot_fa_comp(width = width,
+                      height = height)
+}
+
+fa_comp_spawn = function(r6, format, output) {
+  print_tm(r6$name, "Fatty acid composition analysis: spawning plot.")
+
+  output$fa_comp_plot = plotly::renderPlotly({
+    r6$plots$fa_comp_plot
+    plotly::config(r6$plots$fa_comp_plot, toImageButtonOptions = list(format = format,
+                                                                          filename = timestamped_name('fa_comp'),
+                                                                          height = NULL,
+                                                                          width = NULL,
+                                                                          scale = 1))
+  })
+}
+
+fa_comp_ui = function(dimensions_obj, session) {
+  # add function to show bs4dash with plotting function
+  get_plotly_box(id = "fa_comp",
+                 label = "Fatty acid composition analysis",
+                 dimensions_obj = dimensions_obj,
+                 session = session)
+}
+
+fa_comp_server = function(r6, input, output, session) {
+  ns = session$ns
+  print_tm(r6$name, "Fatty acid composition analysis index: START.")
+
+  # set some UI
+  output$fa_comp_sidebar_ui = shiny::renderUI({
+    shiny::tagList(
+      shiny::selectInput(
+        inputId = ns("fa_comp_metacol"),
+        label = "Select group column",
+        choices = r6$hardcoded_settings$meta_column,
+        selected = r6$params$fa_comp_plot$group_col
+      ),
+      shiny::selectizeInput(
+        inputId = ns("fa_comp_metagroup"),
+        label = "Select two groups to compare",
+        choices = unique(r6$tables$raw_meta[, r6$params$fa_comp_plot$group_col]),
+        selected = c(r6$params$fa_comp_plot$group_1, r6$params$fa_comp_plot$group_2),
+        multiple = TRUE
+      ),
+      shiny::selectizeInput(
+        inputId = ns("fa_comp_selected_lipidclass"),
+        label = "Select lipid class",
+        choices = unique(r6$tables$feature_table$lipid_class),
+        selected = r6$params$fa_comp$selected_lipidclass,
+        multiple = FALSE
+      ),
+      shiny::selectizeInput(
+        inputId = ns('fa_comp_color_palette'),
+        label = "Color palette",
+        choices = r6$hardcoded_settings$color_palette,
+        selected = r6$params$fa_comp_plot$color_palette,
+        multiple = FALSE
+      ),
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectInput(
+        inputId = ns("fa_comp_img_format"),
+        label = "Image format",
+        choices = r6$hardcoded_settings$image_format,
+        selected = r6$params$fa_comp_plot$img_format,
+        width = "100%"),
+      shiny::downloadButton(
+        outputId = ns("download_fa_comp_table"),
+        label = "Download associated table",
+        style = "width:100%;"
+      )
+    )
+  })
+}
+
+
+fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+
+  # Generate the plot
+  shiny::observeEvent(
+    c(input$fa_comp_metacol,
+      input$fa_comp_metagroup,
+      input$fa_comp_selected_lipidclass,
+      input$fa_comp_color_palette,
+      input$fa_comp_img_format),
+    {
+      # shiny::req(iv_fa_comp$is_valid())
+
+      print_tm(r6$name, "Fatty acid composition analysis: Updating params...")
+
+      r6$param_fa_comp_plot(
+        data_table = r6$tables$raw_data,
+        sample_meta = r6$tables$raw_meta,
+        feature_meta = r6$tables$feature_table,
+        group_col = input$fa_comp_metacol,
+        group_1 = input$fa_comp_metagroup[1],
+        group_2 = input$fa_comp_metagroup[2],
+        selected_lipidclass = input$fa_comp_selected_lipidclass,
+        color_palette = input$fa_comp_color_palette,
+        img_format = input$fa_comp_img_format
+      )
+
+      base::tryCatch({
+        fa_comp_generate(r6, color_palette, dimensions_obj, input)
+        fa_comp_spawn(r6, input$fa_comp_img_format, output)
+      },
+      error = function(e) {
+        print_tm(r6$name, 'Fatty acid composition analysis error, missing data.')
+        print(e)
+      },
+      finally = {}
+      )
+    })
+
+  # Download associated table
+  output$download_fa_comp_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("fa_composition_table.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$fa_comp_table, file_name)
+    }
+  )
+
+  # Expanded boxes
+  fa_comp_proxy = plotly::plotlyProxy(outputId = "fa_comp_plot",
+                                          session = session)
+
+  shiny::observeEvent(input$fa_comp_plotbox,{
+    if (input$fa_comp_plotbox$maximized) {
+      plotly::plotlyProxyInvoke(p = fa_comp_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full,
+                                     height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+                                ))
+    } else {
+      plotly::plotlyProxyInvoke(p = fa_comp_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx * dimensions_obj$x_plot,
+                                     height = dimensions_obj$ypx * dimensions_obj$y_plot
+                                ))
+    }
+  })
+}

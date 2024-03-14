@@ -112,7 +112,8 @@ lipidomics_plot_list = function() {
                 "PCA" = "select_pca",
                 # "Double bond plot" = "select_double_bond_plot",
                 # "Saturation index" = "select_satindex_plot",
-                "Fatty acid analysis" = "select_fa_analysis_plot"
+                "Fatty acid analysis" = "select_fa_analysis_plot",
+                "Fatty acid composition" = "select_fa_composition"
   )
   return(plot_list)
 }
@@ -1354,6 +1355,154 @@ fa_analysis_rev_calc <- function(data_table = NULL,
   return(res)
 }
 
+#--------------------------------------------------------- FA composition   ----
+fa_comp_hm_calc <- function(data_table = NULL,
+                            feature_table = NULL,
+                            group_col = NULL,
+                            selected_group = NULL,
+                            sample_meta = NULL,
+                            selected_lipidclass = NULL) {
+  ## samples
+  idx_samples <- rownames(sample_meta)[sample_meta[, group_col] == selected_group]
+  hm_data <- data_table[idx_samples, ]
+
+  ## features
+  feature_table$lipid <- rownames(feature_table)
+  selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
+  # get the unique chain lengths and unsaturation
+  uniq_carbon <- c(min(selected_features$carbons_sum), max(selected_features$carbons_sum))
+  uniq_unsat <- c(min(selected_features$unsat_sum), max(selected_features$unsat_sum))
+
+  ## calculations
+  # initialize result matrix
+  res <- matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+                nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+  colnames(res) <- uniq_carbon[1]:uniq_carbon[2]
+  rownames(res) <- uniq_unsat[1]:uniq_unsat[2]
+
+  for(a in rownames(res)) { # unsaturation
+    for(b in colnames(res)) { # carbons
+      idx_lipids <- selected_features$lipid[selected_features$carbons_sum == b &
+                                              selected_features$unsat_sum == a]
+      if(length(idx_lipids) > 0) {
+        res[a, b] <- sum(hm_data[, idx_lipids], na.rm = TRUE)
+      } else {
+        res[a, b] <- 0
+      }
+    }
+  }
+
+  # calculate the proportion
+  res <- res / sum(res)
+
+  return(res)
+}
+
+
+fa_comp_heatmap <- function(data = NULL,
+                            hline = NULL,
+                            vline = NULL,
+                            color_limits = NULL,
+                            color_palette = NULL,
+                            y_pos_right = FALSE,
+                            showlegend = FALSE) {
+  # prepare data
+  data_df <- as.data.frame(data)
+  data_df$row <- rownames(data)
+
+  data_df <- data_df |>
+    tidyr::pivot_longer(cols = -row,
+                        names_to = "col",
+                        values_to = "value")
+  data_df$row <- as.numeric(data_df$row)
+  data_df$col <- as.numeric(data_df$col)
+
+  # make heatmap
+  fig <- plotly::plot_ly(data = data_df,
+                         x = ~col,
+                         y = ~row,
+                         z = ~value,
+                         type = "heatmap",
+                         colors = color_palette) |>
+    plotly::colorbar(limits = color_limits,
+                     title = "Proportion")
+
+  if(!showlegend) {
+    fig <- fig |>
+      plotly::hide_colorbar()
+  }
+  fig <- fig |>
+    # vertical line
+    plotly::add_segments(
+      x = vline,
+      xend = vline,
+      y = min(data_df$row) - 0.5,
+      yend = max(data_df$row) + 0.5,
+      inherit = FALSE,
+      line = list(color = "black",
+                  width = 2,
+                  dash = "dot"),
+      showlegend = FALSE
+    ) |>
+    # horizotal line
+    plotly::add_segments(
+      x = min(data_df$col) - 0.5,
+      xend = max(data_df$col) + 0.5,
+      y = hline,
+      yend = hline,
+      inherit = FALSE,
+      line = list(color = "black",
+                  width = 2,
+                  dash = "dot"),
+      showlegend = FALSE
+    ) |>
+    plotly::layout(
+      xaxis = list(
+        tick0 = 1,
+        dtick = 1,
+        showgrid = FALSE,
+        fixedrange = TRUE
+      )
+    ) |>
+    plotly::add_annotations(
+      x = c(max(data_df$col), vline),
+      y = c(hline, max(data_df$row)),
+      text = c(sprintf("Avg. %0.1f", hline), sprintf("Avg. %0.1f", vline)),
+      xref = "x",
+      yref = "y",
+      showarrow = FALSE,
+      xanchor = c("right", "left"),
+      yanchor = c("bottom", "middle")
+    )
+
+  if(y_pos_right) {
+    fig <- fig |>
+      plotly::layout(
+        yaxis = list(
+          tick0 = 1,
+          dtick = 1,
+          showgrid = FALSE,
+          range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+          side = "right",
+          fixedrange = TRUE
+        )
+      )
+  } else {
+    fig <- fig |>
+      plotly::layout(
+        yaxis = list(
+          tick0 = 1,
+          dtick = 1,
+          showgrid = FALSE,
+          range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+          fixedrange = TRUE
+        )
+      )
+  }
+
+  return(fig)
+}
+
 #--------------------------------------------------------- Input validation ----
 iv_check_select_input <- function(value, choices, name_plot, message) {
   if(!all(value %in% choices)) {
@@ -1470,7 +1619,7 @@ qc_rsd_violin <- function(data = NULL,
     ggplot2::labs(title = title,
                   x = "Lipid class",
                   y = "Relative standard deviation") +
-  ggplot2::theme_minimal()
+    ggplot2::theme_minimal()
 
   ply <- plotly::ggplotly(p)
 

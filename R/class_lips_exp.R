@@ -97,7 +97,20 @@ Lips_exp = R6::R6Class(
        selected_view = "lipidclass",
        selected_lipidclass = "All",
        fa_norm = FALSE,
-       color_palette = 'Spectral',
+       color_palette = "Spectral",
+       img_format = "png"
+     ),
+
+     # Fatty acid analysis heatmap
+     fa_comp_plot = list(
+       data_table = "Total normalized table",
+       sample_meta = "Raw meta table",
+       feature_meta = NULL,
+       group_col = NULL,
+       group_1 = NULL,
+       group_2 = NULL,
+       selected_lipidclass = "CE",
+       color_palette = "Blues",
        img_format = "png"
      )
     ),
@@ -337,7 +350,8 @@ Lips_exp = R6::R6Class(
       pca_plot = NULL,
       double_bond_plot = NULL,
       satindex_plot = NULL,
-      fa_analysis_plot = NULL
+      fa_analysis_plot = NULL,
+      fa_comp_plot = NULL
     ),
 
     #---------------------------------------------------- Parameter methods ----
@@ -424,6 +438,19 @@ Lips_exp = R6::R6Class(
       self$params$fa_analysis_plot$fa_norm = fa_norm
       self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
+    },
+
+    param_fa_comp_plot = function(data_table, sample_meta, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
+      self$params$fa_comp_plot$data_table = data_table
+      self$params$fa_comp_plot$sample_meta = sample_meta
+      self$params$fa_comp_plot$feature_meta = feature_meta
+      self$params$fa_comp_plot$group_col = group_col
+      self$params$fa_comp_plot$group_1 = group_1
+      self$params$fa_comp_plot$group_2 = group_2
+      self$params$fa_comp_plot$group_2 = group_2
+      self$params$fa_comp_plot$selected_lipidclass = selected_lipidclass
+      self$params$fa_comp_plot$color_palette = color_palette
+      self$params$fa_comp_plot$img_format = img_format
     },
 
     #-------------------------------------------------------- Table methods ----
@@ -713,6 +740,18 @@ Lips_exp = R6::R6Class(
                                   fa_norm = self$params$fa_analysis_plot$fa_norm,
                                   color_palette = 'Spectral',
                                   img_format = "png")
+
+      self$param_fa_comp_plot(
+        data_table = self$tables$total_norm_data,
+        sample_meta = self$tables$raw_meta,
+        feature_meta = self$tables$feature_table,
+        group_col = self$indices$group_col,
+        group_1 = unique(self$tables$raw_meta[, self$indices$group_col])[1],
+        group_2 = unique(self$tables$raw_meta[, self$indices$group_col])[2],
+        selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+        color_palette = "Blues",
+        img_format = "png"
+      )
 
     },
 
@@ -1307,6 +1346,199 @@ Lips_exp = R6::R6Class(
       fig
 
       self$plots$fa_analysis_plot <- fig
+    },
+
+    # plot Fatty acid composition heatmaps
+    plot_fa_comp = function(data_table = self$tables$total_norm_data,
+                            sample_meta = self$tables$raw_meta,
+                            feature_table = self$tables$feature_table,
+                            group_col = self$params$fa_comp_plot$group_col,
+                            group_1 = self$params$fa_comp_plot$group_1,
+                            group_2 = self$params$fa_comp_plot$group_2,
+                            selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+                            color_palette = self$params$fa_comp_plot$color_palette,
+                            width = NULL,
+                            height = NULL) {
+      # Get the color palette
+      color_count = colors_switch(color_palette)
+      color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+      # if (reverse_palette) {
+      #   color_palette = base::rev(color_palette)
+      # }
+
+      ## left side
+      # heatmap
+      hm_left_data <- fa_comp_hm_calc(data_table = data_table,
+                                      sample_meta = sample_meta,
+                                      feature_table = feature_table,
+                                      group_col = group_col,
+                                      selected_group = group_1,
+                                      selected_lipidclass = selected_lipidclass)
+      # bar left top
+      bar_top_left_data <- data.frame(x = factor(colnames(hm_left_data),
+                                                 levels = sort(as.numeric(colnames(hm_left_data))),
+                                                 labels = sort(as.numeric(colnames(hm_left_data)))),
+                                      y = colSums(hm_left_data))
+      avg_carbon_left <- weighted.mean(x = as.numeric(as.character(bar_top_left_data$x)),
+                                       w = bar_top_left_data$y)
+      # bar left
+      bar_left_data <- data.frame(x = factor(rownames(hm_left_data),
+                                             levels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE),
+                                             labels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE)),
+                                  y = rowSums(hm_left_data))
+      avg_unsat_left <- weighted.mean(x = as.numeric(as.character(bar_left_data$x)),
+                                      w = bar_left_data$y)
+
+
+      ## right side
+      # heatmap
+      hm_right_data <- fa_comp_hm_calc(data_table = data_table,
+                                       sample_meta = sample_meta,
+                                       feature_table = feature_table,
+                                       group_col = group_col,
+                                       selected_group = group_2,
+                                       selected_lipidclass = selected_lipidclass)
+      # bar right top
+      bar_top_right_data <- data.frame(x = factor(colnames(hm_right_data),
+                                                  levels = sort(as.numeric(colnames(hm_right_data))),
+                                                  labels = sort(as.numeric(colnames(hm_right_data)))),
+                                       y = colSums(hm_right_data))
+      avg_carbon_right <- weighted.mean(x = as.numeric(as.character(bar_top_right_data$x)),
+                                        w = bar_top_right_data$y)
+      # bar right
+      bar_right_data <- data.frame(x = factor(rownames(hm_right_data),
+                                              levels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE),
+                                              labels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE)),
+                                   y = rowSums(hm_right_data))
+      avg_unsat_right <- weighted.mean(x = as.numeric(as.character(bar_right_data$x)),
+                                      w = bar_right_data$y)
+
+
+      # get the min and max value for the heatmap colorbar
+      min_value <- min(c(min(hm_left_data), min(hm_right_data)))
+      max_value <- max(c(max(hm_left_data), max(hm_right_data)))
+
+      ## plots
+      # left side
+      fig_hm_left <- fa_comp_heatmap(data = hm_left_data,
+                                     vline = avg_carbon_left,
+                                     hline = avg_unsat_left,
+                                     color_limits = c(min_value, max_value),
+                                     color_palette = color_palette)
+      fig_bar_top_left <- plotly::plot_ly(
+        data = bar_top_left_data,
+        x = ~x,
+        y = ~y,
+        type = "bar",
+        showlegend = FALSE,
+        color = I("gray")
+      ) |>
+        plotly::layout(xaxis = list(showticklabels = FALSE,
+                                    fixedrange = TRUE),
+                       yaxis = list(fixedrange = TRUE))
+      fig_bar_left <- plotly::plot_ly(
+        data = bar_left_data,
+        x = ~y,
+        y = ~x,
+        type = "bar",
+        showlegend = FALSE,
+        orientation = "h",
+        color = I("gray")
+      ) |>
+        plotly::layout(
+          xaxis = list(autorange = "reversed",
+                       fixedrange = TRUE),
+          yaxis = list(showticklabels = FALSE,
+                       fixedrange = TRUE)
+        )
+
+      # right side
+      fig_hm_right <- fa_comp_heatmap(data = hm_right_data,
+                                      vline = avg_carbon_right,
+                                      hline = avg_unsat_right,
+                                      color_limits = c(min_value, max_value),
+                                      color_palette = color_palette,
+                                      y_pos_right = TRUE,
+                                      showlegend = TRUE)
+      fig_bar_top_right <- plotly::plot_ly(
+        data = bar_top_right_data,
+        x = ~x,
+        y = ~y,
+        type = "bar",
+        showlegend = FALSE,
+        color = I("gray")
+      )|>
+        plotly::layout(xaxis = list(showticklabels = FALSE,
+                                    fixedrange = TRUE),
+                       yaxis = list(fixedrange = TRUE,
+                                    side = "right"))
+      fig_bar_right <- plotly::plot_ly(
+        data = bar_right_data,
+        x = ~y,
+        y = ~x,
+        type = "bar",
+        showlegend = FALSE,
+        orientation = "h",
+        color = I("gray")
+      ) |>
+        plotly::layout(yaxis = list(showticklabels = FALSE,
+                                    fixedrange = TRUE),
+                       xaxis = list(fixedrange = TRUE))
+
+      # blank plot
+      blank <- plotly::plot_ly(type = "scatter", mode = "markers")
+      blank <- plotly::layout(blank,
+                              xaxis = list(zeroline = FALSE,
+                                           showticklabels = FALSE,
+                                           showgrid = FALSE,
+                                           fixedrange = TRUE),
+                              yaxis = list(zeroline = FALSE,
+                                           showticklabels = FALSE,
+                                           showgrid = FALSE,
+                                           fixedrange = TRUE))
+
+      # combine plots
+      annotations <- list(
+        list(
+          x = 0.3,
+          y = 0.975,
+          text = paste0("<b>", group_1, "</b>"),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        ),
+        list(
+          x = 0.7,
+          y = 0.975,
+          text = paste0("<b>", group_2, "</b>"),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        )
+      )
+
+      fig_top <- plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),
+                                 nrows = 1,
+                                 widths = c(0.1, 0.4, 0.4, 0.1))
+
+      fig_bottom <- plotly::subplot(list(fig_bar_left, fig_hm_left, fig_hm_right, fig_bar_right),
+                                    nrows = 1,
+                                    widths = c(0.1, 0.4, 0.4, 0.1))
+
+      fig <- plotly::subplot(list(fig_top, fig_bottom),
+                             nrows = 2,
+                             heights = c(0.2, 0.75)) |>
+        plotly::layout(title = list(text = paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
+                       annotations = annotations) |>
+        plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d"))
+
+      self$plots$fa_comp_plot <- fig
     }
+
+
   )
 )
