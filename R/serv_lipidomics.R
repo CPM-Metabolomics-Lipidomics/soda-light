@@ -697,6 +697,51 @@ lipidomics_ui = function(id) {
     #   )
     # ),
     shiny::tabPanel(
+      title = "Info",
+      shiny::fluidRow(
+        shiny::column(
+          width = 12,
+          shiny::p("Some additional information about the data set will be placed here!"),
+          shiny::hr(style = "border-top: 1px solid #7d7d7d; width: 75%;"),
+          shiny::p("The imported tables are unfiltered and the raw tables are filtered!"),
+          shiny::fluidRow(
+            shiny::column(
+              width = 3,
+              shiny::downloadButton(
+                outputId = ns("info_download_imp_data"),
+                label = "Download imported data table",
+                style = "width:100%;"
+              )
+            ),
+            shiny::column(
+              width = 3,
+              shiny::downloadButton(
+                outputId = ns("info_download_raw_data"),
+                label = "Download raw data table",
+                style = "width:100%;"
+              )
+            ),
+            shiny::column(
+              width = 3,
+              shiny::downloadButton(
+                outputId = ns("info_download_imp_meta"),
+                label = "Download imported meta data table",
+                style = "width:100%;"
+              )
+            ),
+            shiny::column(
+              width = 3,
+              shiny::downloadButton(
+                outputId = ns("info_download_raw_meta"),
+                label = "Download raw meta data table",
+                style = "width:100%;"
+              )
+            )
+          )
+        )
+      )
+    ),
+    shiny::tabPanel(
       title = "Visualize data",
       # shiny::uiOutput(
       #   outputId = ns('visualize_data_ui')
@@ -1317,6 +1362,44 @@ lipidomics_server = function(id, module_controler) {
         dl_data_table$name = timestamped_name(paste0(stringr::str_replace_all(input$select_data_table, " ", "_"), ".csv"))
         dl_data_table$table = table_switch(input$select_data_table, r6)
       })
+
+      #------------------------------------------------------------ Info server ----
+      # Download data and meta tables
+      output$info_download_imp_data = shiny::downloadHandler(
+        filename = function() {
+          timestamped_name(file_name = "imported_data_table.csv")
+        },
+        content = function(file_name) {
+          write.csv(r6$tables$imp_data, file_name)
+        }
+      )
+
+      output$info_download_raw_data = shiny::downloadHandler(
+        filename = function() {
+          timestamped_name(file_name = "raw_data_table.csv")
+        },
+        content = function(file_name) {
+          write.csv(r6$tables$raw_data, file_name)
+        }
+      )
+
+      output$info_download_imp_meta = shiny::downloadHandler(
+        filename = function() {
+          timestamped_name(file_name = "imported_meta_table.csv")
+        },
+        content = function(file_name) {
+          write.csv(r6$tables$imp_meta, file_name)
+        }
+      )
+
+      output$info_download_raw_meta = shiny::downloadHandler(
+        filename = function() {
+          timestamped_name(file_name = "raw_meta_table.csv")
+        },
+        content = function(file_name) {
+          write.csv(r6$tables$raw_meta, file_name)
+        }
+      )
 
       #-------------------------------------------------- Visualize data server ----
       # Initialise dimensions object
