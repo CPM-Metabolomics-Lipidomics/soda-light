@@ -110,7 +110,7 @@ Lips_exp = R6::R6Class(
        group_1 = NULL,
        group_2 = NULL,
        selected_lipidclass = "CE",
-       color_palette = "Spectral",
+       color_palette = "Blues",
        img_format = "png"
      )
     ),
@@ -749,7 +749,7 @@ Lips_exp = R6::R6Class(
         group_1 = unique(self$tables$raw_meta[, self$indices$group_col])[1],
         group_2 = unique(self$tables$raw_meta[, self$indices$group_col])[2],
         selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
-        color_palette = "Spectral",
+        color_palette = "Blues",
         img_format = "png"
       )
 

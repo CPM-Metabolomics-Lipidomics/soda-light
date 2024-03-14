@@ -1462,6 +1462,16 @@ fa_comp_heatmap <- function(data = NULL,
         showgrid = FALSE,
         fixedrange = TRUE
       )
+    ) |>
+    plotly::add_annotations(
+      x = c(max(data_df$col) - 1, vline + 1),
+      y = c(hline - 0.2, max(data_df$row)),
+      text = c(sprintf("Avg. %0.1f", hline), sprintf("Avg. %0.1f", vline)),
+      xref = "x",
+      yref = "y",
+      showarrow = FALSE,
+      ax = 20,
+      ay = -40
     )
 
   if(y_pos_right) {
