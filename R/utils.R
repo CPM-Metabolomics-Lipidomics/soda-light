@@ -1657,6 +1657,14 @@ example_lipidomics = function(name,
                              meta_data$experimentId %in% data_files), 1:18]
   rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
 
+
+  # create a new column for the blank group filtering
+  meta_data$group_col_blank <- tolower(paste(meta_data$genoType,
+                                             meta_data$treatment,
+                                             meta_data$sex,
+                                             meta_data$cultureConditions,
+                                             sep = "_"))
+
   # get the lipid data
   data_tables <- vector("list", length = length(data_files))
   for(a in 1:length(data_files)) {

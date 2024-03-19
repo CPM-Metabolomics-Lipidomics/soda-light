@@ -254,7 +254,10 @@ Lips_exp = R6::R6Class(
       rownames_pools = NULL,
       rownames_samples = NULL,
 
-      excluded_cols = NULL
+      excluded_cols = NULL,
+
+      # the group column used for blank filtering
+      group_col_blank = NULL
     ),
 
     #--------------------------------------------------------------- Tables ----
@@ -548,6 +551,7 @@ Lips_exp = R6::R6Class(
                                  sample_rownames = self$indices$rownames_samples,
                                  val_threshold = val_threshold)
         } else if (!apply_imputation & apply_filtering) {
+          # this one is used by soda-light
           # Filtering alone
           del_cols = lips_get_del_cols(data_table = data_table,
                                        blank_table = self$tables$blank_table,
@@ -556,7 +560,8 @@ Lips_exp = R6::R6Class(
                                        idx_blanks = self$indices$idx_blanks,
                                        idx_samples = self$indices$idx_samples,
                                        id_col_meta = self$indices$id_col_meta,
-                                       group_col = self$indices$group_col,
+                                       # provide the column name for the group filtering
+                                       group_col = "group_col_blank", #self$indices$group_col,
                                        batch_col = self$indices$batch_col,
                                        blank_multiplier = blank_multiplier,
                                        sample_threshold = sample_threshold,
