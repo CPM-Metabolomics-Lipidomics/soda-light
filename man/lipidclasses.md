@@ -10,7 +10,7 @@ This page shows an overview of all the lipid classes measured.
 <tr>
   <th>Lipid class</th>
   <th>LipidMaps code</th>
-  <th>Lipd class abbrev.</th>
+  <th>Lipid class abbrev.</th>
   <th>Example</th>
 </tr>
 <tr>
