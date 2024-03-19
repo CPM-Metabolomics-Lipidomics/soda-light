@@ -1460,21 +1460,12 @@ fa_comp_heatmap <- function(data = NULL,
     ) |>
     plotly::layout(
       xaxis = list(
-        layer = "above traces",
         tick0 = 1,
         dtick = 1,
         zeroline = FALSE,
         showgrid = FALSE,
-        fixedrange = TRUE
-        # not working
-        # minor = list(
-        #   tick0 = 0.5,
-        #   dtick = 1,
-        #   showgrid = TRUE,
-        #   showline = TRUE,
-        #   gridcolor = "blue",
-        #   gridwidth = 3
-        # )
+        fixedrange = TRUE,
+        title = "Number of carbon atoms"
       )
     ) |>
     plotly::add_annotations(
@@ -1498,7 +1489,8 @@ fa_comp_heatmap <- function(data = NULL,
           showgrid = FALSE,
           range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
           side = "right",
-          fixedrange = TRUE
+          fixedrange = TRUE,
+          title = "Number of double bonds"
         )
       )
   } else {
@@ -1510,7 +1502,8 @@ fa_comp_heatmap <- function(data = NULL,
           zeroline = FALSE,
           showgrid = FALSE,
           range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
-          fixedrange = TRUE
+          fixedrange = TRUE,
+          title = "Number of double bonds"
         )
       )
   }

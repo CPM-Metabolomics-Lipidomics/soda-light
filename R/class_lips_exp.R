@@ -1440,7 +1440,8 @@ Lips_exp = R6::R6Class(
       ) |>
         plotly::layout(xaxis = list(showticklabels = FALSE,
                                     fixedrange = TRUE),
-                       yaxis = list(fixedrange = TRUE))
+                       yaxis = list(fixedrange = TRUE,
+                                    title = "Proportion"))
       fig_bar_left <- plotly::plot_ly(
         data = bar_left_data,
         x = ~y,
@@ -1454,7 +1455,8 @@ Lips_exp = R6::R6Class(
           xaxis = list(autorange = "reversed",
                        fixedrange = TRUE),
           yaxis = list(showticklabels = FALSE,
-                       fixedrange = TRUE)
+                       fixedrange = TRUE,
+                       title = "Proportion")
         )
 
       # right side
@@ -1476,7 +1478,8 @@ Lips_exp = R6::R6Class(
         plotly::layout(xaxis = list(showticklabels = FALSE,
                                     fixedrange = TRUE),
                        yaxis = list(fixedrange = TRUE,
-                                    side = "right"))
+                                    side = "right",
+                                    title = "Proportion"))
       fig_bar_right <- plotly::plot_ly(
         data = bar_right_data,
         x = ~y,
@@ -1487,7 +1490,8 @@ Lips_exp = R6::R6Class(
         color = I("gray")
       ) |>
         plotly::layout(yaxis = list(showticklabels = FALSE,
-                                    fixedrange = TRUE),
+                                    fixedrange = TRUE,
+                                    title = "Proportion"),
                        xaxis = list(fixedrange = TRUE))
 
       # blank plot
