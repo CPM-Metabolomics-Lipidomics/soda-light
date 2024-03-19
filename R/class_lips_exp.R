@@ -1453,10 +1453,11 @@ Lips_exp = R6::R6Class(
       ) |>
         plotly::layout(
           xaxis = list(autorange = "reversed",
-                       fixedrange = TRUE),
+                       fixedrange = TRUE,
+                       title = "Proportion"),
           yaxis = list(showticklabels = FALSE,
                        fixedrange = TRUE,
-                       title = "Proportion")
+                       title = "")
         )
 
       # right side
@@ -1491,8 +1492,9 @@ Lips_exp = R6::R6Class(
       ) |>
         plotly::layout(yaxis = list(showticklabels = FALSE,
                                     fixedrange = TRUE,
-                                    title = "Proportion"),
-                       xaxis = list(fixedrange = TRUE))
+                                    title = ""),
+                       xaxis = list(fixedrange = TRUE,
+                                    title = "Proportion"))
 
       # blank plot
       blank <- plotly::plot_ly(type = "scatter", mode = "markers")
@@ -1532,15 +1534,20 @@ Lips_exp = R6::R6Class(
 
       fig_top <- plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),
                                  nrows = 1,
-                                 widths = c(0.1, 0.4, 0.4, 0.1))
+                                 widths = c(0.1, 0.4, 0.4, 0.1),
+                                 titleY = TRUE)
 
       fig_bottom <- plotly::subplot(list(fig_bar_left, fig_hm_left, fig_hm_right, fig_bar_right),
                                     nrows = 1,
-                                    widths = c(0.1, 0.4, 0.4, 0.1))
+                                    widths = c(0.1, 0.4, 0.4, 0.1),
+                                    titleX = TRUE,
+                                    titleY = TRUE)
 
       fig <- plotly::subplot(list(fig_top, fig_bottom),
                              nrows = 2,
-                             heights = c(0.2, 0.75)) |>
+                             heights = c(0.2, 0.75),
+                             titleX = TRUE,
+                             titleY = TRUE) |>
         plotly::layout(title = list(text = paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
                        annotations = annotations) |>
         plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d"))
