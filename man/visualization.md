@@ -10,4 +10,4 @@ The visualization tab offers several visualization options for the data. Up to 4
 - **Fatty acid analysis.** For the fatty acid analysis there are two types of plot available.
     1. *Fatty acid overview per lipid class.* In this plot you can get an overview of all the fatty acids tails found. The overview can be shown for all lipid classes, including or excluding triacylglycerols (TG), or for each lipid class separately. The diacylglycerophosphates (PA) are excluded from this overview, because there is no information available about the fatty acid tails.
     2. *Lipid class overview per fatty acid.*
-- **Fatty acid composition analysis.**
+- **Fatty acid composition analysis.** The fatty acid composition analysis will give you a comparison between two groups of the distribution of the total carbon number and total double bonds within a lipid class.
