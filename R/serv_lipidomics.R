@@ -701,8 +701,6 @@ lipidomics_ui = function(id) {
       shiny::fluidRow(
         shiny::column(
           width = 12,
-          shiny::p("Some additional information about the data set will be placed here!"),
-          shiny::hr(style = "border-top: 1px solid #7d7d7d; width: 75%;"),
           shiny::p("The imported tables are unfiltered and the raw tables are filtered!"),
           shiny::fluidRow(
             shiny::column(
@@ -737,6 +735,16 @@ lipidomics_ui = function(id) {
                 style = "width:100%;"
               )
             )
+          )
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 12,
+          shiny::hr(style = "border-top: 1px solid #7d7d7d; width: 75%;"),
+          p("An overview of the totals per lipid class and sample."),
+          DT::dataTableOutput(
+            outputId = ns("info_sum_table")
           )
         )
       )
@@ -1365,7 +1373,7 @@ lipidomics_server = function(id, module_controler) {
 
       #------------------------------------------------------------ Info server ----
       # Download data and meta tables
-      output$info_download_imp_data = shiny::downloadHandler(
+      output$info_download_imp_data <- shiny::downloadHandler(
         filename = function() {
           timestamped_name(file_name = "imported_data_table.csv")
         },
@@ -1374,7 +1382,7 @@ lipidomics_server = function(id, module_controler) {
         }
       )
 
-      output$info_download_raw_data = shiny::downloadHandler(
+      output$info_download_raw_data <- shiny::downloadHandler(
         filename = function() {
           timestamped_name(file_name = "raw_data_table.csv")
         },
@@ -1383,7 +1391,7 @@ lipidomics_server = function(id, module_controler) {
         }
       )
 
-      output$info_download_imp_meta = shiny::downloadHandler(
+      output$info_download_imp_meta <- shiny::downloadHandler(
         filename = function() {
           timestamped_name(file_name = "imported_meta_table.csv")
         },
@@ -1392,7 +1400,7 @@ lipidomics_server = function(id, module_controler) {
         }
       )
 
-      output$info_download_raw_meta = shiny::downloadHandler(
+      output$info_download_raw_meta <- shiny::downloadHandler(
         filename = function() {
           timestamped_name(file_name = "raw_meta_table.csv")
         },
@@ -1400,6 +1408,26 @@ lipidomics_server = function(id, module_controler) {
           write.csv(r6$tables$raw_meta, file_name)
         }
       )
+
+      output$info_sum_table <- DT::renderDataTable({
+        req(r6$tables$class_table)
+
+        class_table <- as.data.frame(r6$tables$class_table)
+        lipidclasses <- colnames(class_table)
+        class_table$Total <- rowSums(class_table)
+        class_table$`Sample ID` <- rownames(class_table)
+        # arrange the column names
+        class_table <- class_table[, c("Sample ID", lipidclasses, "Total")]
+
+        DT::datatable(data = class_table,
+                      rownames = FALSE,
+                      options = list(dom = "t",
+                                     pageLength = nrow(class_table),
+                                     ordering = FALSE),
+                      selection = "none") |>
+          DT::formatRound(columns = 2:ncol(class_table),
+                          digits = 1)
+      })
 
       #-------------------------------------------------- Visualize data server ----
       # Initialise dimensions object
