@@ -1853,6 +1853,37 @@ fa_comp_server = function(r6, input, output, session) {
 
 
 fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_fa_comp <- shinyvalidate::InputValidator$new()
+  iv_fa_comp$add_rule("fa_comp_metacol", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_metagroup", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_selected_lipidclass", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_color_palette", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_img_format", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_metacol",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$meta_column,
+                      name_plot = r6$name,
+                      message = "FA composition analysis: Incorrect group column selected!")
+  iv_fa_comp$add_rule("fa_comp_metagroup",
+                      iv_check_select_input,
+                      choices = unique(r6$tables$raw_meta[, r6$params$fa_comp_plot$group_col]),
+                      name_plot = r6$name,
+                      message = "FA composition analysis: Incorrect view selected!")
+  iv_fa_comp$add_rule("fa_comp_selected_lipidclass",
+                      iv_check_select_input,
+                      choices = unique(r6$tables$feature_table$lipid_class),
+                      name_plot = r6$name,
+                      message = "FA composition analysis: Incorrect lipid class selected!")
+  iv_fa_comp$add_rule("fa_comp_color_palette",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$color_palette,
+                      name_plot = r6$name,
+                      message = "FA composition analysis: Incorrect color palette selected!")
+  iv_fa_comp$add_rule("fa_comp_img_format",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$image_format,
+                      name_plot = r6$name,
+                      message = "FA composition analysis: Incorrect image format selected!")
 
   # Generate the plot
   shiny::observeEvent(
@@ -1862,7 +1893,7 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
       input$fa_comp_color_palette,
       input$fa_comp_img_format),
     {
-      # shiny::req(iv_fa_comp$is_valid())
+      shiny::req(iv_fa_comp$is_valid())
 
       print_tm(r6$name, "Fatty acid composition analysis: Updating params...")
 
