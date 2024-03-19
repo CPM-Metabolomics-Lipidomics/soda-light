@@ -1425,7 +1425,9 @@ fa_comp_heatmap <- function(data = NULL,
                          type = "heatmap",
                          colors = color_palette) |>
     plotly::colorbar(limits = color_limits,
-                     title = "Proportion")
+                     title = "Proportion") |>
+    plotly::style(xgap = 3,
+                  ygap = 3)
 
   if(!showlegend) {
     fig <- fig |>
@@ -1458,10 +1460,21 @@ fa_comp_heatmap <- function(data = NULL,
     ) |>
     plotly::layout(
       xaxis = list(
+        layer = "above traces",
         tick0 = 1,
         dtick = 1,
+        zeroline = FALSE,
         showgrid = FALSE,
         fixedrange = TRUE
+        # not working
+        # minor = list(
+        #   tick0 = 0.5,
+        #   dtick = 1,
+        #   showgrid = TRUE,
+        #   showline = TRUE,
+        #   gridcolor = "blue",
+        #   gridwidth = 3
+        # )
       )
     ) |>
     plotly::add_annotations(
@@ -1481,6 +1494,7 @@ fa_comp_heatmap <- function(data = NULL,
         yaxis = list(
           tick0 = 1,
           dtick = 1,
+          zeroline = FALSE,
           showgrid = FALSE,
           range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
           side = "right",
@@ -1493,6 +1507,7 @@ fa_comp_heatmap <- function(data = NULL,
         yaxis = list(
           tick0 = 1,
           dtick = 1,
+          zeroline = FALSE,
           showgrid = FALSE,
           range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
           fixedrange = TRUE
