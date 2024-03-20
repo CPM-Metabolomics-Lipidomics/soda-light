@@ -1553,7 +1553,7 @@ Lips_exp = R6::R6Class(
                                            showgrid = FALSE,
                                            fixedrange = TRUE))
 
-      # combine plots
+      # set annotation for combined plots
       annotations <- list(
         list(
           x = 0.3,
@@ -1579,6 +1579,7 @@ Lips_exp = R6::R6Class(
         )
       )
 
+      # combine plots
       fig_top <- plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),
                                  nrows = 1,
                                  widths = c(0.1, 0.4, 0.4, 0.1),
