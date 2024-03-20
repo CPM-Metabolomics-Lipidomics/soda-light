@@ -1459,19 +1459,30 @@ fa_comp_heatmap <- function(data = NULL,
       showlegend = FALSE
     ) |>
     plotly::layout(
+      font = list(
+        size = 9
+      ),
       xaxis = list(
         tick0 = 1,
         dtick = 1,
         zeroline = FALSE,
         showgrid = FALSE,
         fixedrange = TRUE,
-        title = "Number of carbon atoms"
+        ticklen = 3,
+        title = list(
+          text = "Number of carbon atoms",
+          standoff = 5,
+          font = list(
+            size = 10
+          )
+        )
       )
     ) |>
     plotly::add_annotations(
       x = c(max(data_df$col), vline),
       y = c(hline, max(data_df$row)),
       text = c(sprintf("Avg. %0.1f", hline), sprintf("Avg. %0.1f", vline)),
+      font = list(size = 10),
       xref = "x",
       yref = "y",
       showarrow = FALSE,
@@ -1482,6 +1493,9 @@ fa_comp_heatmap <- function(data = NULL,
   if(y_pos_right) {
     fig <- fig |>
       plotly::layout(
+        font = list(
+          size = 9
+        ),
         yaxis = list(
           tick0 = 1,
           dtick = 1,
@@ -1490,12 +1504,22 @@ fa_comp_heatmap <- function(data = NULL,
           range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
           side = "right",
           fixedrange = TRUE,
-          title = "Number of double bonds"
+          ticklen = 3,
+          title = list(
+            text = "Number of double bonds",
+            standoff = 3,
+            font = list(
+              size = 10
+            )
+          )
         )
       )
   } else {
     fig <- fig |>
       plotly::layout(
+        font = list(
+          size = 9
+        ),
         yaxis = list(
           tick0 = 1,
           dtick = 1,
@@ -1503,7 +1527,14 @@ fa_comp_heatmap <- function(data = NULL,
           showgrid = FALSE,
           range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
           fixedrange = TRUE,
-          title = "Number of double bonds"
+          ticklen = 3,
+          title = list(
+            text = "Number of double bonds",
+            standoff = 3,
+            font = list(
+              size = 10
+            )
+          )
         )
       )
   }

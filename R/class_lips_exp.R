@@ -88,31 +88,31 @@ Lips_exp = R6::R6Class(
         img_format = "png"
       ),
 
-     # Fatty acid analysis parameters self$params$fa_analysis_plot$
-     fa_analysis_plot = list(
-       data_table = "Raw data table",
-       feature_meta = NULL,
-       sample_meta = "Raw meta table",
-       group_col = NULL,
-       selected_view = "lipidclass",
-       selected_lipidclass = "All",
-       fa_norm = FALSE,
-       color_palette = "Spectral",
-       img_format = "png"
-     ),
+      # Fatty acid analysis parameters self$params$fa_analysis_plot$
+      fa_analysis_plot = list(
+        data_table = "Raw data table",
+        feature_meta = NULL,
+        sample_meta = "Raw meta table",
+        group_col = NULL,
+        selected_view = "lipidclass",
+        selected_lipidclass = "All",
+        fa_norm = FALSE,
+        color_palette = "Spectral",
+        img_format = "png"
+      ),
 
-     # Fatty acid analysis heatmap
-     fa_comp_plot = list(
-       data_table = "Total normalized table",
-       sample_meta = "Raw meta table",
-       feature_meta = NULL,
-       group_col = NULL,
-       group_1 = NULL,
-       group_2 = NULL,
-       selected_lipidclass = "CE",
-       color_palette = "Blues",
-       img_format = "png"
-     )
+      # Fatty acid analysis heatmap
+      fa_comp_plot = list(
+        data_table = "Total normalized table",
+        sample_meta = "Raw meta table",
+        feature_meta = NULL,
+        group_col = NULL,
+        group_1 = NULL,
+        group_2 = NULL,
+        selected_lipidclass = "CE",
+        color_palette = "Blues",
+        img_format = "png"
+      )
     ),
     #----------------------------------------------------Hard coded settings----
     hardcoded_settings = list(
@@ -1147,7 +1147,7 @@ Lips_exp = R6::R6Class(
                                                 col_side_colors = row_annotations,
                                                 row_side_colors = col_annotations,
                                                 dendrogram = dendrogram_list)
-                                                # labCol = xlabels)
+      # labCol = xlabels)
     },
 
     ## PCA scores and loading plots
@@ -1241,12 +1241,12 @@ Lips_exp = R6::R6Class(
       ## At the moment this function is using the raw data table
       # do the calculations
       if(selected_view == "lipidclass") {
-      res <- fa_analysis_calc(data_table = data_table,
-                              feature_table = feature_table,
-                              sample_meta = sample_meta,
-                              selected_lipidclass = selected_lipidclass,
-                              fa_norm = fa_norm)
-      # column names are fa tail names, rownames sample names
+        res <- fa_analysis_calc(data_table = data_table,
+                                feature_table = feature_table,
+                                sample_meta = sample_meta,
+                                selected_lipidclass = selected_lipidclass,
+                                fa_norm = fa_norm)
+        # column names are fa tail names, rownames sample names
       } else if(selected_view == "fa") {
         res <- fa_analysis_rev_calc(data_table = data_table,
                                     feature_table = feature_table,
@@ -1416,7 +1416,7 @@ Lips_exp = R6::R6Class(
                                               labels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE)),
                                    y = rowSums(hm_right_data))
       avg_unsat_right <- weighted.mean(x = as.numeric(as.character(bar_right_data$x)),
-                                      w = bar_right_data$y)
+                                       w = bar_right_data$y)
 
 
       # get the min and max value for the heatmap colorbar
@@ -1430,6 +1430,7 @@ Lips_exp = R6::R6Class(
                                      hline = avg_unsat_left,
                                      color_limits = c(min_value, max_value),
                                      color_palette = color_palette)
+
       fig_bar_top_left <- plotly::plot_ly(
         data = bar_top_left_data,
         x = ~x,
@@ -1438,10 +1439,21 @@ Lips_exp = R6::R6Class(
         showlegend = FALSE,
         color = I("gray")
       ) |>
-        plotly::layout(xaxis = list(showticklabels = FALSE,
-                                    fixedrange = TRUE),
-                       yaxis = list(fixedrange = TRUE,
-                                    title = "Proportion"))
+        plotly::layout(
+          xaxis = list(showticklabels = FALSE,
+                       fixedrange = TRUE),
+          yaxis = list(
+            fixedrange = TRUE,
+            title = list(
+              text = "Proportion",
+              standoff = 3,
+              font = list(
+                size = 10
+              )
+            )
+          )
+        )
+
       fig_bar_left <- plotly::plot_ly(
         data = bar_left_data,
         x = ~y,
@@ -1452,12 +1464,21 @@ Lips_exp = R6::R6Class(
         color = I("gray")
       ) |>
         plotly::layout(
-          xaxis = list(autorange = "reversed",
-                       fixedrange = TRUE,
-                       title = "Proportion"),
-          yaxis = list(showticklabels = FALSE,
-                       fixedrange = TRUE,
-                       title = "")
+          xaxis = list(
+            autorange = "reversed",
+            fixedrange = TRUE,
+            title = list(
+              text = "Proportion",
+              standoff = 3,
+              font = list(
+                size = 10
+              )
+            )
+          ),
+          yaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE,
+            title = "")
         )
 
       # right side
@@ -1468,6 +1489,7 @@ Lips_exp = R6::R6Class(
                                       color_palette = color_palette,
                                       y_pos_right = TRUE,
                                       showlegend = TRUE)
+
       fig_bar_top_right <- plotly::plot_ly(
         data = bar_top_right_data,
         x = ~x,
@@ -1476,11 +1498,23 @@ Lips_exp = R6::R6Class(
         showlegend = FALSE,
         color = I("gray")
       )|>
-        plotly::layout(xaxis = list(showticklabels = FALSE,
-                                    fixedrange = TRUE),
-                       yaxis = list(fixedrange = TRUE,
-                                    side = "right",
-                                    title = "Proportion"))
+        plotly::layout(
+          xaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE),
+          yaxis = list(
+            fixedrange = TRUE,
+            side = "right",
+            title = list(
+              text = "Proportion",
+              standoff = 3,
+              font = list(
+                size = 10
+              )
+            )
+          )
+        )
+
       fig_bar_right <- plotly::plot_ly(
         data = bar_right_data,
         x = ~y,
@@ -1490,11 +1524,22 @@ Lips_exp = R6::R6Class(
         orientation = "h",
         color = I("gray")
       ) |>
-        plotly::layout(yaxis = list(showticklabels = FALSE,
-                                    fixedrange = TRUE,
-                                    title = ""),
-                       xaxis = list(fixedrange = TRUE,
-                                    title = "Proportion"))
+        plotly::layout(
+          yaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE,
+            title = ""),
+          xaxis = list(
+            fixedrange = TRUE,
+            title = list(
+              text = "Proportion",
+              standoff = 3,
+              font = list(
+                size = 10
+              )
+            )
+          )
+        )
 
       # blank plot
       blank <- plotly::plot_ly(type = "scatter", mode = "markers")
@@ -1514,6 +1559,7 @@ Lips_exp = R6::R6Class(
           x = 0.3,
           y = 0.975,
           text = paste0("<b>", group_1, "</b>"),
+          font = list(size = 12),
           xref = "paper",
           yref = "paper",
           xanchor = "center",
@@ -1524,6 +1570,7 @@ Lips_exp = R6::R6Class(
           x = 0.7,
           y = 0.975,
           text = paste0("<b>", group_2, "</b>"),
+          font = list(size = 12),
           xref = "paper",
           yref = "paper",
           xanchor = "center",
@@ -1548,8 +1595,11 @@ Lips_exp = R6::R6Class(
                              heights = c(0.2, 0.75),
                              titleX = TRUE,
                              titleY = TRUE) |>
-        plotly::layout(title = list(text = paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
-                       annotations = annotations) |>
+        plotly::layout(title = list(
+          text = paste0("<b>Lipid class: ", selected_lipidclass, "</b>"),
+          size = 14
+        ),
+        annotations = annotations) |>
         plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d"))
 
       self$plots$fa_comp_plot <- fig
