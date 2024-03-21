@@ -119,7 +119,7 @@ Lips_exp = R6::R6Class(
       # general
       meta_column = c(
         "Culture conditions" = "cultureConditions",
-        "Geno type" = "genoType",
+        "Genotype" = "genoType",
         "Treatment" = "treatment",
         "Sex" = "sex"
       ),
