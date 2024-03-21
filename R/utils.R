@@ -1758,7 +1758,7 @@ example_lipidomics = function(name,
                   val_threshold = 0.6,
                   blank_multiplier = 2,
                   sample_threshold = 0.8,
-                  group_threshold = 0.8,
+                  group_threshold = 0.6,
                   norm_col = '')
 
   r6$derive_data_tables()
