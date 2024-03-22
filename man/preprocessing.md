@@ -60,58 +60,63 @@ There are four data tables available for visualization.
 </tr>
 <tr>
   <td>Class distribution</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
 </tr>
 <tr>
   <td>Class comparison</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
 </tr>
 <tr>
   <td>Volcano plot</td>
-  <td class="col-center">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
 </tr>
 <tr>
-  <td>Heatmap</td>
-  <td class="col-center">&#10060;</td>
+  <td>Heatmap (z-scores)</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
 </tr>
 <tr>
-  <td>PCA</td>
-  <td class="col-center">&#10060;</td>
+  <td>PCA (mean centered and uv scaled)</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
 </tr>
 <tr>
   <td>Fatty acid analysis</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
 </tr>
 <tr>
   <td>Fatty acid composition analysis</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
-  <td class="col-center">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
+  <td class="col-center" style="font-size: 75%">&#10060;</td>
 </tr>
 </table>
+
+<!---
+&#10004; = bold check
+&#10060; = red cross
+--->
