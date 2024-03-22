@@ -181,10 +181,10 @@ Lips_exp = R6::R6Class(
 
       heatmap = list(
         datasets = list(
-          "Lipid species" = "Z-scored table",
-          "Lipid species (normalized, % of total lipids)" = "Z-scored total normalized table",
-          "Lipid classes" = "Class table z-scored",
-          "Lipid classes (normalized, % of total lipid classes)" = "Class table z-scored total normalized"
+          "Lipid species (z-scores)" = "Z-scored table",
+          "Lipid species (z-scores, normalized, % of total lipids)" = "Z-scored total normalized table",
+          "Lipid classes (z-scores)" = "Class table z-scored",
+          "Lipid classes (z-scores, normalized, % of total lipids)" = "Class table z-scored total normalized"
         ),
         map_cols = list(
           "Lipid classes" = "lipid_class",
