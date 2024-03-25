@@ -1,4 +1,4 @@
-This page shows an overview of all the lipid classes measured.
+Below an overview of all the lipid classes available. Added are the [LipidMaps](https://lipidmaps.org/databases/lmsd/browse) codes.
 
 <style>
   tr:nth-child(even) {
