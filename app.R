@@ -213,7 +213,7 @@ server = function(input, output, session) {
   client_data <- session$clientData
 
   # read the master database file
-  db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
+  db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile_new.xlsx",
                                              sheet = 1))
 
   # Single omics modules
@@ -230,13 +230,13 @@ server = function(input, output, session) {
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
       print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
-      if(!grepl(pattern = "^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
+      if(!grepl(pattern = "NLA_[0-9]{3}", #"^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
                 x = query[["experimentId"]])) {
         query[["experimentId"]] <- NULL
       }
     } else {
       # for easy development
-      query[["experimentId"]] <- "VDK_220223_01"
+      query[["experimentId"]] <- "NLA_006" # "VDK_220223_01"
     }
     experiment_id = query[["experimentId"]]
 

@@ -1673,14 +1673,13 @@ example_lipidomics = function(name,
                               slot = NA,
                               experiment_id = NULL) {
   # get the meta data
-  meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
+  meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile_new.xlsx"))
   data_files = unique(meta_data$batchNumber[meta_data$experimentId == experiment_id])
   data_files = data_files[!is.na(data_files)]
   meta_data = meta_data[meta_data$batchNumber %in% data_files &
                           (meta_data$experimentId %in% experiment_id |
                              meta_data$experimentId %in% data_files), 1:18]
   rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
-
 
   # create a new column for the blank group filtering
   meta_data$group_col_blank <- tolower(paste(meta_data$genoType,
