@@ -183,6 +183,7 @@ Lips_exp = R6::R6Class(
         datasets = list(
           # "Lipid species (z-scores)" = "Z-scored table",
           "Lipid species (z-scores, normalized, % of total lipids)" = "Z-scored total normalized table",
+          "Lipid species (z-scores, normalized, % of total lipids within class)" = "Z-scored class normalized table",
           # "Lipid classes (z-scores)" = "Class table z-scored",
           "Lipid classes (z-scores, normalized, % of total lipids)" = "Class table z-scored total normalized"
         ),

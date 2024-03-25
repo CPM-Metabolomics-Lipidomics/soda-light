@@ -33,12 +33,10 @@ Total class normalization is only applied on the lipid species. Here each lipid 
 
 ## Data tables
 
-There are four data tables available for visualization.
+There are three data tables available for visualization.
 
-* Lipid species, absolute values (concentrations).
 * Lipid species, normalized to total amount of lipids.
 * Lipid species, normalized to total amount of lipids per lipid class.
-* Lipid class, absolute values. ***Is this correct?***
 * Lipid class, normalized to total amount.
 
 <style>
@@ -52,49 +50,37 @@ There are four data tables available for visualization.
 <table style="width:100%;">
 <tr>
   <th>Visualization</th>
-  <th class="col-center">Lipid species<br>(absolute values)</th>
   <th class="col-center">Lipid species<br>(normalized to total amount of lipids)</th>
   <th class="col-center">Lipid species<br>(normalized to total amount of lipids per lipid class)</th>
-  <th class="col-center">Lipid class<br>(absolute values)</th>
   <th class="col-center">Lipid class<br>(normalized to total amount)</th>
 </tr>
 <tr>
   <td>Class distribution</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
-  <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
 </tr>
 <tr>
   <td>Class comparison</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
-  <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
 </tr>
 <tr>
   <td>Volcano plot</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
 </tr>
 <tr>
   <td>Heatmap (z-scores)</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
 </tr>
 <tr>
   <td>PCA (mean centered and uv scaled)</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
 </tr>
@@ -103,14 +89,10 @@ There are four data tables available for visualization.
   <td class="col-center" style="color: green;">&#10004;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
 </tr>
 <tr>
   <td>Fatty acid composition analysis</td>
   <td class="col-center" style="color: green;">&#10004;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
-  <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
   <td class="col-center" style="font-size: 75%">&#10060;</td>
 </tr>
