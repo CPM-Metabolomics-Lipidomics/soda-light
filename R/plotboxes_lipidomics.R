@@ -951,7 +951,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
 
     print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
-    r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
+    r6$param_fa_analysis_plot(data_table = r6$tables$total_norm_data,
                               feature_meta = r6$tables$feature_table,
                               sample_meta = r6$tables$raw_meta,
                               group_col = input$fa_analysis_metacol,
@@ -1898,7 +1898,7 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
       print_tm(r6$name, "Fatty acid composition analysis: Updating params...")
 
       r6$param_fa_comp_plot(
-        data_table = r6$tables$raw_data,
+        data_table = r6$tables$total_norm_data,
         sample_meta = r6$tables$raw_meta,
         feature_meta = r6$tables$feature_table,
         group_col = input$fa_comp_metacol,

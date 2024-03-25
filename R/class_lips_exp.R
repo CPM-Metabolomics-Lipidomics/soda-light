@@ -90,7 +90,7 @@ Lips_exp = R6::R6Class(
 
       # Fatty acid analysis parameters self$params$fa_analysis_plot$
       fa_analysis_plot = list(
-        data_table = "Raw data table",
+        data_table = "Total normalized table",
         feature_meta = NULL,
         sample_meta = "Raw meta table",
         group_col = NULL,
@@ -101,7 +101,7 @@ Lips_exp = R6::R6Class(
         img_format = "png"
       ),
 
-      # Fatty acid analysis heatmap
+      # Fatty acid analysis heatmap self$params$fa_comp_plot$
       fa_comp_plot = list(
         data_table = "Total normalized table",
         sample_meta = "Raw meta table",
@@ -133,14 +133,14 @@ Lips_exp = R6::R6Class(
       # plot specific
       class_distribution = list(
         datasets = list(
-          "Lipid classes (absolute conc.)" = "Class table",
+          # "Lipid classes (absolute conc.)" = "Class table",
           "Lipid classes (normalized, % of total lipid classes)" = "Class table total normalized"
         )
       ),
 
       class_comparison = list(
         datasets = list(
-          "Lipid classes (absolute conc.)" = "Class table",
+          # "Lipid classes (absolute conc.)" = "Class table",
           "Lipid classes (normalized, % of total lipid classes)" = "Class table total normalized"
         )
       ),
@@ -181,9 +181,9 @@ Lips_exp = R6::R6Class(
 
       heatmap = list(
         datasets = list(
-          "Lipid species (z-scores)" = "Z-scored table",
+          # "Lipid species (z-scores)" = "Z-scored table",
           "Lipid species (z-scores, normalized, % of total lipids)" = "Z-scored total normalized table",
-          "Lipid classes (z-scores)" = "Class table z-scored",
+          # "Lipid classes (z-scores)" = "Class table z-scored",
           "Lipid classes (z-scores, normalized, % of total lipids)" = "Class table z-scored total normalized"
         ),
         map_cols = list(
@@ -1227,7 +1227,7 @@ Lips_exp = R6::R6Class(
     },
 
     ## FA analysis
-    plot_fa_analysis = function(data_table = self$tables$raw_data,
+    plot_fa_analysis = function(data_table = self$tables$total_norm_data,
                                 feature_table = self$tables$feature_table,
                                 sample_meta = self$tables$raw_meta,
                                 group_col = self$params$fa_analysis_plot$group_col,
@@ -1301,7 +1301,7 @@ Lips_exp = R6::R6Class(
       if(fa_norm) {
         ylabel <- "%"
       } else {
-        ylabel <- "Concentration"
+        ylabel <- "Normalized value"
       }
 
       # set the main title for lipid class overview per fatty acids
