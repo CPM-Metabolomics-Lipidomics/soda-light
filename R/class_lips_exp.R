@@ -1110,7 +1110,12 @@ Lips_exp = R6::R6Class(
 
       if (impute) {
         print('Imputing NAs')
-        data_table[is.na(data_table)] <- min(data_table, na.rm = TRUE)
+        # data_table[is.na(data_table)] <- min(data_table, na.rm = TRUE)
+        # use the minimum value per sample
+        data_table <- t(apply(data_table, 1, function(x) {
+          x[is.na(x)] <- min(x, na.rm = TRUE)
+          return(x)
+        }))
       }
 
       # Get the color palette

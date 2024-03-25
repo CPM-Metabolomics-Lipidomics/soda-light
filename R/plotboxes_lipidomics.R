@@ -1069,7 +1069,7 @@ heatmap_server = function(r6, input, output, session) {
             ),
             `data-toggle` = "tooltip",
             `data-placement` = "right",
-            title = "Missing values will be imputed with the minimum value."
+            title = "Missing values will be imputed with the minimum value of that sample."
           )
         ),
         shiny::column(
