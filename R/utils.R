@@ -1678,7 +1678,7 @@ example_lipidomics = function(name,
   data_files = data_files[!is.na(data_files)]
   meta_data = meta_data[meta_data$batchNumber %in% data_files &
                           (meta_data$experimentId %in% experiment_id |
-                             meta_data$experimentId %in% data_files), 1:18]
+                             meta_data$experimentId %in% data_files), 1:20]
   rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
 
   # create a new column for the blank group filtering
@@ -1716,7 +1716,7 @@ example_lipidomics = function(name,
   r6$indices$id_col_meta = 'analystId'
   r6$indices$id_col_data = 'ID'
 
-  r6$indices$group_col = 'genoType'
+  r6$indices$group_col = unique(meta_data$defaultColumn)[1]
   r6$indices$batch_col = 'batchNumber'
   r6$set_raw_meta()
 
