@@ -78,7 +78,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
     left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
   }
-  plot_label = paste0(left_label, ' - ', right_label)
+  plot_label = paste0(left_label, ' vs ', right_label)
 
   # Format data
   data$log2_fold_change = log2(data$fold_change)
