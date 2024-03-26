@@ -594,11 +594,30 @@ Lips_exp = R6::R6Class(
     },
 
     get_qc_table = function() {
-      id_cells <- self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control cells", "analystId"]
-      id_plasma <- self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+      batches <- unique(self$tables$imp_meta$batchNumber)
 
-      qc_cells <- self$tables$imp_data[self$tables$imp_data$ID %in% id_cells, ]
-      qc_plasma <- self$tables$imp_data[self$tables$imp_data$ID %in% id_plasma, ]
+      qc_cells <- c()
+      qc_plasma <- c()
+      for(batch in batches) {
+        id_cells <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control cells" &
+                                                        self$tables$imp_meta$batchNumber == batch, "analystId"], sep = "_")
+        id_plasma <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control plasma" &
+                                                         self$tables$imp_meta$batchNumber == batch, "analystId"], sep = "_")
+        # get the data
+        tmp_cells <- self$tables$imp_data[rownames(self$tables$imp_data) %in% id_cells, ]
+        tmp_plasma <- self$tables$imp_data[rownames(self$tables$imp_data) %in% id_plasma, ]
+
+        # fix QC naming
+        if(nrow(tmp_cells) > 0) {
+          tmp_cells$ID <- id_cells
+        }
+        if(nrow(tmp_plasma) > 0) {
+          tmp_plasma$ID <- id_plasma
+        }
+
+        qc_cells <- rbind(qc_cells, tmp_cells)
+        qc_plasma <- rbind(qc_plasma, tmp_plasma)
+      }
 
       # qc_table[, self$indices$id_col_data] <- NULL
       self$tables$qc_cells_table <- qc_cells
@@ -1607,7 +1626,7 @@ Lips_exp = R6::R6Class(
           size = 14
         ),
         annotations = annotations) |>
-        plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d"))
+        plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d", "select2d", "lasso2d"))
 
       self$plots$fa_comp_plot <- fig
     }

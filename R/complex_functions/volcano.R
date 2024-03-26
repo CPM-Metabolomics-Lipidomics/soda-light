@@ -78,7 +78,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
     left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
   }
-  plot_label = paste0(left_label, ' - ', right_label)
+  plot_label = paste0(left_label, ' vs ', right_label)
 
   # Format data
   data$log2_fold_change = log2(data$fold_change)
@@ -108,11 +108,16 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
   data$groups = replacement_vector[data$groups]
 
   # Produce the data tables & plots
+  print("Rico: volcano top violin")
+  print(data[is.na(data$log10_p_values), ])
+
   if (length(which(is.na(data$log10_p_values))) > 0) { # Top violin
     top_data = data[which(is.na(data$log10_p_values)),]
     data = data[-which(is.na(data$log10_p_values)),]
     inf_idx = which(base::is.infinite(top_data$log2_fold_change))
-    top_data = top_data[-inf_idx,]
+    if(length(inf_idx) > 0) {
+      top_data = top_data[-inf_idx, ]
+    }
     print(paste0('Dropped ', length(inf_idx), ' features with no FC nor p-values.'))
 
     top_violin = plot_volcano_violin(data = top_data,
@@ -394,7 +399,8 @@ plot_volcano_violin_top = function(data,
                                    show_legend) {
 
   p = plotly::plot_ly()
-
+  print("Rico: top")
+  print(data$log2_fold_change)
   p = plotly::add_trace(p,
                         y = 'No p-value',
                         x = data$log2_fold_change,
@@ -487,7 +493,7 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
                     line = list(width = 0.5, color = 'white')),
       legendgroup = group,
       name = group,
-      showlegend = TRUE,
+      showlegend = FALSE,
       hoverinfo = 'text'
     )
     # not significant data
@@ -504,7 +510,7 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
                     line = list(width = 0.5, color = 'white')),
       legendgroup = group,
       name = group,
-      showlegend = FALSE,
+      showlegend = TRUE,
       hoverinfo = 'text'
     )
   }
@@ -527,7 +533,7 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
                                  x0 = -log2(fc_threshold),
                                  x1 = -log2(fc_threshold),
                                  y0 = 0,
-                                 y1 = max(data$log10_p_values),
+                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
                                  line = list(color = "black", width = 1, dash = "dot")
                                ),
                                # Vertical line at x = 1
@@ -536,14 +542,14 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
                                  x0 = log2(fc_threshold),
                                  x1 = log2(fc_threshold),
                                  y0 = 0,
-                                 y1 = max(data$log10_p_values),
+                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
                                  line = list(color = "black", width = 1, dash = "dot")
                                ),
                                # Horizontal line at y = -log10(0.05)
                                list(
                                  type = "line",
-                                 x0 = -round(max(abs(data$log2_fold_change))),
-                                 x1 = round(max(abs(data$log2_fold_change))),
+                                 x0 = -1.2 * round(max(abs(data$log2_fold_change))),
+                                 x1 = 1.2 * round(max(abs(data$log2_fold_change))),
                                  y0 = -log10(p_val_threshold),
                                  y1 = -log10(p_val_threshold),
                                  line = list(color = "black", width = 1, dash = "dot")
