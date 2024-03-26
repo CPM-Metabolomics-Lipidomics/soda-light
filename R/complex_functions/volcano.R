@@ -487,7 +487,7 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
                     line = list(width = 0.5, color = 'white')),
       legendgroup = group,
       name = group,
-      showlegend = TRUE,
+      showlegend = FALSE,
       hoverinfo = 'text'
     )
     # not significant data
@@ -504,7 +504,7 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
                     line = list(width = 0.5, color = 'white')),
       legendgroup = group,
       name = group,
-      showlegend = FALSE,
+      showlegend = TRUE,
       hoverinfo = 'text'
     )
   }
