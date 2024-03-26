@@ -108,11 +108,16 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
   data$groups = replacement_vector[data$groups]
 
   # Produce the data tables & plots
+  print("Rico: volcano top violin")
+  print(data[is.na(data$log10_p_values), ])
+
   if (length(which(is.na(data$log10_p_values))) > 0) { # Top violin
     top_data = data[which(is.na(data$log10_p_values)),]
     data = data[-which(is.na(data$log10_p_values)),]
     inf_idx = which(base::is.infinite(top_data$log2_fold_change))
-    top_data = top_data[-inf_idx,]
+    if(length(inf_idx) > 0) {
+      top_data = top_data[-inf_idx, ]
+    }
     print(paste0('Dropped ', length(inf_idx), ' features with no FC nor p-values.'))
 
     top_violin = plot_volcano_violin(data = top_data,
@@ -394,7 +399,8 @@ plot_volcano_violin_top = function(data,
                                    show_legend) {
 
   p = plotly::plot_ly()
-
+  print("Rico: top")
+  print(data$log2_fold_change)
   p = plotly::add_trace(p,
                         y = 'No p-value',
                         x = data$log2_fold_change,
