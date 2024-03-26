@@ -595,8 +595,6 @@ Lips_exp = R6::R6Class(
 
     get_qc_table = function() {
       batches <- unique(self$tables$imp_meta$batchNumber)
-      print("Rico: batches")
-      print(batches)
 
       qc_cells <- c()
       qc_plasma <- c()
@@ -605,24 +603,21 @@ Lips_exp = R6::R6Class(
                                                         self$tables$imp_meta$batchNumber == batch, "analystId"], sep = "_")
         id_plasma <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control plasma" &
                                                          self$tables$imp_meta$batchNumber == batch, "analystId"], sep = "_")
-        print("Rico: batch")
-        print(batch)
-        print(id_cells)
         # get the data
         tmp_cells <- self$tables$imp_data[rownames(self$tables$imp_data) %in% id_cells, ]
         tmp_plasma <- self$tables$imp_data[rownames(self$tables$imp_data) %in% id_plasma, ]
+
         # fix QC naming
-        tmp_cells$ID <- self$tables$imp_meta[rownames(self$tables$imp_meta) %in% id_cells, "sampleReferral"]
-        tmp_plasma$ID <- self$tables$imp_meta[rownames(self$tables$imp_meta) %in% id_plasma, "sampleReferral"]
+        if(nrow(tmp_cells) > 0) {
+          tmp_cells$ID <- id_cells
+        }
+        if(nrow(tmp_plasma) > 0) {
+          tmp_plasma$ID <- id_plasma
+        }
 
         qc_cells <- rbind(qc_cells, tmp_cells)
         qc_plasma <- rbind(qc_plasma, tmp_plasma)
       }
-
-      print("Rico: id_cells")
-      print(id_cells)
-      print("Rico: id_plasma")
-      print(id_plasma)
 
       # qc_table[, self$indices$id_col_data] <- NULL
       self$tables$qc_cells_table <- qc_cells
