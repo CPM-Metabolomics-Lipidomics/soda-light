@@ -1626,7 +1626,7 @@ Lips_exp = R6::R6Class(
           size = 14
         ),
         annotations = annotations) |>
-        plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d"))
+        plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d", "select2d", "lasso2d"))
 
       self$plots$fa_comp_plot <- fig
     }
