@@ -215,7 +215,7 @@ server = function(input, output, session) {
   client_data <- session$clientData
 
   # read the master database file
-  db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile_new.xlsx",
+  db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
                                              sheet = 1))
 
   # Single omics modules
