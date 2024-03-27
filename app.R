@@ -146,6 +146,8 @@ sidebar_ui = function() {
 #--------------------------------------------------------------- Setup body ----
 body_ui = function() {
   bs4Dash::dashboardBody(
+    waiter::useWaiter(),
+    waiter::waiterPreloader(html = waiter::spin_fading_circles()),
 
     # Detect UI functions
     shinyjs::useShinyjs(),
@@ -195,7 +197,7 @@ server = function(input, output, session) {
 
   module_controler = shiny::reactiveValues(
 
-    r6_exp = NULL,
+    r6_exp = shiny::reactiveValues(),
 
     dims = list(
       x_box = 0.9,
@@ -218,8 +220,8 @@ server = function(input, output, session) {
 
   # Single omics modules
   shiny::observe({
-    req(client_data,
-        db_data)
+    shiny::req(client_data,
+               db_data)
 
     print("Rico: app starting")
 

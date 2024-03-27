@@ -1526,7 +1526,6 @@ lipidomics_server = function(id, module_controler) {
             disabledChoices = input$showPlots
           )
         }
-
       })
 
       session$userData[[id]]$clear_plots = shiny::observeEvent(input$clear_plots, {
@@ -1540,7 +1539,5 @@ lipidomics_server = function(id, module_controler) {
           NULL
         )
       })
-
-
     })
 }

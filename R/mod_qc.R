@@ -6,7 +6,8 @@ qc_ui = function(id){
     # shiny::fluidRow(
     #   shiny::p("QC page imported data wil be shown here!"),
     # ),
-    waiter::autoWaiter(),
+    waiter::autoWaiter(html = waiter::spin_fading_circles(),
+                       color = rgb(0, 0, 1, 0.5)),
     shiny::fluidRow(
       shiny::column(width = 4,
                     shiny::textOutput(outputId = ns("qc_c_imp_rsd_text")),

@@ -1308,7 +1308,8 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   })
 
   shiny::observeEvent(c(input$heatmap_run), {
-    req(input$heatmap_run)
+    req(input$heatmap_run,
+        input$heatmap_img_format)
 
     # make sure no feature annotations will be supplied to heatmap when
     # a lipid class table is selected

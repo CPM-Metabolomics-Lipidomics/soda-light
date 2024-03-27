@@ -696,15 +696,15 @@ Lips_exp = R6::R6Class(
       self$get_group_summary_classes()
 
       # Set plotting parameters
-      self$param_class_distribution(dataset = 'Class table total normalized',
+      self$param_class_distribution(dataset = self$params$class_distribution$dataset,
                                     group_col = self$indices$group_col,
-                                    color_palette = 'Spectral',
-                                    img_format = "png")
+                                    color_palette = self$params$class_distribution$color_palette,
+                                    img_format = self$params$class_distribution$img_format)
 
-      self$param_class_comparison(dataset = 'Class table total normalized',
+      self$param_class_comparison(dataset = self$params$class_comparison$dataset,
                                   group_col = self$indices$group_col,
-                                  color_palette = 'Spectral',
-                                  img_format = "png")
+                                  color_palette = self$params$class_comparison$color_palette,
+                                  img_format = self$params$class_comparison$img_format)
 
       self$param_volcano_plot(auto_refresh = TRUE,
                               data_table = 'Total normalized table',
