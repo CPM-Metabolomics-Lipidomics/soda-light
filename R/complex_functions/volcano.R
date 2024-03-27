@@ -108,9 +108,6 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
   data$groups = replacement_vector[data$groups]
 
   # Produce the data tables & plots
-  print("Rico: volcano top violin")
-  print(data[is.na(data$log10_p_values), ])
-
   if (length(which(is.na(data$log10_p_values))) > 0) { # Top violin
     top_data = data[which(is.na(data$log10_p_values)),]
     data = data[-which(is.na(data$log10_p_values)),]
@@ -399,8 +396,7 @@ plot_volcano_violin_top = function(data,
                                    show_legend) {
 
   p = plotly::plot_ly()
-  print("Rico: top")
-  print(data$log2_fold_change)
+
   p = plotly::add_trace(p,
                         y = 'No p-value',
                         x = data$log2_fold_change,

@@ -111,7 +111,10 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
                                  message = "Class distribution: Incorrect image format selected!")
 
   # Generate the plot
-  shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_color_palette, input$class_distribution_img_format), {
+  shiny::observeEvent(c(input$class_distribution_dataset,
+                        input$class_distribution_metacol,
+                        input$class_distribution_color_palette,
+                        input$class_distribution_img_format), {
     shiny::req(iv_class_distribution$is_valid())
 
     print_tm(r6$name, "Class distribution: Updating params...")
@@ -552,11 +555,11 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                            choices = r6$hardcoded_settings$image_format,
                            name_plot = r6$name,
                            message = "Volcano plot: Incorrect image palette selected!")
-  iv_volcano_plot$add_rule("volcano_plot_metagroup",
-                           iv_check_select_input,
-                           choices = unique(r6$tables$raw_meta[, r6$params$volcano_plot$group_col]),
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect group selected!")
+  # iv_volcano_plot$add_rule("volcano_plot_metagroup",
+  #                          iv_check_select_input,
+  #                          choices = unique(r6$tables$raw_meta[, r6$params$volcano_plot$group_col]),
+  #                          name_plot = r6$name,
+  #                          message = "Volcano plot: Incorrect groups selected!")
   iv_volcano_plot$add_rule("volcano_plot_feature_metadata",
                            iv_check_select_input,
                            choices = c("None", unique(colnames(r6$tables$feature_table))),
@@ -613,25 +616,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     )
   })
 
-  # shiny::observeEvent(input$volcano_plot_feature_metadata, {
-  #   if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
-  #     shiny::updateSelectizeInput(
-  #       inputId = "volcano_plot_annotation_terms",
-  #       session = session,
-  #       choices = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$feature_list,
-  #       selected = character(0)
-  #     )
-  #   } else {
-  #     shiny::updateSelectizeInput(
-  #       inputId = "volcano_plot_annotation_terms",
-  #       session = session,
-  #       choices = NULL,
-  #       selected = character(0)
-  #     )
-  #   }
-  # })
-
-
+  # make the plot
   shiny::observeEvent(
     c(shiny::req(length(input$volcano_plot_metagroup) == 2),
       input$volcano_plot_auto_refresh,
@@ -641,7 +626,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_test,
       input$volcano_plot_displayed_plot,
       input$volcano_plot_feature_metadata,
-      # input$volcano_plot_annotation_terms,
       input$volcano_plot_color_palette,
       input$volcano_plot_p_val_threshold,
       input$volcano_plot_fc_threshold,
@@ -1323,8 +1307,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     }
   })
 
-  shiny::observeEvent(c(input$heatmap_run,
-                        input$heatmap_img_format), {
+  shiny::observeEvent(c(input$heatmap_run), {
     req(input$heatmap_run)
 
     # make sure no feature annotations will be supplied to heatmap when
@@ -1825,7 +1808,7 @@ fa_comp_server = function(r6, input, output, session) {
         inputId = ns("fa_comp_selected_lipidclass"),
         label = "Select lipid class",
         choices = unique(r6$tables$feature_table$lipid_class),
-        selected = r6$params$fa_comp$selected_lipidclass,
+        selected = r6$params$fa_comp_plot$selected_lipidclass,
         multiple = FALSE
       ),
       shiny::selectizeInput(
@@ -1864,11 +1847,11 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = r6$hardcoded_settings$meta_column,
                       name_plot = r6$name,
                       message = "FA composition analysis: Incorrect group column selected!")
-  iv_fa_comp$add_rule("fa_comp_metagroup",
-                      iv_check_select_input,
-                      choices = unique(r6$tables$raw_meta[, r6$params$fa_comp_plot$group_col]),
-                      name_plot = r6$name,
-                      message = "FA composition analysis: Incorrect view selected!")
+  # iv_fa_comp$add_rule("fa_comp_metagroup",
+  #                     iv_check_select_input,
+  #                     choices = unique(r6$tables$raw_meta[, r6$params$fa_comp_plot$group_col]),
+  #                     name_plot = r6$name,
+  #                     message = "FA composition analysis: Incorrect groups selected!")
   iv_fa_comp$add_rule("fa_comp_selected_lipidclass",
                       iv_check_select_input,
                       choices = unique(r6$tables$feature_table$lipid_class),
@@ -1885,10 +1868,19 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       name_plot = r6$name,
                       message = "FA composition analysis: Incorrect image format selected!")
 
+  # auto-update selected groups
+  shiny::observeEvent(input$fa_comp_metacol, {
+    shiny::updateSelectizeInput(
+      inputId = "fa_comp_metagroup",
+      session = session,
+      choices = unique(r6$tables$raw_meta[, input$fa_comp_metacol]),
+      selected = unique(r6$tables$raw_meta[, input$fa_comp_metacol])[c(1, 2)]
+    )
+  })
+
   # Generate the plot
   shiny::observeEvent(
-    c(input$fa_comp_metacol,
-      input$fa_comp_metagroup,
+    c(shiny::req(length(input$fa_comp_metagroup) == 2),
       input$fa_comp_selected_lipidclass,
       input$fa_comp_color_palette,
       input$fa_comp_img_format),

@@ -306,8 +306,6 @@ Lips_exp = R6::R6Class(
       dbplot_table = NULL,
       satindex_table = NULL,
       fa_analysis_table = NULL
-
-
     ),
 
     #-------------------------------------------------------------- Local table
@@ -1389,6 +1387,8 @@ Lips_exp = R6::R6Class(
                             color_palette = self$params$fa_comp_plot$color_palette,
                             width = NULL,
                             height = NULL) {
+      print("Rico: lipid class")
+      print(selected_lipidclass)
       # Get the color palette
       color_count = colors_switch(color_palette)
       color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
