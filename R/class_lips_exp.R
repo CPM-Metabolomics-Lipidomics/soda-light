@@ -118,6 +118,7 @@ Lips_exp = R6::R6Class(
     hardcoded_settings = list(
       # general
       meta_column = c(
+        "Cell type" = "cellType",
         "Culture conditions" = "cultureConditions",
         "Genotype" = "genoType",
         "Treatment" = "treatment",
