@@ -11,8 +11,8 @@ if(dev) {
   experiments <- sort(unique(meta_data$experimentId))
 
   # remove all NLA stuff
-  experiments <- experiments[!grepl(pattern = "^NLA_.*",
-                                    x = experiments)]
+  # experiments <- experiments[!grepl(pattern = "^NLA_.*",
+  #                                   x = experiments)]
 
   export <- data.frame(matrix(ncol = 10,
                               nrow = length(experiments)))
@@ -21,6 +21,11 @@ if(dev) {
                         "method", "contributingLab", "harvestDate")
 
   for(a in 1:length(experiments)) {
+    experimentTitle <- unique(meta_data$experimentTitle[meta_data$experimentId == experiments[a]])
+    experimentTitle <- experimentTitle[!is.na(experimentTitle)]
+    experimentTitle <- experimentTitle[experimentTitle != "NA"]
+    experimentTitle <- paste(experimentTitle, collapse = ", ")
+
     genoType <- unique(meta_data$genoType[meta_data$experimentId == experiments[a]])
     genoType <- genoType[!is.na(genoType)]
     genoType <- genoType[genoType != "NA"]
@@ -63,7 +68,7 @@ if(dev) {
     harvestDate <- paste(harvestDate, collapse = ", ")
 
     export$experimentId[a] <- experiments[a]
-    export$experimentTitle[a] <- paste(genoType, cellType, collapse = " ")
+    export$experimentTitle[a] <- experimentTitle
     export$genoType[a] <- genoType
     export$cellType[a] <- cellType
     export$parentCellLine[a] <- parentCellLine
@@ -77,11 +82,11 @@ if(dev) {
 
   ## Need to do some cleaning before sending to Menno
   # Remove datasets with multiple harvest dates
-  keep <- !grepl(pattern = ",",
-                 x = export$harvestDate)
-  export <- export[keep, ]
-  # Remove experiment VDK_230406_01
-  export <- export[export$experimentId != "VDK_230406_01", ]
+  # keep <- !grepl(pattern = ",",
+  #                x = export$harvestDate)
+  # export <- export[keep, ]
+  # # Remove experiment VDK_230406_01
+  # export <- export[export$experimentId != "VDK_230406_01", ]
 
   write.table(x = export,
               file = "./neurolipid_meta.csv",
