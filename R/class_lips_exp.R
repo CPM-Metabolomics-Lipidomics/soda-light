@@ -33,6 +33,7 @@ Lips_exp = R6::R6Class(
       class_comparison = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
+        color_palette = 'Spectral',
         img_format = "png"
       ),
 
@@ -945,10 +946,10 @@ Lips_exp = R6::R6Class(
       for (c in class_list) {
         i = 1
         subplot = plot_ly(colors = unname(colors), width = width, height = height)
-        for (g in groups){
-          if (g %in% cleared_groups) {
+        for(g in groups){
+          if(g %in% cleared_groups) {
             first_bool = FALSE
-          }else{
+          } else {
             first_bool = TRUE
             cleared_groups = c(cleared_groups, g)
           }
@@ -959,30 +960,65 @@ Lips_exp = R6::R6Class(
           m = mean(d) # Get the mean concentration for samples s for class c
 
           # Subplot for the bar chart displaying the mean concentration
-          subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
-                                          color = colors[g], alpha = 1,
-                                          legendgroup=i, showlegend = first_bool)
+          subplot = subplot |>
+            plotly::add_trace(x = g, y = m, type  = "bar", name = g,
+                              color = colors[g], alpha = 1,
+                              legendgroup=i, showlegend = first_bool)
 
           # Subplot for boxplots displaying the median and all datapoints
-          subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
-                                          pointpos = 0, name = g, color = colors[g],
-                                          line = list(color = 'rgb(100,100,100)'),
-                                          marker = list(color = 'rgb(100,100,100)'), alpha = 1,
-                                          legendgroup=i, showlegend = FALSE,
-                                          text = s,
-                                          hoverinfo = "text")
-          subplot = subplot %>% layout(xaxis = list(showticklabels = FALSE),
-                                       yaxis = list(tickfont = list(size = 8),
-                                                    tickformat = "digits"))
+          subplot = subplot |>
+            plotly::add_trace(x = g, y = d, type  = "box", boxpoints = "all",
+                              pointpos = 0, name = g, color = colors[g],
+                              line = list(color = 'rgb(100,100,100)'),
+                              marker = list(color = 'rgb(100,100,100)'), alpha = 1,
+                              legendgroup=i, showlegend = FALSE,
+                              text = s,
+                              hoverinfo = "text")
+
+          # add the title to the plot
+          subplot = subplot |>
+            plotly::add_annotations(
+              text = paste0("<b>", c, "</b>"),
+              x = 0.5,
+              y = 1,
+              yref = "paper",
+              xref = "paper",
+              xanchor = "center",
+              yanchor = "bottom",
+              showarrow = FALSE,
+              font = list(size = 11)) |>
+            plotly::layout(
+              xaxis = list(showticklabels = FALSE),
+              yaxis = list(tickfont = list(size = 8),
+                           tickformat = "digits"),
+              shapes = list(
+                list(
+                  type = "rect",
+                  x0 = 0,
+                  x1 = 1,
+                  y0 = 1.,
+                  y1 = 1.2,
+                  yref = "paper",
+                  xref = "paper",
+                  fillcolor = "#0255e9",
+                  opacity = 0.4,
+                  line = list(color = "#0255e9",
+                              width = 1,
+                              opacity = 0.4)
+                )
+              ))
           i = i + 1
         }
-        plot_list[[j]] = plotly_build(subplot)
+        plot_list[[j]] = subplot
         j = j + 1
       }
 
-      fig = subplot(plot_list, nrows = y_dim, margin = 0.035, titleX = TRUE)
-      fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                           annotations = annotations)
+      fig = plotly::subplot(plot_list,
+                            nrows = y_dim,
+                            margin = 0.035) |>
+        plotly::layout(legend = list(orientation = 'h',
+                                     xanchor = "center",
+                                     x = 0.5))
 
       self$plots$class_comparison = fig
     },
