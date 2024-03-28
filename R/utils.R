@@ -1685,8 +1685,6 @@ example_lipidomics = function(name,
   meta_data = meta_data[meta_data$batchNumber %in% data_files &
                           (meta_data$experimentId %in% experiment_id |
                              meta_data$experimentId %in% data_files), meta_columns]
-  print("Rico: meta")
-  print(colnames(meta_data))
   rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
 
   # create a new column for the blank group filtering
