@@ -1673,12 +1673,20 @@ example_lipidomics = function(name,
                               slot = NA,
                               experiment_id = NULL) {
   # get the meta data
+  # set the interesting columns
+  meta_columns <- c("experimentTitle", "experimentId", "defaultColumn", "batchNumber",
+                    "processDate", "experimentIdOrg", "analystId", "sampleId",
+                    "referenceGroup", "sampleReferral", "harvestDate", "cellType",
+                    "genoType", "parentCellLine", "cellLineName", "sex", "cultureConditions",
+                    "treatment")
   meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
   data_files = unique(meta_data$batchNumber[meta_data$experimentId == experiment_id])
   data_files = data_files[!is.na(data_files)]
   meta_data = meta_data[meta_data$batchNumber %in% data_files &
                           (meta_data$experimentId %in% experiment_id |
-                             meta_data$experimentId %in% data_files), 1:20]
+                             meta_data$experimentId %in% data_files), meta_columns]
+  print("Rico: meta")
+  print(colnames(meta_data))
   rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
 
   # create a new column for the blank group filtering
