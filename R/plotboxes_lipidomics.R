@@ -402,13 +402,17 @@ volcano_plot_server = function(r6, input, output, session) {
         selected = c(r6$params$volcano_plot$group_1, r6$params$volcano_plot$group_2),
         multiple = TRUE
       ),
-
-      shiny::selectizeInput(
-        inputId = ns('volcano_plot_feature_metadata'),
-        label = "Feature metadata",
-        choices = r6$hardcoded_settings$volcano_plot$feature_metadata,
-        selected = r6$params$volcano_plot$feature_metadata,
-        multiple = FALSE
+      shiny::span(
+        shiny::selectizeInput(
+          inputId = ns('volcano_plot_feature_metadata'),
+          label = "Feature metadata",
+          choices = r6$hardcoded_settings$volcano_plot$feature_metadata,
+          selected = r6$params$volcano_plot$feature_metadata,
+          multiple = FALSE
+        ),
+        `data-toggle` = "tooltip",
+        `data-placement` = "right",
+        title = "Note:\nSN1:\n\t* TG total number of carbons.\n\t* PA total number of carbons.\nSN2:\n\t* TG Number of carbons of one of the tails.\n\t* CE, PA, LPC, LPE 0 number of carbons."
       ),
       # shiny::selectizeInput(
       #   inputId = ns('volcano_plot_annotation_terms'),
