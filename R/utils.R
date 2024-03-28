@@ -1423,7 +1423,13 @@ fa_comp_heatmap <- function(data = NULL,
                          y = ~row,
                          z = ~value,
                          type = "heatmap",
-                         colors = color_palette) |>
+                         colors = color_palette,
+                         hovertemplate = paste(
+                           "Total carbons: %{x:d}<br>",
+                           "Total double bond: %{y:d}<br>",
+                           "Proportion: %{z:.3f}",
+                           "<extra></extra>"
+                         )) |>
     plotly::colorbar(limits = color_limits,
                      title = "Proportion") |>
     plotly::style(xgap = 3,
