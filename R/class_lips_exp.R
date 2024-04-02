@@ -826,6 +826,7 @@ Lips_exp = R6::R6Class(
                                       idx_group_2 = idx_group_2,
                                       used_function = test,
                                       impute_na = FALSE)
+
       volcano_table$q_val_bh = stats::p.adjust(volcano_table$p_val, method = "BH")
 
       volcano_table$minus_log10_p_value = -log10(volcano_table$p_val)
