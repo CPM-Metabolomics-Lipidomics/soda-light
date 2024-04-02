@@ -818,14 +818,14 @@ Lips_exp = R6::R6Class(
                                                    idx_group_1 = idx_group_1,
                                                    idx_group_2 = idx_group_2,
                                                    used_function = used_function,
-                                                   impute_inf = F)
+                                                   impute_inf = FALSE)
 
 
       volcano_table$p_val = get_p_val(data_table = data_table,
                                       idx_group_1 = idx_group_1,
                                       idx_group_2 = idx_group_2,
                                       used_function = test,
-                                      impute_na = F)
+                                      impute_na = FALSE)
       volcano_table$q_val_bh = stats::p.adjust(volcano_table$p_val, method = "BH")
 
       volcano_table$minus_log10_p_value = -log10(volcano_table$p_val)

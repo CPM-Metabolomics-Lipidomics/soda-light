@@ -1025,7 +1025,6 @@ get_fold_changes = function(data_table, idx_group_1, idx_group_2, used_function,
   }
 
   return(fold_changes)
-
 }
 
 get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute_na = T) {
