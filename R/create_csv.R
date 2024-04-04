@@ -31,9 +31,13 @@ if(dev) {
     genoType <- genoType[genoType != "NA"]
     genoType <- paste(genoType, collapse = ", ")
 
+    # remove blanks and QC from cellType
     cellType <- unique(meta_data$cellType[meta_data$experimentId == experiments[a]])
     cellType <- cellType[!is.na(cellType)]
     cellType <- cellType[cellType != "NA"]
+    cellType <- cellType[!grepl(x = cellType,
+                                pattern = "(blank|quality)",
+                                ignore.case = TRUE)]
     cellType <- paste(cellType, collapse = ", ")
 
     parentCellLine <- unique(meta_data$parentalCellLine[meta_data$experimentId == experiments[a]])
