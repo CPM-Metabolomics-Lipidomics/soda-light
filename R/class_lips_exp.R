@@ -861,8 +861,8 @@ Lips_exp = R6::R6Class(
       for (c in class_list) {
         for (g in group_list){
           s = rownames(meta_table)[meta_table[,group_col] == g]
-          m = mean(as.matrix(table[s, c]))
-          plot_table[c,g] = m
+          m = mean(as.matrix(table[s, c]), na.rm = TRUE)
+          plot_table[c, g] = m
         }
       }
 
