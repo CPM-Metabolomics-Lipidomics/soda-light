@@ -958,7 +958,7 @@ Lips_exp = R6::R6Class(
           # For each class, each group
           s = rownames(meta_table)[meta_table[, group_col] == g] # Get the samples for the current group
           d = data_table[s, c] # Get the concentrations for all s samples in the current class c
-          m = mean(d) # Get the mean concentration for samples s for class c
+          m = mean(d, na.rm = TRUE) # Get the mean concentration for samples s for class c
 
           # Subplot for the bar chart displaying the mean concentration
           subplot = subplot |>
