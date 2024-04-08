@@ -117,20 +117,28 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
                         input$class_distribution_img_format), {
     shiny::req(iv_class_distribution$is_valid())
 
-    print_tm(r6$name, "Class distribution: Updating params...")
+    if(r6$name == "Error") {
+      output$class_distribution_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
 
-    r6$param_class_distribution(dataset = input$class_distribution_dataset,
-                                group_col = input$class_distribution_metacol,
-                                color_palette = input$class_distribution_color_palette,
-                                img_format = input$class_distribution_img_format)
+      print_tm(r6$name, "Class distribution: Updating params...")
 
-    base::tryCatch({
-      class_distribution_generate(r6, color_palette, dimensions_obj, input)
-      class_distribution_spawn(r6, input$class_distribution_img_format, output)
-    },error=function(e){
-      print_tm(r6$name, 'Class distribution: ERROR.')
-    },finally={}
-    )
+      r6$param_class_distribution(dataset = input$class_distribution_dataset,
+                                  group_col = input$class_distribution_metacol,
+                                  color_palette = input$class_distribution_color_palette,
+                                  img_format = input$class_distribution_img_format)
+
+      base::tryCatch({
+        class_distribution_generate(r6, color_palette, dimensions_obj, input)
+        class_distribution_spawn(r6, input$class_distribution_img_format, output)
+      },error=function(e){
+        print_tm(r6$name, 'Class distribution: ERROR.')
+      },finally={}
+      )
+    }
+
   })
 
   # Download associated table
@@ -273,22 +281,26 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
   shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_color_palette, input$class_comparison_img_format), {
     shiny::req(iv_class_comparison$is_valid())
 
-    print_tm(r6$name, "Class comparison: Updating params...")
+    if(r6$name == "Error") {
+      output$class_comparison_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      print_tm(r6$name, "Class comparison: Updating params...")
 
-    r6$param_class_comparison(dataset = input$class_comparison_dataset,
-                              group_col = input$class_comparison_metacol,
-                              color_palette = input$class_comparison_color_palette,
-                              img_format = input$class_comparison_img_format)
+      r6$param_class_comparison(dataset = input$class_comparison_dataset,
+                                group_col = input$class_comparison_metacol,
+                                color_palette = input$class_comparison_color_palette,
+                                img_format = input$class_comparison_img_format)
 
-    base::tryCatch({
-      class_comparison_generate(r6, color_palette, dimensions_obj, input)
-      class_comparison_spawn(r6, input$class_comparison_img_format, output)
-    },error=function(e){
-      print_tm(r6$name, 'Class comparison: error, missing data.')
-    },finally={}
-    )
-
-
+      base::tryCatch({
+        class_comparison_generate(r6, color_palette, dimensions_obj, input)
+        class_comparison_spawn(r6, input$class_comparison_img_format, output)
+      },error=function(e){
+        print_tm(r6$name, 'Class comparison: error, missing data.')
+      },finally={}
+      )
+    }
   })
 
 
@@ -612,12 +624,18 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
-    shiny::updateSelectizeInput(
-      inputId = "volcano_plot_metagroup",
-      session = session,
-      choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
-      selected = unique(r6$tables$raw_meta[, input$volcano_plot_metacol])[c(1, 2)]
-    )
+    if(r6$name == "Error") {
+      output$volcano_plot_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      shiny::updateSelectizeInput(
+        inputId = "volcano_plot_metagroup",
+        session = session,
+        choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
+        selected = unique(r6$tables$raw_meta[, input$volcano_plot_metacol])[c(1, 2)]
+      )
+    }
   })
 
   # make the plot
@@ -637,53 +655,58 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_opacity,
       input$volcano_plot_img_format
     ), {
-       shiny::req(iv_volcano_plot$is_valid(),
-                 length(input$volcano_plot_metagroup) == 2)
+      if(r6$name == "Error") {
+        output$volcano_plot_message <- shiny::renderText({
+          "Error! No data available!"
+        })
+      } else {
+        shiny::req(iv_volcano_plot$is_valid(),
+                   length(input$volcano_plot_metagroup) == 2)
 
-      if (!input$volcano_plot_auto_refresh) {
-        r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
-        return()
-      }
-      print_tm(r6$name, "Volcano plot: Updating params...")
-
-      # Is the column multivalue?
-      if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
-        if (length(input$volcano_plot_annotation_terms) > 0) {
-          feature_metadata = match_go_terms(terms_list = input$volcano_plot_annotation_terms,
-                                            sparse_table = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$sparse_matrix)
-        } else {
+        if (!input$volcano_plot_auto_refresh) {
+          r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
           return()
         }
-      } else {
-        feature_metadata = input$volcano_plot_feature_metadata
+        print_tm(r6$name, "Volcano plot: Updating params...")
+
+        # Is the column multivalue?
+        if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
+          if (length(input$volcano_plot_annotation_terms) > 0) {
+            feature_metadata = match_go_terms(terms_list = input$volcano_plot_annotation_terms,
+                                              sparse_table = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$sparse_matrix)
+          } else {
+            return()
+          }
+        } else {
+          feature_metadata = input$volcano_plot_feature_metadata
+        }
+
+        r6$param_volcano_plot(auto_refresh = input$volcano_plot_auto_refresh,
+                              data_table = input$volcano_plot_tables,
+                              adjustment = input$volcano_plot_adjustment,
+                              group_col = input$volcano_plot_metacol,
+                              group_1 = input$volcano_plot_metagroup[1],
+                              group_2 = input$volcano_plot_metagroup[2],
+                              feature_metadata = input$volcano_plot_feature_metadata,
+                              color_palette = input$volcano_plot_color_palette,
+                              displayed_plot = input$volcano_plot_displayed_plot,
+                              p_val_threshold = input$volcano_plot_p_val_threshold,
+                              fc_threshold = input$volcano_plot_fc_threshold,
+                              marker_size = input$volcano_plot_marker_size,
+                              opacity = input$volcano_plot_opacity,
+                              selected_function = input$volcano_plot_function,
+                              selected_test = input$volcano_plot_test,
+                              img_format = input$volcano_plot_img_format)
+
+        base::tryCatch({
+          volcano_plot_generate(r6, color_palette, dimensions_obj, input)
+          volcano_plot_spawn(r6, input$volcano_plot_img_format, output)
+        },error=function(e){
+          print_tm(r6$name, 'Volcano plot: ERROR.')
+          print(e)
+        },finally={}
+        )
       }
-
-      r6$param_volcano_plot(auto_refresh = input$volcano_plot_auto_refresh,
-                            data_table = input$volcano_plot_tables,
-                            adjustment = input$volcano_plot_adjustment,
-                            group_col = input$volcano_plot_metacol,
-                            group_1 = input$volcano_plot_metagroup[1],
-                            group_2 = input$volcano_plot_metagroup[2],
-                            feature_metadata = input$volcano_plot_feature_metadata,
-                            color_palette = input$volcano_plot_color_palette,
-                            displayed_plot = input$volcano_plot_displayed_plot,
-                            p_val_threshold = input$volcano_plot_p_val_threshold,
-                            fc_threshold = input$volcano_plot_fc_threshold,
-                            marker_size = input$volcano_plot_marker_size,
-                            opacity = input$volcano_plot_opacity,
-                            selected_function = input$volcano_plot_function,
-                            selected_test = input$volcano_plot_test,
-                            img_format = input$volcano_plot_img_format)
-
-      base::tryCatch({
-        volcano_plot_generate(r6, color_palette, dimensions_obj, input)
-        volcano_plot_spawn(r6, input$volcano_plot_img_format, output)
-      },error=function(e){
-        print_tm(r6$name, 'Volcano plot: ERROR.')
-        print(e)
-      },finally={}
-      )
-
 
     })
 
@@ -932,35 +955,42 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
     shiny::req(iv_fa_analysis$is_valid())
-    if(input$fa_analysis_selected_view == "lipidclass") {
-      shiny::req(input$fa_analysis_selected_lipidclass)
-    } else if(input$fa_analysis_selected_view == "fa") {
-      shiny::req(input$fa_analysis_selected_fa)
-    }
 
-    print_tm(r6$name, "Fatty acid analysis: Updating params...")
+                          if(r6$name == "Error") {
+                            output$fa_analysis_message <- shiny::renderText({
+                              "Error! No data available!"
+                            })
+                          } else {
+                            if(input$fa_analysis_selected_view == "lipidclass") {
+                              shiny::req(input$fa_analysis_selected_lipidclass)
+                            } else if(input$fa_analysis_selected_view == "fa") {
+                              shiny::req(input$fa_analysis_selected_fa)
+                            }
 
-    r6$param_fa_analysis_plot(data_table = r6$tables$total_norm_data,
-                              feature_meta = r6$tables$feature_table,
-                              sample_meta = r6$tables$raw_meta,
-                              group_col = input$fa_analysis_metacol,
-                              selected_view = input$fa_analysis_selected_view,
-                              selected_lipidclass = input$fa_analysis_selected_lipidclass,
-                              selected_fa = input$fa_analysis_selected_fa,
-                              fa_norm = input$fa_analysis_fa_norm,
-                              color_palette = input$fa_analysis_color_palette,
-                              img_format = input$fa_analysis_img_format)
+                            print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
-    base::tryCatch({
-      fa_analysis_generate(r6, color_palette, dimensions_obj, input)
-      fa_analysis_spawn(r6, input$fa_analysis_img_format, output)
-    },
-    error = function(e) {
-      print_tm(r6$name, 'Fatty acid analysis error, missing data.')
-      print(e)
-    },
-    finally = {}
-    )
+                            r6$param_fa_analysis_plot(data_table = r6$tables$total_norm_data,
+                                                      feature_meta = r6$tables$feature_table,
+                                                      sample_meta = r6$tables$raw_meta,
+                                                      group_col = input$fa_analysis_metacol,
+                                                      selected_view = input$fa_analysis_selected_view,
+                                                      selected_lipidclass = input$fa_analysis_selected_lipidclass,
+                                                      selected_fa = input$fa_analysis_selected_fa,
+                                                      fa_norm = input$fa_analysis_fa_norm,
+                                                      color_palette = input$fa_analysis_color_palette,
+                                                      img_format = input$fa_analysis_img_format)
+
+                            base::tryCatch({
+                              fa_analysis_generate(r6, color_palette, dimensions_obj, input)
+                              fa_analysis_spawn(r6, input$fa_analysis_img_format, output)
+                            },
+                            error = function(e) {
+                              print_tm(r6$name, 'Fatty acid analysis error, missing data.')
+                              print(e)
+                            },
+                            finally = {}
+                            )
+                          }
   })
 
   # Download associated table
@@ -1369,7 +1399,11 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   })
 
   output$heatmap_message <- shiny::renderText({
-    "To generate a heatmap, go to the settings menu and click the generate heatmap button."
+    if(r6$name == "Error") {
+      "Error! No data available!"
+    } else {
+      "To generate a heatmap, go to the settings menu and click the generate heatmap button."
+    }
   })
 
   # Download associated table
@@ -1679,40 +1713,46 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                         input$pca_displayed_plots,
                         input$pca_colors_palette,
                         input$pca_img_format), {
-    shiny::req(iv_pca$is_valid())
 
-    if (!input$pca_auto_refresh) {
-      r6$params$pca$auto_refresh = input$pca_auto_refresh
-      return()
-    }
+                          if(r6$name == "Error") {
+                            output$pca_message <- shiny::renderText({
+                              "Error! No data available!"
+                            })
+                          } else {
+                            shiny::req(iv_pca$is_valid())
 
-    print_tm(r6$name, "PCA: Updating params...")
+                            if (!input$pca_auto_refresh) {
+                              r6$params$pca$auto_refresh = input$pca_auto_refresh
+                              return()
+                            }
 
-    r6$param_pca(auto_refresh = input$pca_auto_refresh,
-                 data_table = input$pca_data_table,
-                 sample_groups_col = input$pca_sample_groups_col,
-                 sample_groups_col_shape = input$pca_sample_groups_col_shape,
-                 feature_groups_col = input$pca_feature_group,
-                 apply_da = input$pca_apply_da,
-                 alpha_da = input$pca_alpha_da,
-                 pca_method = input$pca_method,
-                 nPcs = input$pca_npcs,
-                 displayed_pc_1 = input$pca_displayed_pc_1,
-                 displayed_pc_2 = input$pca_displayed_pc_2,
-                 completeObs = input$pca_completeObs,
-                 displayed_plots = input$pca_displayed_plots,
-                 colors_palette = input$pca_colors_palette,
-                 img_format = input$pca_img_format)
+                            print_tm(r6$name, "PCA: Updating params...")
 
-    base::tryCatch({
-      pca_generate(r6, color_palette, dimensions_obj, input)
-      pca_spawn(r6, input$pca_img_format, output)
-    },error=function(e){
-      print_tm(r6$name, 'PCA: ERROR.')
-      print(e)
-    },finally={}
-    )
+                            r6$param_pca(auto_refresh = input$pca_auto_refresh,
+                                         data_table = input$pca_data_table,
+                                         sample_groups_col = input$pca_sample_groups_col,
+                                         sample_groups_col_shape = input$pca_sample_groups_col_shape,
+                                         feature_groups_col = input$pca_feature_group,
+                                         apply_da = input$pca_apply_da,
+                                         alpha_da = input$pca_alpha_da,
+                                         pca_method = input$pca_method,
+                                         nPcs = input$pca_npcs,
+                                         displayed_pc_1 = input$pca_displayed_pc_1,
+                                         displayed_pc_2 = input$pca_displayed_pc_2,
+                                         completeObs = input$pca_completeObs,
+                                         displayed_plots = input$pca_displayed_plots,
+                                         colors_palette = input$pca_colors_palette,
+                                         img_format = input$pca_img_format)
 
+                            base::tryCatch({
+                              pca_generate(r6, color_palette, dimensions_obj, input)
+                              pca_spawn(r6, input$pca_img_format, output)
+                            },error=function(e){
+                              print_tm(r6$name, 'PCA: ERROR.')
+                              print(e)
+                            },finally={}
+                            )
+                          }
   })
 
 
@@ -1876,12 +1916,18 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
 
   # auto-update selected groups
   shiny::observeEvent(input$fa_comp_metacol, {
-    shiny::updateSelectizeInput(
-      inputId = "fa_comp_metagroup",
-      session = session,
-      choices = unique(r6$tables$raw_meta[, input$fa_comp_metacol]),
-      selected = unique(r6$tables$raw_meta[, input$fa_comp_metacol])[c(1, 2)]
-    )
+    if(r6$name == "Error") {
+      output$fa_comp_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      shiny::updateSelectizeInput(
+        inputId = "fa_comp_metagroup",
+        session = session,
+        choices = unique(r6$tables$raw_meta[, input$fa_comp_metacol]),
+        selected = unique(r6$tables$raw_meta[, input$fa_comp_metacol])[c(1, 2)]
+      )
+    }
   })
 
   # Generate the plot
@@ -1893,30 +1939,36 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
     {
       shiny::req(iv_fa_comp$is_valid())
 
-      print_tm(r6$name, "Fatty acid composition analysis: Updating params...")
+      if(r6$name == "Error") {
+        output$fa_comp_message <- shiny::renderText({
+          "Error! No data available!"
+        })
+      } else {
+        print_tm(r6$name, "Fatty acid composition analysis: Updating params...")
 
-      r6$param_fa_comp_plot(
-        data_table = r6$tables$total_norm_data,
-        sample_meta = r6$tables$raw_meta,
-        feature_meta = r6$tables$feature_table,
-        group_col = input$fa_comp_metacol,
-        group_1 = input$fa_comp_metagroup[1],
-        group_2 = input$fa_comp_metagroup[2],
-        selected_lipidclass = input$fa_comp_selected_lipidclass,
-        color_palette = input$fa_comp_color_palette,
-        img_format = input$fa_comp_img_format
-      )
+        r6$param_fa_comp_plot(
+          data_table = r6$tables$total_norm_data,
+          sample_meta = r6$tables$raw_meta,
+          feature_meta = r6$tables$feature_table,
+          group_col = input$fa_comp_metacol,
+          group_1 = input$fa_comp_metagroup[1],
+          group_2 = input$fa_comp_metagroup[2],
+          selected_lipidclass = input$fa_comp_selected_lipidclass,
+          color_palette = input$fa_comp_color_palette,
+          img_format = input$fa_comp_img_format
+        )
 
-      base::tryCatch({
-        fa_comp_generate(r6, color_palette, dimensions_obj, input)
-        fa_comp_spawn(r6, input$fa_comp_img_format, output)
-      },
-      error = function(e) {
-        print_tm(r6$name, 'Fatty acid composition analysis error, missing data.')
-        print(e)
-      },
-      finally = {}
-      )
+        base::tryCatch({
+          fa_comp_generate(r6, color_palette, dimensions_obj, input)
+          fa_comp_spawn(r6, input$fa_comp_img_format, output)
+        },
+        error = function(e) {
+          print_tm(r6$name, 'Fatty acid composition analysis error, missing data.')
+          print(e)
+        },
+        finally = {}
+        )
+      }
     })
 
   # Download associated table

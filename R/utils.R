@@ -1704,91 +1704,100 @@ example_lipidomics = function(name,
   meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
   data_files = unique(meta_data$batchNumber[meta_data$experimentId == experiment_id])
   data_files = data_files[!is.na(data_files)]
-  meta_data = meta_data[meta_data$batchNumber %in% data_files &
-                          (meta_data$experimentId %in% experiment_id |
-                             meta_data$experimentId %in% data_files), meta_columns]
-  rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
+  if(length(data_files) > 0) {
+    meta_data = meta_data[meta_data$batchNumber %in% data_files &
+                            (meta_data$experimentId %in% experiment_id |
+                               meta_data$experimentId %in% data_files), meta_columns]
+    rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
 
-  # create a new column for the blank group filtering
-  meta_data$group_col_blank <- tolower(paste(meta_data$genoType,
-                                             meta_data$treatmentDiagnosis,
-                                             meta_data$sex,
-                                             meta_data$cultureConditions,
-                                             sep = "_"))
+    # create a new column for the blank group filtering
+    meta_data$group_col_blank <- tolower(paste(meta_data$genoType,
+                                               meta_data$treatmentDiagnosis,
+                                               meta_data$sex,
+                                               meta_data$cultureConditions,
+                                               sep = "_"))
 
-  # get the lipid data
-  data_tables <- vector("list", length = length(data_files))
-  for(a in 1:length(data_files)) {
-    file_path = file.path("data", "Database", data_files[a], paste0(data_files[a], "_output_merge.xlsx"))
-    data_tables[[a]] = soda_read_table(file_path = file_path)
-    data_tables[[a]][, "rownames"] <- paste(data_files[a], data_tables[[a]][, "ID"], sep = "_")
-  }
-  lips_data = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
-  rownames(lips_data) <- lips_data[, "rownames"]
-  lips_data[, "rownames"] <- NULL
+    # get the lipid data
+    data_tables <- vector("list", length = length(data_files))
+    for(a in 1:length(data_files)) {
+      file_path = file.path("data", "Database", data_files[a], paste0(data_files[a], "_output_merge.xlsx"))
+      data_tables[[a]] = soda_read_table(file_path = file_path)
+      data_tables[[a]][, "rownames"] <- paste(data_files[a], data_tables[[a]][, "ID"], sep = "_")
+    }
+    lips_data = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
+    rownames(lips_data) <- lips_data[, "rownames"]
+    lips_data[, "rownames"] <- NULL
 
-  # The imported data needs to be filtered because sometimes a batch consist out of multiple experiments
-  lips_data = lips_data[lips_data[, "ID"] %in% meta_data[, "analystId"], ]
+    # The imported data needs to be filtered because sometimes a batch consist out of multiple experiments
+    lips_data = lips_data[lips_data[, "ID"] %in% meta_data[, "analystId"], ]
 
-  # create the r6 object
-  r6 = Lips_exp$new(name = name,
-                    id = id,
-                    slot = slot,
-                    preloaded = TRUE,
-                    data_file = data_files,
-                    experiment_id = experiment_id)
+    # create the r6 object
+    r6 = Lips_exp$new(name = name,
+                      id = id,
+                      slot = slot,
+                      preloaded = TRUE,
+                      data_file = data_files,
+                      experiment_id = experiment_id)
 
-  r6$tables$imp_meta = meta_data
-  r6$tables$imp_data = lips_data
+    r6$tables$imp_meta = meta_data
+    r6$tables$imp_data = lips_data
 
-  r6$indices$id_col_meta = 'analystId'
-  r6$indices$id_col_data = 'ID'
+    r6$indices$id_col_meta = 'analystId'
+    r6$indices$id_col_data = 'ID'
 
-  r6$indices$group_col = unique(meta_data$defaultColumn)[1]
-  r6$indices$batch_col = 'batchNumber'
-  r6$set_raw_meta()
+    r6$indices$group_col = unique(meta_data$defaultColumn)[1]
+    r6$indices$batch_col = 'batchNumber'
+    r6$set_raw_meta()
 
-  type_vector = r6$tables$imp_meta[, "sampleType"]
-  blank_idx = grep(pattern = 'blank',
-                   x = type_vector,
-                   ignore.case = TRUE)
-  qc_idx = grep(pattern = 'Quality',
-                x = type_vector,
-                ignore.case = TRUE)
-  pool_idx = grep(pattern = 'Pool',
+    type_vector = r6$tables$imp_meta[, "sampleType"]
+    blank_idx = grep(pattern = 'blank',
+                     x = type_vector,
+                     ignore.case = TRUE)
+    qc_idx = grep(pattern = 'Quality',
                   x = type_vector,
                   ignore.case = TRUE)
+    pool_idx = grep(pattern = 'Pool',
+                    x = type_vector,
+                    ignore.case = TRUE)
 
-  sample_idx = 1:nrow(r6$tables$imp_meta)
-  sample_idx = setdiff(sample_idx, c(blank_idx, qc_idx, pool_idx))
+    sample_idx = 1:nrow(r6$tables$imp_meta)
+    sample_idx = setdiff(sample_idx, c(blank_idx, qc_idx, pool_idx))
 
-  r6$indices$idx_blanks = blank_idx
-  r6$indices$idx_qcs = qc_idx
-  r6$indices$idx_pools = pool_idx
-  r6$indices$idx_samples = sample_idx
+    r6$indices$idx_blanks = blank_idx
+    r6$indices$idx_qcs = qc_idx
+    r6$indices$idx_pools = pool_idx
+    r6$indices$idx_samples = sample_idx
 
-  r6$indices$rownames_blanks = rownames(r6$tables$imp_meta)[blank_idx]
-  r6$indices$rownames_qcs = rownames(r6$tables$imp_meta)[qc_idx]
-  r6$indices$rownames_pools = rownames(r6$tables$imp_meta)[pool_idx]
-  r6$indices$rownames_samples = rownames(r6$tables$imp_meta)[sample_idx]
+    r6$indices$rownames_blanks = rownames(r6$tables$imp_meta)[blank_idx]
+    r6$indices$rownames_qcs = rownames(r6$tables$imp_meta)[qc_idx]
+    r6$indices$rownames_pools = rownames(r6$tables$imp_meta)[pool_idx]
+    r6$indices$rownames_samples = rownames(r6$tables$imp_meta)[sample_idx]
 
-  r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
+    r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
 
-  # extract the blanks and the qc samples
-  r6$get_blank_table()
-  r6$get_qc_table()
+    # extract the blanks and the qc samples
+    r6$get_blank_table()
+    r6$get_qc_table()
 
-  r6$set_raw_data(apply_imputation = FALSE,
-                  impute_before = FALSE,
-                  apply_filtering = TRUE,
-                  imputation_function = 'minimum',
-                  val_threshold = 0.6,
-                  blank_multiplier = 2,
-                  sample_threshold = 0.8,
-                  group_threshold = 0.6,
-                  norm_col = '')
+    r6$set_raw_data(apply_imputation = FALSE,
+                    impute_before = FALSE,
+                    apply_filtering = TRUE,
+                    imputation_function = 'minimum',
+                    val_threshold = 0.6,
+                    blank_multiplier = 2,
+                    sample_threshold = 0.8,
+                    group_threshold = 0.6,
+                    norm_col = '')
 
-  r6$derive_data_tables()
+    r6$derive_data_tables()
+  } else {
+    r6 <- Lips_exp$new(name = "Error",
+                       id = id,
+                       slot = slot,
+                       preloaded = TRUE,
+                       data_file = data_files,
+                       experiment_id = experiment_id)
+  }
 
   return(r6)
 }
