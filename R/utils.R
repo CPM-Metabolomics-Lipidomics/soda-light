@@ -1380,7 +1380,7 @@ fa_comp_hm_calc <- function(data_table = NULL,
                             selected_lipidclass = NULL) {
   ## samples
   idx_samples <- rownames(sample_meta)[sample_meta[, group_col] == selected_group]
-  hm_data <- data_table[idx_samples, ]
+  hm_data <- data_table[idx_samples, , drop = FALSE]
 
   ## features
   feature_table$lipid <- rownames(feature_table)
@@ -1395,11 +1395,11 @@ fa_comp_hm_calc <- function(data_table = NULL,
                 nrow = length(uniq_unsat[1]:uniq_unsat[2]))
   colnames(res) <- uniq_carbon[1]:uniq_carbon[2]
   rownames(res) <- uniq_unsat[1]:uniq_unsat[2]
-
   for(a in rownames(res)) { # unsaturation
     for(b in colnames(res)) { # carbons
       idx_lipids <- selected_features$lipid[selected_features$carbons_sum == b &
                                               selected_features$unsat_sum == a]
+      print(idx_lipids)
       if(length(idx_lipids) > 0) {
         res[a, b] <- sum(hm_data[, idx_lipids], na.rm = TRUE)
       } else {
