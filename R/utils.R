@@ -1790,6 +1790,13 @@ example_lipidomics = function(name,
                     norm_col = '')
 
     r6$derive_data_tables()
+
+    # set which variables are available for colering
+    idx_meta <- apply(r6$tables$raw_meta[, r6$hardcoded_settings$meta_column], 2, function(x) {
+      length(unique(x)) >= 2
+    })
+
+    r6$hardcoded_settings$meta_column <- r6$hardcoded_settings$meta_column[idx_meta]
   } else {
     r6 <- Lips_exp$new(name = "Error",
                        id = id,
