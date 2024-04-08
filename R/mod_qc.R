@@ -68,7 +68,7 @@ qc_server = function(id, module_controler) {
             r6$tables$imp_meta)
 
         # get the sample id's of the quality control cells
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$sampleType) == "quality control cells", "analystId"]
 
         # if nothing found
         if(nrow(r6$tables$qc_cells_table) == 0) {
@@ -211,7 +211,7 @@ qc_server = function(id, module_controler) {
             r6$tables$imp_meta)
 
         # get the sample id's of the quality control plasma
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$sampleType) == "quality control plasma", "analystId"]
 
         # if nothing found
         if(nrow(r6$tables$qc_plasma_table) == 0) {

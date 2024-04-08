@@ -119,10 +119,10 @@ Lips_exp = R6::R6Class(
     hardcoded_settings = list(
       # general
       meta_column = c(
-        "Cell type" = "cellType",
+        "Sample type" = "sampleType",
         "Culture conditions" = "cultureConditions",
         "Genotype" = "genoType",
-        "Treatment" = "treatment",
+        "Treatment/Diagnosis" = "treatmentDiagnosis",
         "Sex" = "sex"
       ),
       color_palette = c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges",
@@ -599,9 +599,9 @@ Lips_exp = R6::R6Class(
       qc_cells <- c()
       qc_plasma <- c()
       for(batch in batches) {
-        id_cells <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control cells" &
+        id_cells <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$sampleType) == "quality control cells" &
                                                         self$tables$imp_meta$batchNumber == batch, "analystId"], sep = "_")
-        id_plasma <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control plasma" &
+        id_plasma <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$sampleType) == "quality control plasma" &
                                                          self$tables$imp_meta$batchNumber == batch, "analystId"], sep = "_")
         # get the data
         tmp_cells <- self$tables$imp_data[rownames(self$tables$imp_data) %in% id_cells, ]

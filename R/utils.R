@@ -462,7 +462,7 @@ get_plot_box = function(id, label, dimensions_obj, session) {
 get_group_median_table = function(data_table,
                                   meta_table,
                                   group_col) {
-  unique_groups = unique(meta_table[,group_col])
+  unique_groups = unique(meta_table[, group_col])
   out_table = as.data.frame(matrix(data = NA,
                                    nrow = length(unique_groups),
                                    ncol = ncol(data_table)))
@@ -1698,9 +1698,9 @@ example_lipidomics = function(name,
   # set the interesting columns
   meta_columns <- c("experimentTitle", "experimentId", "defaultColumn", "batchNumber",
                     "processDate", "experimentIdOrg", "analystId", "sampleId",
-                    "referenceGroup", "sampleReferral", "harvestDate", "cellType",
+                    "referenceGroup", "sampleReferral", "harvestDate", "sampleType",
                     "genoType", "parentCellLine", "cellLineName", "sex", "cultureConditions",
-                    "treatment")
+                    "treatmentDiagnosis")
   meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
   data_files = unique(meta_data$batchNumber[meta_data$experimentId == experiment_id])
   data_files = data_files[!is.na(data_files)]
@@ -1711,7 +1711,7 @@ example_lipidomics = function(name,
 
   # create a new column for the blank group filtering
   meta_data$group_col_blank <- tolower(paste(meta_data$genoType,
-                                             meta_data$treatment,
+                                             meta_data$treatmentDiagnosis,
                                              meta_data$sex,
                                              meta_data$cultureConditions,
                                              sep = "_"))
@@ -1748,7 +1748,7 @@ example_lipidomics = function(name,
   r6$indices$batch_col = 'batchNumber'
   r6$set_raw_meta()
 
-  type_vector = r6$tables$imp_meta[, 'cellType']
+  type_vector = r6$tables$imp_meta[, "sampleType"]
   blank_idx = grep(pattern = 'blank',
                    x = type_vector,
                    ignore.case = TRUE)
