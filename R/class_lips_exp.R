@@ -755,7 +755,7 @@ Lips_exp = R6::R6Class(
                      colors_palette = 'Spectral',
                      img_format = "png")
 
-      self$param_fa_analysis_plot(data_table = self$tables$raw_data,
+      self$param_fa_analysis_plot(data_table = self$tables$total_norm_data,
                                   feature_meta = self$tables$feature_table,
                                   sample_meta = self$tables$raw_meta,
                                   group_col = self$indices$group_col,
