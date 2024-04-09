@@ -87,6 +87,9 @@ header_ui = function() {
   header = paste(name, "|", version, sep = " ")
   # bs4Dash::dashboardHeader(title = header)
   bs4Dash::dashboardHeader(
+    tags$li(shiny::htmlOutput(outputId = "main_title"),
+            class = "dropdown",
+            style = "list-style-type: none;"),
     title = bs4Dash::dashboardBrand(
       title = img(src = "./images/logo-neurolipid-atlas.png",
                   title = "Neurolipid Atlas",
@@ -206,9 +209,9 @@ server = function(input, output, session) {
 
     dims = list(
       x_box = 0.9,
-      y_box = 0.70,
+      y_box = 0.67,
       x_plot = 0.8,
-      y_plot = 0.67,
+      y_plot = 0.65,
       x_plot_full = 0.95,
       y_plot_full = 0.91,
       xpx_total = NULL,
@@ -222,6 +225,14 @@ server = function(input, output, session) {
   # read the master database file
   db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
                                              sheet = 1))
+
+  output$main_title <- shiny::renderUI({
+    req(!is.null(module_controler$r6_exp$name))
+
+    HTML(
+      unique(module_controler$r6_exp$tables$raw_meta$experimentTitle)
+    )
+  })
 
   # Single omics modules
   shiny::observe({

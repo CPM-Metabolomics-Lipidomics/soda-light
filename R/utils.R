@@ -1399,7 +1399,6 @@ fa_comp_hm_calc <- function(data_table = NULL,
     for(b in colnames(res)) { # carbons
       idx_lipids <- selected_features$lipid[selected_features$carbons_sum == b &
                                               selected_features$unsat_sum == a]
-      print(idx_lipids)
       if(length(idx_lipids) > 0) {
         res[a, b] <- sum(hm_data[, idx_lipids], na.rm = TRUE)
       } else {

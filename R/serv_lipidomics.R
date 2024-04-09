@@ -239,18 +239,18 @@ lipidomics_ui = function(id) {
         shiny::column(
           width = 12,
           shiny::HTML(paste0("<p>Several tables are available for download. Select a table below and click <i>Download table</i> to download the selected table.<br>",
-                          "<b>Note:</b> The imported tables are unfiltered and the other tables are filtered!</p>")),
+                             "<b>Note:</b> The imported tables are unfiltered and the other tables are filtered!</p>")),
           shiny::selectInput(
             inputId = ns("info_download_table_select"),
             label = "Select table:",
             choices = list(
               "Data tables" = list(
-              "Imported data table" = "Imported data table",
-              "Raw data table" = "Raw data table",
-              "Total normalized data table" = "Total normalized table"),
+                "Imported data table" = "Imported data table",
+                "Raw data table" = "Raw data table",
+                "Total normalized data table" = "Total normalized table"),
               "Meta data tables" = list(
-              "Imported meta data table" = "Imported metadata table",
-              "Raw meta data table" = "Raw metadata table")
+                "Imported meta data table" = "Imported metadata table",
+                "Raw meta data table" = "Raw metadata table")
             )
           ),
           shiny::downloadButton(
