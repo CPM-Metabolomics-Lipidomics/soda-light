@@ -117,7 +117,6 @@ sidebar_ui = function() {
   bs4Dash::dashboardSidebar(
     skin = "light",
     bs4Dash::sidebarMenu(
-
       bs4Dash::menuItem(
         text = "Data",
         tabName = "data",
@@ -137,6 +136,12 @@ sidebar_ui = function() {
         text = "About",
         tabName = "about",
         icon = shiny::icon("question")
+      ),
+      bs4Dash::menuItem(
+        text = "iSODA",
+        href = "https://cpm.lumc.nl/",
+        newTab = TRUE,
+        icon = shiny::icon("i")
       )
     )
   )
