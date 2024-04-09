@@ -212,9 +212,9 @@ server = function(input, output, session) {
 
     dims = list(
       x_box = 0.9,
-      y_box = 0.67,
+      y_box = 0.72,
       x_plot = 0.8,
-      y_plot = 0.65,
+      y_plot = 0.69,
       x_plot_full = 0.95,
       y_plot_full = 0.91,
       xpx_total = NULL,
