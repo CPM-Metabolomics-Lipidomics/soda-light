@@ -87,9 +87,12 @@ header_ui = function() {
   header = paste(name, "|", version, sep = " ")
   # bs4Dash::dashboardHeader(title = header)
   bs4Dash::dashboardHeader(
+    # add title to main grey bar
     tags$li(shiny::htmlOutput(outputId = "main_title"),
             class = "dropdown",
-            style = "list-style-type: none;"),
+            style = "list-style-type: none; width: 100%; text-align: center;"),
+
+    # add logo in upper left corner
     title = bs4Dash::dashboardBrand(
       title = img(src = "./images/logo-neurolipid-atlas.png",
                   title = "Neurolipid Atlas",
@@ -230,7 +233,11 @@ server = function(input, output, session) {
     req(!is.null(module_controler$r6_exp$name))
 
     HTML(
-      unique(module_controler$r6_exp$tables$raw_meta$experimentTitle)
+      paste0(
+        "<b>",
+        unique(module_controler$r6_exp$tables$raw_meta$experimentTitle),
+        "</b>"
+      )
     )
   })
 
