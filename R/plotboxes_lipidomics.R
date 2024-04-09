@@ -1512,9 +1512,21 @@ pca_server = function(r6, input, output, session) {
       shiny::selectInput(
         inputId = ns("pca_feature_group"),
         label = "Feature group column",
-        choices = colnames(r6$tables$feature_table),
+        choices = r6$hardcoded_settings$pca$feature_metadata,
         selected = r6$params$pca$feature_groups_col
       ),
+      # shiny::span(
+      #   shiny::selectizeInput(
+      #     inputId = ns('volcano_plot_feature_metadata'),
+      #     label = "Feature metadata",
+      #     choices = r6$hardcoded_settings$volcano_plot$feature_metadata,
+      #     selected = r6$params$volcano_plot$feature_metadata,
+      #     multiple = FALSE
+      #   ),
+      #   `data-toggle` = "tooltip",
+      #   `data-placement` = "right",
+      #   title = "Note:\nSN1:\n\t* TG total number of carbons.\n\t* PA total number of carbons.\nSN2:\n\t* TG Number of carbons of one of the tails.\n\t* CE, PA, LPC, LPE 0 number of carbons."
+      # ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::fluidRow(
         shiny::column(

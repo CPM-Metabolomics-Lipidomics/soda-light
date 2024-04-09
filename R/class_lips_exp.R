@@ -218,6 +218,16 @@ Lips_exp = R6::R6Class(
           # "Lipid species (z-scores)" = "Z-scored table",
           "Lipid species (z-scores), (normalized, % of total lipids)" = "Z-scored total normalized table"
         ),
+        feature_metadata = list(
+          "None" = "None",
+          "Lipid classes" = "lipid_class",
+          "SN1 number of carbons" = "carbons_1",
+          "SN2 number of carbons" = "carbons_2",
+          "Total number of carbons" = "carbons_sum",
+          "SN1 number of double bonds" = "unsat_1",
+          "SN2 number of double bonds" = "unsat_2",
+          "Total number of double bonds" = "unsat_sum"
+        ),
         method = list(
           "svd",
           "nipals",
@@ -743,7 +753,7 @@ Lips_exp = R6::R6Class(
                      data_table = 'z_scored_total_norm_data',
                      sample_groups_col = self$indices$group_col,
                      sample_groups_col_shape = "",
-                     feature_groups_col = NULL,
+                     feature_groups_col = "lipid_class",
                      apply_da = self$params$pca$apply_da,
                      alpha_da = 0.8,
                      pca_method = 'svd',
