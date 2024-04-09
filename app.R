@@ -90,7 +90,7 @@ header_ui = function() {
     # add title to main grey bar
     tags$li(shiny::htmlOutput(outputId = "main_title"),
             class = "dropdown",
-            style = "list-style-type: none; width: 100%; text-align: center;"),
+            style = "list-style-type: none; width: 100%; text-align: center; color: #0255e9;"),
 
     # add logo in upper left corner
     title = bs4Dash::dashboardBrand(
