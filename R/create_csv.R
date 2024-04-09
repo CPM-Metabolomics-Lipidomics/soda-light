@@ -7,7 +7,12 @@ if(dev) {
                          sheet = 1,
                          skip_empty_rows = TRUE)
 
+  # remove QC and blanks
+  meta_data <- meta_data[!grepl(x = meta_data$sampleType,
+                                pattern = "(blank|quality)",
+                                ignore.case = TRUE), ]
 
+  # get all experiments / comparisons
   experiments <- sort(unique(meta_data$experimentId))
 
   # remove all NLA stuff
@@ -32,23 +37,20 @@ if(dev) {
     genoType <- paste(genoType, collapse = ", ")
 
     # remove blanks and QC from cellType
-    cellType <- unique(meta_data$cellType[meta_data$experimentId == experiments[a]])
-    cellType <- cellType[!is.na(cellType)]
-    cellType <- cellType[cellType != "NA"]
-    cellType <- cellType[!grepl(x = cellType,
-                                pattern = "(blank|quality)",
-                                ignore.case = TRUE)]
-    cellType <- paste(cellType, collapse = ", ")
+    sampleType <- unique(meta_data$sampleType[meta_data$experimentId == experiments[a]])
+    sampleType <- sampleType[!is.na(sampleType)]
+    sampleType <- sampleType[sampleType != "NA"]
+    sampleType <- paste(sampleType, collapse = ", ")
 
     parentCellLine <- unique(meta_data$parentalCellLine[meta_data$experimentId == experiments[a]])
     parentCellLine <- parentCellLine[!is.na(parentCellLine)]
     parentCellLine <- parentCellLine[parentCellLine != "NA"]
     parentCellLine <- paste(parentCellLine, collapse = ", ")
 
-    treatment <- unique(meta_data$treatment[meta_data$experimentId == experiments[a]])
-    treatment <- treatment[!is.na(treatment)]
-    treatment <- treatment[treatment != "NA"]
-    treatment <- paste(treatment, collapse = ", ")
+    treatmentDiagnosis <- unique(meta_data$treatmentDiagnosis[meta_data$experimentId == experiments[a]])
+    treatmentDiagnosis <- treatmentDiagnosis[!is.na(treatmentDiagnosis)]
+    treatmentDiagnosis <- treatmentDiagnosis[treatmentDiagnosis != "NA"]
+    treatmentDiagnosis <- paste(treatmentDiagnosis, collapse = ", ")
 
     sex <- unique(meta_data$sex[meta_data$experimentId == experiments[a]])
     sex <- sex[!is.na(sex)]
@@ -74,9 +76,9 @@ if(dev) {
     export$experimentId[a] <- experiments[a]
     export$experimentTitle[a] <- experimentTitle
     export$genoType[a] <- genoType
-    export$cellType[a] <- cellType
+    export$cellType[a] <- sampleType
     export$parentCellLine[a] <- parentCellLine
-    export$drugTreatment[a] <- treatment
+    export$drugTreatment[a] <- treatmentDiagnosis
     export$sex[a] <- sex
     export$method[a] <- "SLA" # method
     export$contributingLab[a] <- contributingLab
