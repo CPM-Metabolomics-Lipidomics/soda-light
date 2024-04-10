@@ -1699,7 +1699,7 @@ example_lipidomics = function(name,
                     "processDate", "experimentIdOrg", "analystId", "sampleId",
                     "referenceGroup", "sampleReferral", "harvestDate", "sampleType",
                     "genoType", "parentCellLine", "cellLineName", "sex", "cultureConditions",
-                    "treatmentDiagnosis")
+                    "treatmentDiagnosis", "notes", "lab", "Machine")
   meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
   data_files = unique(meta_data$batchNumber[meta_data$experimentId == experiment_id])
   data_files = data_files[!is.na(data_files)]

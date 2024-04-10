@@ -263,10 +263,28 @@ lipidomics_ui = function(id) {
         shiny::column(
           width = 12,
           shiny::hr(style = "border-top: 1px solid #7d7d7d; width: 75%;"),
-          p("An overview of the totals per lipid class and sample."),
-          DT::dataTableOutput(
-            outputId = ns("info_sum_table")
+          bs4Dash::tabsetPanel(
+            shiny::tabPanel(
+              title = "Experiment info",
+              DT::dataTableOutput(
+                outputId = ns("info_experiment_table")
+              )
+            ),
+            shiny::tabPanel(
+              title = "Meta data",
+              DT::dataTableOutput(
+                outputId = ns("info_metadata_table")
+              )
+            ),
+            shiny::tabPanel(
+              title = "Data overview",
+              p("An overview of the totals per lipid class and sample."),
+              DT::dataTableOutput(
+                outputId = ns("info_sum_table")
+              )
+            )
           )
+
         )
       )
     ),
@@ -934,6 +952,60 @@ lipidomics_server = function(id, module_controler) {
                           digits = 1)
       })
 
+
+      output$info_experiment_table <- DT::renderDataTable({
+        req(r6$tables$raw_meta)
+
+        raw_meta <- r6$tables$raw_meta
+        # remove NA's
+        raw_meta <- as.data.frame(apply(raw_meta, 2, function(x) {
+          x[x == "NA"] <- ""
+          x
+        }))
+
+        exp_info_table <- data.frame(
+          title = c(
+            "Experiment title",
+            "Sample type",
+            "Genotype",
+            "Parental cell line",
+            "Cell line name",
+            "Culture conditions",
+            "Harvest date",
+            "Gender",
+            "Treatment / Diagnosis",
+            "Contributing lab",
+            "Machine"
+          ),
+          value = c(
+            unique(r6$tables$raw_meta$experimentTitle),
+            paste(unique(raw_meta$sampleType), collapse = ", "),
+            paste(unique(raw_meta$genoType), collapse = ", "),
+            paste(unique(raw_meta$parentCellLine), collapse = ", "),
+            paste(unique(raw_meta$cellLineName), collapse = ", "),
+            paste(unique(raw_meta$cultureConditions), collapse = ", "),
+            paste(unique(raw_meta$harvestDate), collapse = ", "),
+            paste(unique(raw_meta$sex), collapse = ", "),
+            paste(unique(raw_meta$treatmentDiagnosis), collapse = ", "),
+            paste(unique(raw_meta$lab), collapse = ", "),
+            paste(unique(paste0("Sciex QTRAP ", raw_meta$Machine)), collapse = ", ")
+          )
+        )
+
+        DT::datatable(
+          data = exp_info_table,
+          rownames = FALSE,
+          colnames = c("", ""),
+          options = list(dom = "t",
+                         pageLength = nrow(exp_info_table),
+                         ordering = FALSE),
+          selection = "none"
+        ) |>
+          DT::formatStyle(
+            columns = "title",
+            fontWeight = "bold"
+          )
+      })
       #-------------------------------------------------- Visualize data server ----
       # Initialise dimensions object
       dimensions_obj = shiny::reactiveValues(
