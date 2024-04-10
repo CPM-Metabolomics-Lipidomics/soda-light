@@ -145,8 +145,9 @@ sidebar_ui = function() {
       ),
       bs4Dash::menuItem(
         text = "iSODA",
-        href = "https://cpm.lumc.nl/",
-        newTab = TRUE,
+        tabName = "iSODA",
+        # href = "https://cpm.lumc.nl/",
+        # newTab = TRUE,
         icon = shiny::icon("i")
       )
     )
@@ -182,6 +183,10 @@ body_ui = function() {
       bs4Dash::tabItem(
         tabName = "about",
         about_ui(id = 'mod_about')
+      ),
+      bs4Dash::tabItem(
+        tabName = "iSODA",
+        isoda_ui(id = "mod_isoda")
       )
     )
   )
