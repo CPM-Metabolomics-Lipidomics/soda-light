@@ -478,6 +478,7 @@ Lips_exp = R6::R6Class(
         data_table = self$tables$imp_meta
         rownames(data_table) = paste(data_table[, "batchNumber"], data_table[, self$indices$id_col_meta], sep = "_")
         data_table[, self$indices$id_col_meta] = NULL
+
         self$tables$raw_meta = data_table
       }
     },

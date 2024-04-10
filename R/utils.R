@@ -1707,13 +1707,8 @@ example_lipidomics = function(name,
                             (meta_data$experimentId %in% experiment_id |
                                meta_data$experimentId %in% data_files), meta_columns]
     rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
-
-    # create a new column for the blank group filtering
-    meta_data$group_col_blank <- tolower(paste(meta_data$genoType,
-                                               meta_data$treatmentDiagnosis,
-                                               meta_data$sex,
-                                               meta_data$cultureConditions,
-                                               sep = "_"))
+    # create a new column for the blank group filtering, initialize with NA
+    meta_data$group_col_blank <- NA
 
     # get the lipid data
     data_tables <- vector("list", length = length(data_files))
@@ -1772,6 +1767,16 @@ example_lipidomics = function(name,
     r6$indices$rownames_samples = rownames(r6$tables$imp_meta)[sample_idx]
 
     r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
+    # create the new groups for the blank group filtering
+    r6$tables$raw_meta[, "group_col_blank"] <- tolower(
+      paste(
+        r6$tables$raw_meta[, "sampleType"],
+        r6$tables$raw_meta[, "genoType"],
+        r6$tables$raw_meta[, "treatmentDiagnosis"],
+        # r6$tables$raw_meta[, "sex"],
+        r6$tables$raw_meta[, "cultureConditions"],
+        sep = "_")
+    )
 
     # extract the blanks and the qc samples
     r6$get_blank_table()
