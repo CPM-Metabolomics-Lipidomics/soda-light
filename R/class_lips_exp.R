@@ -174,9 +174,11 @@ Lips_exp = R6::R6Class(
         feature_metadata = list(
           "None" = "None",
           "Lipid classes" = "lipid_class",
-          "SN1 number of carbons" = "carbons_1",
-          "SN2 number of carbons" = "carbons_2",
+          "Tail 1 number of carbons" = "carbons_1",
+          "Tail 2 number of carbons" = "carbons_2",
           "Total number of carbons" = "carbons_sum",
+          "Tail 1 number of double bonds" = "unsat_1",
+          "Tail 2 number of double bonds" = "unsat_2",
           "Total number of double bonds" = "unsat_sum"
         )
       ),
@@ -191,9 +193,11 @@ Lips_exp = R6::R6Class(
         ),
         map_cols = list(
           "Lipid classes" = "lipid_class",
-          "SN1 number of carbons" = "carbons_1",
-          "SN2 number of carbons" = "carbons_2",
+          "Tail 1 number of carbons" = "carbons_1",
+          "Tail 2 number of carbons" = "carbons_2",
           "Total number of carbons" = "carbons_sum",
+          "Tail 1 number of double bonds" = "unsat_1",
+          "Tail 2 number of double bonds" = "unsat_2",
           "Total number of double bonds" = "unsat_sum"
         )
       ),
@@ -221,11 +225,11 @@ Lips_exp = R6::R6Class(
         feature_metadata = list(
           "None" = "None",
           "Lipid classes" = "lipid_class",
-          "SN1 number of carbons" = "carbons_1",
-          "SN2 number of carbons" = "carbons_2",
+          "Tail 1 number of carbons" = "carbons_1",
+          "Tail 2 number of carbons" = "carbons_2",
           "Total number of carbons" = "carbons_sum",
-          "SN1 number of double bonds" = "unsat_1",
-          "SN2 number of double bonds" = "unsat_2",
+          "Tail 1 number of double bonds" = "unsat_1",
+          "Tail 2 number of double bonds" = "unsat_2",
           "Total number of double bonds" = "unsat_sum"
         ),
         method = list(
