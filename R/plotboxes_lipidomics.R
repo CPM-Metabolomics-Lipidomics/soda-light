@@ -701,10 +701,18 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
         base::tryCatch({
           volcano_plot_generate(r6, color_palette, dimensions_obj, input)
           volcano_plot_spawn(r6, input$volcano_plot_img_format, output)
-        },error=function(e){
+        },
+        error = function(e) {
+          if(grepl(x = e,
+                   pattern = "not enough '(x|y)' observations")) {
+            output$volcano_plot_message <- shiny::renderText({
+              "Error: Not enough samples in one or both groups!"
+            })
+          }
           print_tm(r6$name, 'Volcano plot: ERROR.')
           print(e)
-        },finally={}
+        },
+        finally = {}
         )
       }
 
