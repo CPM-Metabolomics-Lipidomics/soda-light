@@ -704,7 +704,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
         },
         error = function(e) {
           if(grepl(x = e,
-                   pattern = "not enough '(x|y)' observations")) {
+                   pattern = "not enough observations")) {
             output$volcano_plot_message <- shiny::renderText({
               "Error: Not enough samples in one or both groups!"
             })

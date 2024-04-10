@@ -1035,10 +1035,9 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
   if (used_function == "Wilcoxon") {
     test_function = function(x, y){
 
-      # if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
-      #   return(1)
-      # } else
-      if(all(is.na(x)) | all(is.na(y))) {
+      if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
+        return(1)
+      } else if(all(is.na(x)) | all(is.na(y))) {
         # if one group contains only NA's
         if(all(is.na(x))) {
           x <- y
@@ -1054,10 +1053,9 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
   } else if (used_function == "t-Test") {
     test_function = function(x, y){
 
-      # if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
-      #   return(1)
-      # } else
-      if(all(is.na(x)) | all(is.na(y))) {
+      if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
+        return(1)
+      } else if(all(is.na(x)) | all(is.na(y))) {
         # if one group contains only NA's
         if(all(is.na(x))) {
           x <- y
@@ -1086,7 +1084,6 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
   if ((length(which(is.na(p_values))) > 0) & impute_na){
     p_values[which(is.na(p_values))] = min(p_values, na.rm = T) * 0.99
   }
-
 
   return(p_values)
 }

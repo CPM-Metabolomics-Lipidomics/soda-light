@@ -815,6 +815,9 @@ Lips_exp = R6::R6Class(
       idx_group_1 = which(rownames(data_table) %in% rownames_group_1)
       idx_group_2 = which(rownames(data_table) %in% rownames_group_2)
 
+      if(length(idx_group_1) <= 1 | length(idx_group_2) <= 1) {
+        stop("not enough observations")
+      }
 
       # Remove empty columns
       dead_features = colnames(data_table)
