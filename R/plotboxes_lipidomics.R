@@ -663,6 +663,9 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
         shiny::req(iv_volcano_plot$is_valid(),
                    length(input$volcano_plot_metagroup) == 2)
 
+        shinyjs::hide(id = "volcano_plot_message")
+        output$volcano_plot_message <- shiny::renderText({return(NULL)})
+
         if (!input$volcano_plot_auto_refresh) {
           r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
           return()
@@ -705,6 +708,8 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
         error = function(e) {
           if(grepl(x = e,
                    pattern = "not enough observations")) {
+            output$volcano_plot_plot <- plotly::renderPlotly({return(NULL)})
+            shinyjs::show(id = "volcano_plot_message")
             output$volcano_plot_message <- shiny::renderText({
               "Error: Not enough samples in one or both groups!"
             })

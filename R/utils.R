@@ -1035,9 +1035,7 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
   if (used_function == "Wilcoxon") {
     test_function = function(x, y){
 
-      if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
-        return(1)
-      } else if(all(is.na(x)) | all(is.na(y))) {
+      if(all(is.na(x)) | all(is.na(y))) {
         # if one group contains only NA's
         if(all(is.na(x))) {
           x <- y
@@ -1046,6 +1044,8 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
       } else if(sum(!is.na(x)) < 2 | sum(!is.na(y)) < 2) {
         # if one of the groups doesn't contain enough data
         return(NA)
+      } else if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
+        return(1)
       } else {
         return(stats::wilcox.test(x, y)$p.value)
       }
@@ -1053,9 +1053,10 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
   } else if (used_function == "t-Test") {
     test_function = function(x, y){
 
-      if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
-        return(1)
-      } else if(all(is.na(x)) | all(is.na(y))) {
+      # if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
+      #   return(1)
+      # } else
+      if(all(is.na(x)) | all(is.na(y))) {
         # if one group contains only NA's
         if(all(is.na(x))) {
           x <- y
@@ -1064,6 +1065,8 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
       } else if(sum(!is.na(x)) < 2 | sum(!is.na(y)) < 2) {
         # if one of the groups doesn't contain enough data
         return(NA)
+      } else if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
+        return(1)
       } else {
         return(stats::t.test(x, y)$p.value)
       }
