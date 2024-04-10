@@ -134,6 +134,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                                       threshold = -log10(p_val_threshold),
                                       side = 'left',
                                       label = left_label,
+                                      y_label = y_label,
                                       opacity = opacity,
                                       marker_size = marker_size,
                                       show_legend = F)
@@ -148,6 +149,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                                        threshold = -log10(p_val_threshold),
                                        side = 'right',
                                        label = right_label,
+                                       y_label = y_label,
                                        opacity = opacity,
                                        marker_size = marker_size,
                                        show_legend = F)
@@ -180,9 +182,9 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
 
   if (is.null(left_data) & is.null(right_data) & is.null(top_data) | (displayed_plot == 'main')) { # Only main
+
     out_plot = main_plot
-    out_plot = plotly::layout(out_plot,
-                              yaxis = list(title = y_label))
+
   } else if (!is.null(top_data) & (displayed_plot == 'top')) { # Export top violin
 
     out_plot = top_violin
@@ -194,6 +196,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
   } else if (!is.null(right_data) & (displayed_plot == 'right')) { # Export right violin
 
     out_plot = right_violin
+
 
   } else if (is.null(left_data) & is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top only
 
@@ -212,8 +215,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       list(left_violin, main_plot),
       shareX = TRUE,
       shareY = TRUE,
-      titleX = T,
-      titleY = F,
+      titleX = TRUE,
+      titleY = TRUE,
       widths = c(0.1, 0.9)
     )
 
@@ -223,8 +226,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       list(main_plot, right_violin),
       shareX = TRUE,
       shareY = TRUE,
-      titleX = T,
-      titleY = F,
+      titleX = TRUE,
+      titleY = TRUE,
       widths = c(0.9, 0.1)
     )
 
@@ -235,13 +238,11 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
              ncol = 3, byrow = TRUE),
       shareX = TRUE,
       shareY = TRUE,
-      titleX = T,
-      titleY = F,
+      titleX = TRUE,
+      titleY = TRUE,
       widths = c(0.1, 0.8, 0.1)
     )
 
-    out_plot = plotly::layout(out_plot,
-                                yaxis = list(title = y_label))
   } else if (!is.null(left_data) & !is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # All violins
 
     out_plot = plotly::subplot(
@@ -256,6 +257,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       widths = c(0.1, 0.8, 0.1),
       heights = c(0.1, 0.9)
     )
+
   } else if (!is.null(left_data) & is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top and left
 
     out_plot = plotly::subplot(
@@ -285,6 +287,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       widths = c(0.9, 0.1),
       heights = c(0.1, 0.9)
     )
+
   } else {
     warning('Selected plot unavailable, returning blank.')
     out_plot = blank_plot
@@ -294,7 +297,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
 }
 
-plot_volcano_violin = function(data, threshold, side, label, opacity = 1, marker_size = 6, show_legend = F) {
+plot_volcano_violin = function(data, threshold, side, label, y_label, opacity = 1, marker_size = 6, show_legend = F) {
 
   if (!(side %in% c('left', 'right', 'top'))) {
     stop('side must be in [left, right, top]')
@@ -368,20 +371,21 @@ plot_volcano_violin = function(data, threshold, side, label, opacity = 1, marker
                          y0 = threshold,
                          y1 = threshold,
                          line = list(color = "black", width = 1, dash = "dot")
-                         )
-                       ),
+                       )
+                     ),
                      xaxis = list(
                        title = list(
                          text = x_val
                        )
+                     ),
+                     yaxis = list(
+                       title = list(
+                         text = y_label
+                       )
                      )
-                     )
-
-
-
+  )
 
   return(p)
-
 }
 
 plot_volcano_violin_top = function(data,
@@ -426,8 +430,7 @@ plot_volcano_violin_top = function(data,
   }
 
   p = plotly::layout(p,
-                     xaxis = list(title = "Log2(Fold Change)"
-                     ),
+                     xaxis = list(title = "Log2(Fold Change)"),
                      shapes = list(
                        # Vertical line at x = -1
                        list(
