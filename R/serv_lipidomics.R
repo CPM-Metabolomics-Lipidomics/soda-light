@@ -959,7 +959,7 @@ lipidomics_server = function(id, module_controler) {
         raw_meta <- r6$tables$raw_meta
         # remove NA's
         raw_meta <- as.data.frame(apply(raw_meta, 2, function(x) {
-          x[x == "NA"] <- ""
+          x[x == "NA" | is.na(x)] <- ""
           x
         }))
 
@@ -1018,7 +1018,7 @@ lipidomics_server = function(id, module_controler) {
 
         # remove NA's
         meta_data <- as.data.frame(apply(meta_data, 2, function(x) {
-          x[x == "NA"] <- ""
+          x[x == "NA" | is.na(x)] <- ""
           x
         }))
 
