@@ -1006,6 +1006,41 @@ lipidomics_server = function(id, module_controler) {
             fontWeight = "bold"
           )
       })
+
+
+      output$info_metadata_table <- DT::renderDataTable({
+        req(r6$tables$raw_meta)
+
+        meta_data <- r6$tables$raw_meta[, c("sampleId", "sampleType", "genoType",
+                                            "parentCellLine", "cellLineName",
+                                            "cultureConditions", "harvestDate",
+                                            "sex", "treatmentDiagnosis")]
+
+        # remove NA's
+        meta_data <- as.data.frame(apply(meta_data, 2, function(x) {
+          x[x == "NA"] <- ""
+          x
+        }))
+
+        DT::datatable(
+          data = meta_data,
+          rownames = FALSE,
+          colnames = c("Sample ID" = "sampleId",
+                       "Sample type" = "sampleType",
+                       "Genotype" = "genoType",
+                       "Parental cell line" = "parentCellLine",
+                       "Cell line name" = "cellLineName",
+                       "Culture condtions" = "cultureConditions",
+                       "Harvest date" = "harvestDate",
+                       "Gender" = "sex",
+                       "Treatment / Diagnosis" = "treatmentDiagnosis"),
+          options = list(dom = "t",
+                         pageLength = nrow(meta_data),
+                         ordering = FALSE),
+          selection = "none"
+        )
+
+      })
       #-------------------------------------------------- Visualize data server ----
       # Initialise dimensions object
       dimensions_obj = shiny::reactiveValues(
