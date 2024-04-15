@@ -949,6 +949,10 @@ apply_discriminant_analysis = function(data_table, group_list, nlambda = 100, al
     group_list = group_list[!(group_list %in% dead_groups)]
   }
 
+  if(length(unique(group_list)) == 1) {
+    stop("Heatmap: not enough groups (2) with at least 3 samples.")
+  }
+
   if (length(unique(group_list) > 2)) {
     family = "multinomial"
   } else {
@@ -976,6 +980,7 @@ apply_discriminant_analysis = function(data_table, group_list, nlambda = 100, al
   }
 
   coef = stats::coef(coef, s = "lambda.min")
+
   keep_cols = as.matrix(coef[[1]])
 
   keep_cols = rownames(keep_cols)[which(keep_cols != 0)]

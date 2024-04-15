@@ -1398,6 +1398,9 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
         if(grepl(x = e,
                  pattern = "hclustfun\\(dist\\): NA\\/NaN\\/Inf")) {
           return("There are missing values in the data! Use imputation!")
+        } else if(grepl(x = e,
+                        pattern = "Heatmap: not enough groups")) {
+          return("Error: not enough groups with a least 3 samples!")
         } else {
           return("An error occurred! Can not generate heatmap!")
         }
