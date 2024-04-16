@@ -968,7 +968,7 @@ lipidomics_server = function(id, module_controler) {
             "Experiment title",
             "Sample type",
             "Genotype",
-            "Parental cell line",
+            "Parental cell line / Brain region",
             "Cell line name",
             "Culture conditions",
             "Harvest date",
@@ -981,7 +981,7 @@ lipidomics_server = function(id, module_controler) {
             unique(r6$tables$raw_meta$experimentTitle),
             paste(unique(raw_meta$sampleType), collapse = ", "),
             paste(unique(raw_meta$genoType), collapse = ", "),
-            paste(unique(raw_meta$parentCellLine), collapse = ", "),
+            paste(unique(raw_meta$parentCellLineBrainregion), collapse = ", "),
             paste(unique(raw_meta$cellLineName), collapse = ", "),
             paste(unique(raw_meta$cultureConditions), collapse = ", "),
             paste(unique(raw_meta$harvestDate), collapse = ", "),
@@ -1012,7 +1012,7 @@ lipidomics_server = function(id, module_controler) {
         req(r6$tables$raw_meta)
 
         meta_data <- r6$tables$raw_meta[, c("sampleId", "sampleType", "genoType",
-                                            "parentCellLine", "cellLineName",
+                                            "parentCellLineBrainregion", "cellLineName",
                                             "cultureConditions", "harvestDate",
                                             "sex", "treatmentDiagnosis")]
 
@@ -1028,7 +1028,7 @@ lipidomics_server = function(id, module_controler) {
           colnames = c("Sample ID" = "sampleId",
                        "Sample type" = "sampleType",
                        "Genotype" = "genoType",
-                       "Parental cell line" = "parentCellLine",
+                       "Parental cell line / Brain region" = "parentCellLineBrainregion",
                        "Cell line name" = "cellLineName",
                        "Culture condtions" = "cultureConditions",
                        "Harvest date" = "harvestDate",

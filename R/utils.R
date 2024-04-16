@@ -1705,7 +1705,7 @@ example_lipidomics = function(name,
   meta_columns <- c("experimentTitle", "experimentId", "defaultColumn", "batchNumber",
                     "processDate", "experimentIdOrg", "analystId", "sampleId",
                     "referenceGroup", "sampleReferral", "harvestDate", "sampleType",
-                    "genoType", "parentCellLine", "cellLineName", "sex", "cultureConditions",
+                    "genoType", "parentCellLineBrainregion", "cellLineName", "sex", "cultureConditions",
                     "treatmentDiagnosis", "notes", "lab", "Machine")
   meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
   data_files = unique(meta_data$batchNumber[meta_data$experimentId == experiment_id])
