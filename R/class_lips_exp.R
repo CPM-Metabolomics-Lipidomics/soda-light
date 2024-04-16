@@ -119,11 +119,12 @@ Lips_exp = R6::R6Class(
     hardcoded_settings = list(
       # general
       meta_column = c(
-        "Sample type" = "sampleType",
         "Culture conditions" = "cultureConditions",
         "Genotype" = "genoType",
-        "Treatment/Diagnosis" = "treatmentDiagnosis",
-        "Sex" = "sex"
+        "Parental cell line / Brain region" = "parentCellLineBrainregion",
+        "Sample type" = "sampleType",
+        "Sex" = "sex",
+        "Treatment/Diagnosis" = "treatmentDiagnosis"
       ),
       color_palette = c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges",
                         "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds",

@@ -1781,6 +1781,7 @@ example_lipidomics = function(name,
         r6$tables$raw_meta[, "sampleType"],
         r6$tables$raw_meta[, "genoType"],
         r6$tables$raw_meta[, "treatmentDiagnosis"],
+        r6$tables$raw_meta[, "parentCellLineBrainregion"],
         # r6$tables$raw_meta[, "sex"],
         r6$tables$raw_meta[, "cultureConditions"],
         sep = "_")
