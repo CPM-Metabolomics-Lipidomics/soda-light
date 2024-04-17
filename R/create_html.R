@@ -34,7 +34,7 @@ if(dev) {
     cellType <- cellType[cellType != "NA"]
     cellType <- paste(cellType, collapse = " | ")
 
-    parentCellLine <- unique(meta_data$parentalCellLine[meta_data$experimentId == experiment])
+    parentCellLine <- unique(meta_data$parentalCellLineBrainregion[meta_data$experimentId == experiment])
     parentCellLine <- parentCellLine[!is.na(parentCellLine)]
     parentCellLine <- parentCellLine[parentCellLine != "NA"]
     parentCellLine <- paste(parentCellLine, collapse = " | ")

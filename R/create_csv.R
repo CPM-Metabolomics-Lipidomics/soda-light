@@ -42,7 +42,7 @@ if(dev) {
     sampleType <- sampleType[sampleType != "NA"]
     sampleType <- paste(sampleType, collapse = ", ")
 
-    parentCellLine <- unique(meta_data$parentCellLine[meta_data$experimentId == experiments[a]])
+    parentCellLine <- unique(meta_data$parentCellLineBrainregion[meta_data$experimentId == experiments[a]])
     parentCellLine <- parentCellLine[!is.na(parentCellLine)]
     parentCellLine <- parentCellLine[parentCellLine != "NA"]
     parentCellLine <- paste(parentCellLine, collapse = ", ")
