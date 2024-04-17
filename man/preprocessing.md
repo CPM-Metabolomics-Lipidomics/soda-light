@@ -14,7 +14,13 @@ The blank filtering is applied to determine which lipid species are kept for vis
 
 #### Groups
 
-***Explain what a group is.***
+A dataset can have multiple groups, e.g. genotype, treatmen/diagnosis. For the blank filtering a new group is created which is a combination of the following groups:
+
+* sample type
+* genotype
+* treatment / diagnosis
+* parental cell line / brain region
+* culture conditions
 
 ### Normalization
 
