@@ -499,11 +499,7 @@ get_lipid_class_table = function(table){
   out_table = sapply(X = classes,
                      FUN = function(x) {
                        col_list = which(col_vector == x)
-                       if (length(col_list) > 1) {
-                         rowSums(table[,col_list], na.rm = T)
-                       } else {
-                         table[,col_list]
-                       }
+                       rowSums(table[, col_list, drop = TRUE], na.rm = TRUE)
                      }
   )
 
