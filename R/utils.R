@@ -1391,7 +1391,11 @@ fa_comp_hm_calc <- function(data_table = NULL,
 
   ## features
   feature_table$lipid <- rownames(feature_table)
-  selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
+  if(selected_lipidclass == "All") {
+    selected_features <- feature_table
+  } else {
+    selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
+  }
   # get the unique chain lengths and unsaturation
   uniq_carbon <- c(min(selected_features$carbons_sum), max(selected_features$carbons_sum))
   uniq_unsat <- c(min(selected_features$unsat_sum), max(selected_features$unsat_sum))

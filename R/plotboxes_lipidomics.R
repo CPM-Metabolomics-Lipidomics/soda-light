@@ -1869,7 +1869,7 @@ fa_comp_server = function(r6, input, output, session) {
       shiny::selectizeInput(
         inputId = ns("fa_comp_selected_lipidclass"),
         label = "Select lipid class",
-        choices = unique(r6$tables$feature_table$lipid_class),
+        choices = c("All", unique(r6$tables$feature_table$lipid_class)),
         selected = r6$params$fa_comp_plot$selected_lipidclass,
         multiple = FALSE
       ),
@@ -1916,7 +1916,7 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
   #                     message = "FA composition analysis: Incorrect groups selected!")
   iv_fa_comp$add_rule("fa_comp_selected_lipidclass",
                       iv_check_select_input,
-                      choices = unique(r6$tables$feature_table$lipid_class),
+                      choices = c("All", unique(r6$tables$feature_table$lipid_class)),
                       name_plot = r6$name,
                       message = "FA composition analysis: Incorrect lipid class selected!")
   iv_fa_comp$add_rule("fa_comp_color_palette",
