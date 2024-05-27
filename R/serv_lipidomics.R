@@ -937,7 +937,7 @@ lipidomics_server = function(id, module_controler) {
 
         class_table <- as.data.frame(r6$tables$class_table)
         lipidclasses <- colnames(class_table)
-        class_table$Total <- rowSums(class_table)
+        class_table$Total <- rowSums(class_table, na.rm = TRUE)
         class_table$`Sample ID` <- rownames(class_table)
         # arrange the column names
         class_table <- class_table[, c("Sample ID", lipidclasses, "Total")]
