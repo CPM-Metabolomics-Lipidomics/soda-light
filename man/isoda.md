@@ -9,4 +9,4 @@ A key feature of all data analysis in **iSODA** is the ability to adapt the impo
 
 To use **iSODA** with the data provided by the <span style="color: #0255e9;">Neuro Lipid Atlas</span> go to the **Info** tabsheet where you can download the data and the meta data. These files can be uploaded in **iSODA**.
 
-<a href="https://cpm.lumc.nl/" target="_blank" style="color: #db285a;">Go to iSODA</a>
+<a href="http://isoda.online/" target="_blank" style="color: #db285a;">Go to iSODA</a>! Final version coming soon!
