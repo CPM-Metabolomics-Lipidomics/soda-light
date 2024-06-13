@@ -39,6 +39,21 @@ library(reshape2)
 library(dplyr)
 library(tidyr)
 
+# metrics
+library(googledrive)
+library(googlesheets4)
+
+#------------------------------------------------------- needed for metrics ---
+options(
+  # whenever there is one account token found, use the cached token
+  gargle_oauth_email = TRUE,
+  # specify auth tokens should be stored in a hidden directory ".secrets"
+  gargle_oauth_cache = ".secrets"
+)
+
+# get the id of the file to edit
+sheet_id <- drive_get(path = "neurolipidatlas")$id
+
 #-------------------------------------------------------- Tool tip settings ----
 # Set up for showing tooltips.
 # Use as: shiny::span(your shiny element,
@@ -121,6 +136,7 @@ footer_ui = function() {
 
 sidebar_ui = function() {
   bs4Dash::dashboardSidebar(
+    tags$script('$(document).on("shiny:sessioninitialized",function(){$.get("https://api.ipify.org", function(response) {Shiny.setInputValue("getIP", response);});})'),
     skin = "light",
     bs4Dash::sidebarMenu(
       bs4Dash::menuItem(
@@ -237,6 +253,7 @@ server = function(input, output, session) {
   output$main_title <- shiny::renderUI({
     req(!is.null(module_controler$r6_exp$name))
 
+    # show nice title
     HTML(
       paste0(
         "<b>",
@@ -290,6 +307,20 @@ server = function(input, output, session) {
       # QC
       qc_server(id = "mod_qc",
                 module_controler = module_controler)
+
+      if(is.null(input$getIP)) {
+        ip <- "anonymous"
+      } else {
+        ip <- input$getIP
+      }
+
+      ip_df <- data.frame("date" = Sys.time(),
+                          "ip" = ip,
+                          "session" = session$token,
+                          "dataset" = query[["experimentId"]])
+
+      sheet_append(ss = sheet_id,
+                   data = ip_df)
     }
   })
 
