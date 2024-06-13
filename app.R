@@ -301,28 +301,40 @@ server = function(input, output, session) {
                                                    experiment_id = experiment_id)
 
       # server stuff is created here, should the data be passed here?
+      # this causes everything to be executed twice during startup
       lipidomics_server(id = "mod_exp_1",
                         module_controler = module_controler)
 
       # QC
       qc_server(id = "mod_qc",
                 module_controler = module_controler)
-
-      if(is.null(input$getIP)) {
-        ip <- "anonymous"
-      } else {
-        ip <- input$getIP
-      }
-
-      ip_df <- data.frame("date" = Sys.time(),
-                          "ip" = ip,
-                          "session" = session$token,
-                          "dataset" = query[["experimentId"]])
-
-      sheet_append(ss = sheet_id,
-                   data = ip_df)
     }
   })
+
+  observeEvent(input$getIP, {
+    query <- list("experimentId" = NULL)
+    query <- shiny::parseQueryString(client_data$url_search)
+
+    if (!is.null(query[["experimentId"]])) {
+      if(!grepl(pattern = "NLA_[0-9]{3}", #"^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
+                x = query[["experimentId"]])) {
+        query[["experimentId"]] <- "NLA_005"
+      }
+    } else {
+      # for easy development
+      query[["experimentId"]] <- "NLA_005" # "VDK_220223_01"
+    }
+
+    ip_df <- data.frame("date" = Sys.time(),
+                        "ip" = input$getIP,
+                        "session" = session$token,
+                        "dataset" = query[["experimentId"]])
+
+    googlesheets4::sheet_append(ss = sheet_id,
+                                data = ip_df)
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
 
   # help
   about_server(id = 'mod_about', main_output = output)
