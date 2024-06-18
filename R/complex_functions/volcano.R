@@ -67,18 +67,18 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
   if(nchar(left_label) != nchar(right_label)) {
     if(nchar(left_label) > nchar(right_label)) {
       num <- nchar(left_label) - nchar(right_label)
-      right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;", paste(rep("&nbsp;", num), collapse = ""))
-      left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+      r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;", paste(rep("&nbsp;", num), collapse = ""))
+      l_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
     } else {
       num <- nchar(right_label) - nchar(left_label)
-      right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
-      left_label <- paste0(paste(rep("&nbsp;", num), collapse = ""), "&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+      r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+      l_label <- paste0(paste(rep("&nbsp;", num), collapse = ""), "&#8656;&nbsp;&nbsp;&nbsp;", left_label)
     }
   } else {
-    right_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
-    left_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+    l_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
   }
-  plot_label = paste0(left_label, ' - ', right_label)
+  plot_label = paste0(l_label, ' vs ', r_label)
 
   # Format data
   data$log2_fold_change = log2(data$fold_change)
@@ -112,7 +112,9 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     top_data = data[which(is.na(data$log10_p_values)),]
     data = data[-which(is.na(data$log10_p_values)),]
     inf_idx = which(base::is.infinite(top_data$log2_fold_change))
-    top_data = top_data[-inf_idx,]
+    if(length(inf_idx) > 0) {
+      top_data = top_data[-inf_idx, ]
+    }
     print(paste0('Dropped ', length(inf_idx), ' features with no FC nor p-values.'))
 
     top_violin = plot_volcano_violin(data = top_data,
@@ -124,28 +126,30 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
   } else {top_data = NULL}
 
-  if (length(which(data$log2_fold_change == -Inf)) > 0) { # Left violin
-    left_data = data[which(data$log2_fold_change == -Inf),]
-    data = data[-which(data$log2_fold_change == -Inf),]
+  if (length(which(data$fold_change == -Inf)) > 0) { # Left violin
+    left_data = data[which(data$fold_change == -Inf),]
+    data = data[-which(data$fold_change == -Inf),]
 
     left_violin = plot_volcano_violin(data = left_data,
                                       threshold = -log10(p_val_threshold),
                                       side = 'left',
                                       label = left_label,
+                                      y_label = y_label,
                                       opacity = opacity,
                                       marker_size = marker_size,
                                       show_legend = F)
 
   } else {left_data = NULL}
 
-  if (length(which(data$log2_fold_change == Inf)) > 0) { # right violin
-    right_data = data[which(data$log2_fold_change == Inf),]
-    data = data[-which(data$log2_fold_change == Inf),]
+  if (length(which(data$fold_change == Inf)) > 0) { # right violin
+    right_data = data[which(data$fold_change == Inf),]
+    data = data[-which(data$fold_change == Inf),]
 
     right_violin = plot_volcano_violin(data = right_data,
                                        threshold = -log10(p_val_threshold),
                                        side = 'right',
                                        label = right_label,
+                                       y_label = y_label,
                                        opacity = opacity,
                                        marker_size = marker_size,
                                        show_legend = F)
@@ -162,7 +166,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                            fc_threshold = fc_threshold,
                            opacity = opacity,
                            y_axis_title = y_label,
-                           show_y_title = F)
+                           show_y_title = T)
 
   # Blank plot
   blank_plot = plotly::plot_ly(type = 'scatter', mode = 'markers')
@@ -178,9 +182,9 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
 
   if (is.null(left_data) & is.null(right_data) & is.null(top_data) | (displayed_plot == 'main')) { # Only main
+
     out_plot = main_plot
-    out_plot = plotly::layout(out_plot,
-                              yaxis = list(title = y_label))
+
   } else if (!is.null(top_data) & (displayed_plot == 'top')) { # Export top violin
 
     out_plot = top_violin
@@ -193,6 +197,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
     out_plot = right_violin
 
+
   } else if (is.null(left_data) & is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top only
 
     out_plot = plotly::subplot(
@@ -200,6 +205,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       main_plot,
       nrows = 2,
       shareX = TRUE,
+      titleY = TRUE,
       heights = c(0.1, 0.9)
     )
 
@@ -209,8 +215,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       list(left_violin, main_plot),
       shareX = TRUE,
       shareY = TRUE,
-      titleX = T,
-      titleY = F,
+      titleX = TRUE,
+      titleY = TRUE,
       widths = c(0.1, 0.9)
     )
 
@@ -220,8 +226,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       list(main_plot, right_violin),
       shareX = TRUE,
       shareY = TRUE,
-      titleX = T,
-      titleY = F,
+      titleX = TRUE,
+      titleY = TRUE,
       widths = c(0.9, 0.1)
     )
 
@@ -232,13 +238,11 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
              ncol = 3, byrow = TRUE),
       shareX = TRUE,
       shareY = TRUE,
-      titleX = T,
-      titleY = F,
+      titleX = TRUE,
+      titleY = TRUE,
       widths = c(0.1, 0.8, 0.1)
     )
 
-    out_plot = plotly::layout(out_plot,
-                                yaxis = list(title = y_label))
   } else if (!is.null(left_data) & !is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # All violins
 
     out_plot = plotly::subplot(
@@ -253,6 +257,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       widths = c(0.1, 0.8, 0.1),
       heights = c(0.1, 0.9)
     )
+
   } else if (!is.null(left_data) & is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top and left
 
     out_plot = plotly::subplot(
@@ -282,6 +287,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
       widths = c(0.9, 0.1),
       heights = c(0.1, 0.9)
     )
+
   } else {
     warning('Selected plot unavailable, returning blank.')
     out_plot = blank_plot
@@ -291,7 +297,7 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
 }
 
-plot_volcano_violin = function(data, threshold, side, label, opacity = 1, marker_size = 6, show_legend = F) {
+plot_volcano_violin = function(data, threshold, side, label, y_label, opacity = 1, marker_size = 6, show_legend = F) {
 
   if (!(side %in% c('left', 'right', 'top'))) {
     stop('side must be in [left, right, top]')
@@ -315,42 +321,31 @@ plot_volcano_violin = function(data, threshold, side, label, opacity = 1, marker
 
   p = plotly::plot_ly()
 
-  if (length(data$log10_p_values[which(data$log10_p_values >= threshold)]) > 1) {
-    sub_data = data[which(data$log10_p_values >= threshold),]
-    p = plotly::add_trace(p,
-                          y = sub_data$log10_p_values,
-                          x = x_val, type = "violin",
-                          box = list(visible = FALSE),
-                          line = list(color = col_line),
-                          fillcolor = col_fill,
-                          meanline = list(visible = F),
-                          opacity = opacity,
-                          points = FALSE,
-                          name = sub_data$groups[1],
-                          legendgroup = sub_data$groups[1],
-                          hoverinfo = 'none',
-                          showlegend = F)
-  }
+  # add violin
+  p = plotly::add_trace(p,
+                        y = data$log10_p_values,
+                        x = x_val, type = "violin",
+                        box = list(visible = FALSE),
+                        line = list(color = 'darkgray'),
+                        fillcolor = 'ghostwhite',
+                        meanline = list(visible = FALSE),
+                        opacity = opacity,
+                        points = FALSE,
+                        name = data$groups[1],
+                        legendgroup = data$groups[1],
+                        hoverinfo = 'none',
+                        showlegend = F)
 
-  if (length(data$log10_p_values[which(data$log10_p_values < threshold)]) > 1) {
-    sub_data = data[which(data$log10_p_values < threshold),]
-    p = plotly::add_trace(p,
-                          y = sub_data$log10_p_values,
-                          x = x_val, type = "violin",
-                          box = list(visible = FALSE),
-                          line = list(color = 'darkgray'),
-                          fillcolor = 'lightgray',
-                          meanline = list(visible = F),
-                          opacity = opacity,
-                          points = FALSE,
-                          name = sub_data$groups[1],
-                          legendgroup = sub_data$groups[1],
-                          hoverinfo = 'none',
-                          showlegend = F)
-  }
-
+  # add the points
   for (group in unique(data$groups)) {
-    group_table = data[data$groups == group,]
+    group_table = data[data$groups == group, ]
+    # get the significant ones
+    idx_signif <- group_table$log10_p_values >= threshold
+
+    # opacity
+    group_table$opacity[idx_signif] <- opacity
+    group_table$opacity[!idx_signif] <- 0.6 * opacity
+
     p = plotly::add_trace(p,
                           type = "scatter",
                           mode = "markers",
@@ -358,7 +353,7 @@ plot_volcano_violin = function(data, threshold, side, label, opacity = 1, marker
                           x = x_val,
                           marker = list(size = marker_size,
                                         color = group_table$color[1],
-                                        opacity = opacity,
+                                        opacity = group_table$opacity,
                                         line = list(width = 0.5, color = 'white')),
                           name = group,
                           legendgroup = group,
@@ -366,6 +361,7 @@ plot_volcano_violin = function(data, threshold, side, label, opacity = 1, marker
                           hoverinfo = 'text',
                           showlegend = show_legend)
   }
+
   p = plotly::layout(p,
                      shapes = list(
                        list(
@@ -375,15 +371,21 @@ plot_volcano_violin = function(data, threshold, side, label, opacity = 1, marker
                          y0 = threshold,
                          y1 = threshold,
                          line = list(color = "black", width = 1, dash = "dot")
-                         )
+                       )
+                     ),
+                     xaxis = list(
+                       title = list(
+                         text = x_val
+                       )
+                     ),
+                     yaxis = list(
+                       title = list(
+                         text = y_label
                        )
                      )
-
-
-
+  )
 
   return(p)
-
 }
 
 plot_volcano_violin_top = function(data,
@@ -428,8 +430,7 @@ plot_volcano_violin_top = function(data,
   }
 
   p = plotly::layout(p,
-                     xaxis = list(title = "Log2(Fold Change)"
-                     ),
+                     xaxis = list(title = "Log2(Fold Change)"),
                      shapes = list(
                        # Vertical line at x = -1
                        list(
@@ -465,6 +466,14 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
 
   for (group in sort_group) {
     subset_data = data[data$groups == group, ]
+    # get the significant ones
+    idx_signif <- subset_data$p_values <= p_val_threshold
+
+    # opacity
+    subset_data$opacity[idx_signif] <- opacity
+    subset_data$opacity[!idx_signif] <- 0.6 * opacity
+
+    # significant data
     main_plot = plotly::add_trace(
       main_plot,
       x = subset_data$log2_fold_change,
@@ -474,7 +483,7 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
       type = "scatter",
       mode = "markers",
       marker = list(size = marker_size,
-                    opacity = opacity,
+                    opacity = subset_data$opacity,
                     line = list(width = 0.5, color = 'white')),
       legendgroup = group,
       name = group,
@@ -501,7 +510,7 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
                                  x0 = -log2(fc_threshold),
                                  x1 = -log2(fc_threshold),
                                  y0 = 0,
-                                 y1 = max(data$log10_p_values),
+                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
                                  line = list(color = "black", width = 1, dash = "dot")
                                ),
                                # Vertical line at x = 1
@@ -510,14 +519,14 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
                                  x0 = log2(fc_threshold),
                                  x1 = log2(fc_threshold),
                                  y0 = 0,
-                                 y1 = max(data$log10_p_values),
+                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
                                  line = list(color = "black", width = 1, dash = "dot")
                                ),
                                # Horizontal line at y = -log10(0.05)
                                list(
                                  type = "line",
-                                 x0 = -round(max(abs(data$log2_fold_change))),
-                                 x1 = round(max(abs(data$log2_fold_change))),
+                                 x0 = -1.2 * round(max(abs(data$log2_fold_change))),
+                                 x1 = 1.2 * round(max(abs(data$log2_fold_change))),
                                  y0 = -log10(p_val_threshold),
                                  y1 = -log10(p_val_threshold),
                                  line = list(color = "black", width = 1, dash = "dot")

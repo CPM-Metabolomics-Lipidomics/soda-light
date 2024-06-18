@@ -39,6 +39,39 @@ library(reshape2)
 library(dplyr)
 library(tidyr)
 
+#-------------------------------------------------------- Tool tip settings ----
+# Set up for showing tooltips.
+# Use as: shiny::span(your shiny element,
+#                     `data-toggle` = "tooltip",
+#                     `data-placement` = "right",
+#                     title = "Text of tooltip.")
+css <- "
+.tooltip {
+  pointer-events: none;
+}
+.tooltip > .tooltip-inner {
+  pointer-events: none;
+  background-color: #73AD21;
+  color: #FFFFFF;
+  border: 1px solid green;
+  padding: 10px;
+  font-size: 25px;
+  font-style: italic;
+  text-align: justify;
+  margin-left: 0;
+  max-width: 1000px;
+}
+.tooltip > .arrow::before {
+  border-right-color: #73AD21;
+}
+"
+
+js <- "
+$(function () {
+  $('[data-toggle=tooltip]').tooltip()
+})
+"
+
 #------------------------------------------------------------- Setup header ----
 header_ui = function() {
 
@@ -54,6 +87,12 @@ header_ui = function() {
   header = paste(name, "|", version, sep = " ")
   # bs4Dash::dashboardHeader(title = header)
   bs4Dash::dashboardHeader(
+    # add title to main grey bar
+    tags$li(shiny::htmlOutput(outputId = "main_title"),
+            class = "dropdown",
+            style = "list-style-type: none; width: 100%; text-align: center; color: #0255e9;"),
+
+    # add logo in upper left corner
     title = bs4Dash::dashboardBrand(
       title = img(src = "./images/logo-neurolipid-atlas.png",
                   title = "Neurolipid Atlas",
@@ -84,7 +123,6 @@ sidebar_ui = function() {
   bs4Dash::dashboardSidebar(
     skin = "light",
     bs4Dash::sidebarMenu(
-
       bs4Dash::menuItem(
         text = "Data",
         tabName = "data",
@@ -96,9 +134,21 @@ sidebar_ui = function() {
         icon = shiny::icon("q")
       ),
       bs4Dash::menuItem(
+        text = "Help",
+        icon = shiny::icon("question"),
+        tabName = 'help_single_omics'
+      ),
+      bs4Dash::menuItem(
         text = "About",
         tabName = "about",
         icon = shiny::icon("question")
+      ),
+      bs4Dash::menuItem(
+        text = "iSODA",
+        tabName = "iSODA",
+        # href = "https://cpm.lumc.nl/",
+        # newTab = TRUE,
+        icon = shiny::icon("i")
       )
     )
   )
@@ -108,6 +158,8 @@ sidebar_ui = function() {
 #--------------------------------------------------------------- Setup body ----
 body_ui = function() {
   bs4Dash::dashboardBody(
+    waiter::useWaiter(),
+    waiter::waiterPreloader(html = waiter::spin_fading_circles()),
 
     # Detect UI functions
     shinyjs::useShinyjs(),
@@ -125,8 +177,16 @@ body_ui = function() {
         qc_ui(id = 'mod_qc')
       ),
       bs4Dash::tabItem(
+        tabName = "help_single_omics",
+        help_single_omics_ui(id = 'mod_help_single_omics')
+      ),
+      bs4Dash::tabItem(
         tabName = "about",
         about_ui(id = 'mod_about')
+      ),
+      bs4Dash::tabItem(
+        tabName = "iSODA",
+        isoda_ui(id = "mod_isoda")
       )
     )
   )
@@ -153,13 +213,13 @@ server = function(input, output, session) {
 
   module_controler = shiny::reactiveValues(
 
-    r6_exp = NULL,
+    r6_exp = shiny::reactiveValues(),
 
     dims = list(
       x_box = 0.9,
-      y_box = 0.70,
+      y_box = 0.72,
       x_plot = 0.8,
-      y_plot = 0.67,
+      y_plot = 0.69,
       x_plot_full = 0.95,
       y_plot_full = 0.91,
       xpx_total = NULL,
@@ -174,10 +234,22 @@ server = function(input, output, session) {
   db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
                                              sheet = 1))
 
+  output$main_title <- shiny::renderUI({
+    req(!is.null(module_controler$r6_exp$name))
+
+    HTML(
+      paste0(
+        "<b>",
+        unique(module_controler$r6_exp$tables$raw_meta$experimentTitle),
+        "</b>"
+      )
+    )
+  })
+
   # Single omics modules
   shiny::observe({
-    req(client_data,
-        db_data)
+    shiny::req(client_data,
+               db_data)
 
     print("Rico: app starting")
 
@@ -188,13 +260,13 @@ server = function(input, output, session) {
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
       print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
-      if(!grepl(pattern = "^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
+      if(!grepl(pattern = "NLA_[0-9]{3}", #"^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
                 x = query[["experimentId"]])) {
-        query[["experimentId"]] <- NULL
+        query[["experimentId"]] <- "NLA_005"
       }
     } else {
       # for easy development
-      query[["experimentId"]] <- "VDK_220223_01"
+      query[["experimentId"]] <- "NLA_005" # "VDK_220223_01"
     }
     experiment_id = query[["experimentId"]]
 

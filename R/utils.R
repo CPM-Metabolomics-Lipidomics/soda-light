@@ -29,12 +29,12 @@ adjustment_title_switch = function(selection) {
 feature_table_cols_switch = function(col) {
   switch(EXPR = col,
          'Lipid class' = 'lipid_class',
-         'Double bonds (chain 1)' = 'unsat_1',
-         'Carbon count (chain 1)' = 'carbons_1',
-         'Double bonds (chain 2)' = 'unsat_2',
-         'Carbon count (chain 2)' = 'carbons_2',
-         'Double bonds (sum)' = 'unsat_sum',
-         'Carbon count (sum)' = 'carbons_sum'
+         'SN1 number of double bonds' = 'unsat_1',
+         'SN1 number of carbons' = 'carbons_1',
+         'SN2 number of double bonds' = 'unsat_2',
+         'SN2 number of carbons' = 'carbons_2',
+         'Total number of double bonds' = 'unsat_sum',
+         'Total number of carbons' = 'carbons_sum'
   )
 }
 
@@ -110,9 +110,10 @@ lipidomics_plot_list = function() {
                 "Volcano plot" = "select_volcano_plot",
                 "Heatmap" = "select_heatmap",
                 "PCA" = "select_pca",
-                "Double bond plot" = "select_double_bond_plot",
-                "Saturation index" = "select_satindex_plot",
-                "Fatty acid analysis" = "select_fa_analysis_plot"
+                # "Double bond plot" = "select_double_bond_plot",
+                # "Saturation index" = "select_satindex_plot",
+                "Fatty acid analysis" = "select_fa_analysis_plot",
+                "Fatty acid composition" = "select_fa_composition"
   )
   return(plot_list)
 }
@@ -360,6 +361,7 @@ get_plotly_box = function(id, label, dimensions_obj, session) {
         outputId = ns(paste0(id, "_sidebar_ui"))
       )
     ),
+    shiny::textOutput(outputId = ns(paste0(id, "_message"))),
     plotly::plotlyOutput(
       outputId = ns(paste0(id, "_plot")),
       width = dimensions_obj$xpx * dimensions_obj$x_plot,
@@ -460,7 +462,7 @@ get_plot_box = function(id, label, dimensions_obj, session) {
 get_group_median_table = function(data_table,
                                   meta_table,
                                   group_col) {
-  unique_groups = unique(meta_table[,group_col])
+  unique_groups = unique(meta_table[, group_col])
   out_table = as.data.frame(matrix(data = NA,
                                    nrow = length(unique_groups),
                                    ncol = ncol(data_table)))
@@ -497,13 +499,12 @@ get_lipid_class_table = function(table){
   out_table = sapply(X = classes,
                      FUN = function(x) {
                        col_list = which(col_vector == x)
-                       if (length(col_list) > 1) {
-                         rowSums(table[,col_list], na.rm = T)
-                       } else {
-                         table[,col_list]
-                       }
+                       rowSums(table[, col_list, drop = FALSE], na.rm = TRUE)
                      }
   )
+
+  # Fix the TG, sum needs to be divided by 3, because they are measured 3 times.
+  out_table[, "TG"] <- out_table[, "TG"] / 3
 
   return(out_table)
 }
@@ -944,6 +945,10 @@ apply_discriminant_analysis = function(data_table, group_list, nlambda = 100, al
     group_list = group_list[!(group_list %in% dead_groups)]
   }
 
+  if(length(unique(group_list)) == 1) {
+    stop("Heatmap: not enough groups (2) with at least 3 samples.")
+  }
+
   if (length(unique(group_list) > 2)) {
     family = "multinomial"
   } else {
@@ -971,6 +976,7 @@ apply_discriminant_analysis = function(data_table, group_list, nlambda = 100, al
   }
 
   coef = stats::coef(coef, s = "lambda.min")
+
   keep_cols = as.matrix(coef[[1]])
 
   keep_cols = rownames(keep_cols)[which(keep_cols != 0)]
@@ -1014,32 +1020,55 @@ get_fold_changes = function(data_table, idx_group_1, idx_group_2, used_function,
     }
   }
 
+  # if x/0 the fold change should be -Inf
+  fold_changes[fold_changes == 0] <- -Inf
+
   # Impute NaNs (0/0)
   if (length(which(is.nan(fold_changes)) > 0)) {
     fold_changes[which(is.nan(fold_changes))] = 1
   }
 
   return(fold_changes)
-
 }
 
 get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute_na = T) {
-
+  # define the function for testing
   if (used_function == "Wilcoxon") {
-    test_function=function(x,y){
+    test_function = function(x, y){
 
-      if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
+      if(all(is.na(x)) | all(is.na(y))) {
+        # if one group contains only NA's
+        if(all(is.na(x))) {
+          x <- y
+        }
+        return(stats::wilcox.test(x)$p.value)
+      } else if(sum(!is.na(x)) < 2 | sum(!is.na(y)) < 2) {
+        # if one of the groups doesn't contain enough data
+        return(NA)
+      } else if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
         return(1)
-      } else{
+      } else {
         return(stats::wilcox.test(x, y)$p.value)
       }
     }
   } else if (used_function == "t-Test") {
-    test_function=function(x,y){
+    test_function = function(x, y){
 
-      if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
+      # if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
+      #   return(1)
+      # } else
+      if(all(is.na(x)) | all(is.na(y))) {
+        # if one group contains only NA's
+        if(all(is.na(x))) {
+          x <- y
+        }
+        return(stats::t.test(x)$p.value)
+      } else if(sum(!is.na(x)) < 2 | sum(!is.na(y)) < 2) {
+        # if one of the groups doesn't contain enough data
+        return(NA)
+      } else if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
         return(1)
-      } else{
+      } else {
         return(stats::t.test(x, y)$p.value)
       }
     }
@@ -1050,12 +1079,8 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
     group1 = column[idx_group_1]
     group2 = column[idx_group_2]
 
-    # Check if there are enough non-NA values to conduct a t-test
-    if (sum(!is.na(group1)) < 2 || sum(!is.na(group2)) < 2) {
-      return(NA)  # Return NA if not enough data
-    }
-
     test_result = test_function(group1, group2)  # Assuming equal variance
+
     return(test_result)
   })
 
@@ -1063,7 +1088,6 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
   if ((length(which(is.na(p_values))) > 0) & impute_na){
     p_values[which(is.na(p_values))] = min(p_values, na.rm = T) * 0.99
   }
-
 
   return(p_values)
 }
@@ -1160,269 +1184,49 @@ get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, 
               "p_value_bh_adj" = p_value_bh_adj))
 }
 
-#------------------------------------------------------- Saturation index ------
-# Here are some functions to calculate the saturation index in several different
-# ways.
 
-# use palmitate, stearate and oleate tails for the calculation of the SI index per lipid class
-satindex_calc_ratio <- function(data_table = NULL,
-                                feature_table = NULL,
-                                sample_meta = NULL) {
-  ## Initialize some stuff
-  # the feature table doesn't contain a column lipids fix here
-  feature_table$lipid <- rownames(feature_table)
-  # get the unique lipid classes
-  lipid_classes <- unique(feature_table$lipid_class)
+#------------------------------------------------------------ heatmap stuff ----
+calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
+                              cluster_rows = NULL,
+                              cluster_columns = NULL,
+                              factor_height = 1) {
+  subplot <- vector(mode = "list",
+                    length = 2)
+  names(subplot) <- c("width", "height")
 
-  # define list with which FA tails to search for
-  lipids <- list(
-    palmitate = c("carbon" = 16,
-                  "db" = 0),
-    stearate = c("carbon" = 18,
-                 "db" = 0),
-    oleate = c("carbon" = 18,
-               "db" = 1)
+  # define width and height for the color annotation bars
+  width_ann <- 0.02
+  height_ann <- 0.04 / factor_height
+
+  # define width and height for the dendrograms
+  width_dend <- switch(
+    dendrogram,
+    "both" = 0.05,
+    "row" = 0.05,
+    "column" = 0,
+    "none" = 0
   )
-  # get the names of the FA tails
-  lipid_names <- names(lipids)
+  height_dend <- switch(
+    dendrogram,
+    "both" = 0.075 / factor_height,
+    "row" = 0,
+    "column" = 0.075 / factor_height,
+    "none" = 0
+  )
 
-  # initialize result list
-  tot_lipids <- vector(mode = "list",
-                       length = length(lipid_classes))
-  names(tot_lipids) <- lipid_classes
-  tot_lipids <- lapply(tot_lipids, function(x) {
-    setNames(vector(mode = "list",
-                    length = length(lipid_names) + 1),
-             c(lipid_names, "SI"))
-  })
+  # calculate the size of the subplots
+  subplot$width <- c(1 - width_dend - (length(cluster_columns) * width_ann),
+                     length(cluster_columns) * width_ann,
+                     width_dend)
+  subplot$height <- c(height_dend,
+                      length(cluster_rows) * height_ann,
+                      1 - height_dend - (length(cluster_rows) * height_ann))
 
-  for(a in lipid_classes) {
-    for(b in lipid_names) {
-      # select the lipids with the correct FA tails
-      lipid_all <- feature_table$lipid[feature_table$lipid_class == a &
-                                         ((feature_table$carbons_1 == lipids[[b]]["carbon"] & feature_table$unsat_1 == lipids[[b]]["db"]) |
-                                            (feature_table$carbons_2 == lipids[[b]]["carbon"] & feature_table$unsat_2 == lipids[[b]]["db"]))]
-      lipid_dbl <- feature_table$lipid[feature_table$lipid_class == a &
-                                         (feature_table$carbons_1 == lipids[[b]]["carbon"] & feature_table$unsat_1 == lipids[[b]]["db"] &
-                                            feature_table$carbons_2 == lipids[[b]]["carbon"] & feature_table$unsat_2 == lipids[[b]]["db"])]
+  # remove any zero's
+  subplot$width <- subplot$width[subplot$width != 0]
+  subplot$height <- subplot$height[subplot$height != 0]
 
-      # get all data
-      lipid_data <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a], drop = FALSE]
-      # If doesn't contain any of the FA tail multiply by zero
-      lipid_data[, !(colnames(lipid_data) %in% lipid_all)] <- lipid_data[, !(colnames(lipid_data) %in% lipid_all)] * 0
-      # if contains 2x FA tail multiply by 2
-      lipid_data[, colnames(lipid_data) %in% lipid_dbl] <- lipid_data[, colnames(lipid_data) %in% lipid_dbl] * 2
-
-      # get the total
-      tot_lipids[[a]][[b]] <- rowSums(lipid_data, na.rm = TRUE)
-    }
-    tot_lipids[[a]][["SI"]] <- (tot_lipids[[a]][["palmitate"]] + tot_lipids[[a]][["stearate"]]) / tot_lipids[[a]][["oleate"]]
-  }
-
-  # make data.frame
-  tot_lipids <- do.call("cbind.data.frame", lapply(tot_lipids, function(x) {
-    x["SI"]
-  }))
-  names(tot_lipids) <- lipid_classes
-
-  return(tot_lipids)
-}
-
-# use all FA tails for the calculation of the SI index per lipid class
-satindex_calc_all <- function(data_table = NULL,
-                              feature_table = NULL,
-                              sample_meta = NULL) {
-  # initialize some stuff
-  # the feature table doesn't contain a column lipids fix here
-  feature_table$lipid <- rownames(feature_table)
-  # get the unique lipid classes
-  lipid_classes <- unique(feature_table$lipid_class)
-
-  tot_lipids <- vector(mode = "list",
-                       length = length(lipid_classes))
-  names(tot_lipids) <- lipid_classes
-  tot_lipids <- lapply(tot_lipids, function(x) {
-    setNames(vector(mode = "list",
-                    length = 3),
-             c("weighted", "unweighted", "SI"))
-  })
-
-  for(a in lipid_classes) {
-    # lipids with only one FA chain
-    if(all(feature_table$carbons_2[feature_table$lipid_class == a] == 0) | a == "TG") {
-
-      sat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
-                                         feature_table$unsat_sum == 0]
-      unsat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
-                                           feature_table$unsat_sum != 0]
-      sat_lipid_dbl <- NULL
-      unsat_lipid_dbl <- NULL
-    } else {
-      # lipids with 2 FA chains
-      sat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
-                                         (feature_table$unsat_1 == 0 |
-                                            feature_table$unsat_2 == 0)]
-      unsat_lipid <- feature_table$lipid[feature_table$lipid_class == a &
-                                           (feature_table$unsat_1 != 0 |
-                                              feature_table$unsat_2 != 0)]
-      sat_lipid_dbl <- feature_table$lipid[feature_table$lipid_class == a &
-                                             feature_table$unsat_1 == 0 &
-                                             feature_table$unsat_2 == 0]
-      unsat_lipid_dbl <- feature_table$lipid[feature_table$lipid_class == a &
-                                               feature_table$unsat_1 != 0 &
-                                               feature_table$unsat_2 != 0]
-    }
-
-    ## get data per lipid class
-    lipid_data <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a], drop = FALSE]
-    lipid_data_weighted <- data_table[, colnames(data_table) %in% feature_table$lipid[feature_table$lipid_class == a], drop = FALSE]
-    ## saturated
-    # if contains 2x saturated FA tail multiply by 2
-    lipid_data_weighted[, colnames(lipid_data_weighted) %in% sat_lipid_dbl] <- lipid_data_weighted[, colnames(lipid_data_weighted) %in% sat_lipid_dbl] * 2
-
-    ## unsaturated
-    # get the total unsaturation and multiply by the number of unsaturations
-    select_lipids <- union(
-      union(sat_lipid, sat_lipid_dbl),
-      union(unsat_lipid, unsat_lipid_dbl)
-    )
-    unsat_sum <- feature_table[feature_table$lipid_class == a, "unsat_sum"]
-    lipid_data_weighted[, colnames(lipid_data_weighted) %in% select_lipids] <- t(t(lipid_data_weighted[, colnames(lipid_data_weighted) %in% select_lipids]) * unsat_sum)
-    # correct the lipid classes where the totals where used, for the number of FA tails
-    lipid_data_weighted <- switch(
-      a,
-      "PA" = lipid_data_weighted / 2,
-      "TG" = lipid_data_weighted / 3,
-      lipid_data_weighted
-    )
-    # ## saturated
-    # lipid_data_sat <- lipid_data[, colnames(lipid_data) %in% union(sat_lipid, sat_lipid_dbl), drop = FALSE]
-    # # if contains 2x saturated FA tail multiply by 2
-    # lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] <- lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] * 2
-    # ## unsaturated
-    # lipid_data_unsat <- lipid_data[, colnames(lipid_data) %in% union(unsat_lipid, unsat_lipid_dbl), drop = FALSE]
-    # # get the total unsaturation and multiply by the number of unsaturations
-    # unsat_sum <- feature_table[union(unsat_lipid, unsat_lipid_dbl), "unsat_sum"]
-    # lipid_data_unsat <- t(t(lipid_data_unsat) * unsat_sum)
-
-    # calculate the SI index
-    # tot_lipids[[a]][["tot_sat"]] <- rowSums(lipid_data_sat, na.rm = TRUE)
-    # tot_lipids[[a]][["tot_unsat"]] <- rowSums(lipid_data_unsat, na.rm = TRUE)
-    tot_lipids[[a]][["unweighted"]] <- rowSums(lipid_data, na.rm = TRUE)
-    tot_lipids[[a]][["weighted"]] <- rowSums(lipid_data_weighted, na.rm = TRUE)
-    tot_lipids[[a]][["SI"]] <- tot_lipids[[a]][["weighted"]] / tot_lipids[[a]][["unweighted"]]
-  }
-
-  # make data.frame
-  tot_lipids <- do.call("cbind.data.frame", lapply(tot_lipids, function(x) {
-    x["SI"]
-  }))
-  names(tot_lipids) <- lipid_classes
-
-  return(tot_lipids)
-}
-
-# use all FA tails for the calculation of the overall SI index
-satindex_calc_overall <- function(data_table = NULL,
-                                  feature_table = NULL,
-                                  sample_meta = NULL) {
-  # the feature table doesn't contain a column lipids fix here
-  feature_table$lipid <- rownames(feature_table)
-
-  # leave TG's and PA's out
-  sat_lipid <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
-                                     (feature_table$unsat_1 == 0 |
-                                        feature_table$unsat_2 == 0)]
-  unsat_lipid <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
-                                       (feature_table$unsat_1 != 0 |
-                                          feature_table$unsat_2 != 0)]
-  sat_lipid_dbl <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
-                                         feature_table$unsat_1 == 0 &
-                                         feature_table$unsat_2 == 0]
-  unsat_lipid_dbl <- feature_table$lipid[!(feature_table$lipid_class %in% c("TG", "PA")) &
-                                           feature_table$unsat_1 != 0 &
-                                           feature_table$unsat_2 != 0]
-  # with TG's
-  sat_lipid_TG <- feature_table$lipid[feature_table$lipid_class == "TG" &
-                                        feature_table$unsat_2 == 0]
-  unsat_lipid_TG <- feature_table$lipid[feature_table$lipid_class == "TG" &
-                                          feature_table$unsat_2 != 0]
-
-  # with PA's
-  sat_lipid_PA <- feature_table$lipid[feature_table$lipid_class == "PA" &
-                                        feature_table$unsat_2 == 0]
-  unsat_lipid_PA <- feature_table$lipid[feature_table$lipid_class == "PA" &
-                                          feature_table$unsat_2 != 0]
-  # saturated
-  lipid_data_sat <- data_table[, colnames(data_table) %in% Reduce("union", list(sat_lipid, sat_lipid_dbl, sat_lipid_TG, sat_lipid_PA)), drop = FALSE]
-  if(length(sat_lipid_dbl) > 0 ) {
-    lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl] <- lipid_data_sat[, colnames(lipid_data_sat) %in% sat_lipid_dbl, drop = FALSE] * 2
-  }
-
-  # unsaturated
-  lipid_data_unsat <- data_table[, colnames(data_table) %in% Reduce("union", list(unsat_lipid, unsat_lipid_dbl, unsat_lipid_TG, unsat_lipid_PA)), drop = FALSE]
-  if(length(unsat_lipid_dbl) > 0 ) {
-    lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl] <- lipid_data_unsat[, colnames(lipid_data_unsat) %in% unsat_lipid_dbl, drop = FALSE] * 2
-  }
-
-  SI_index_overall <- rowSums(lipid_data_sat, na.rm = TRUE) / rowSums(lipid_data_unsat, na.rm = TRUE)
-
-  tot_lipids <- data.frame(SI = SI_index_overall)
-
-  return(tot_lipids)
-}
-
-satindex_calc_db <- function(data_table = NULL,
-                             feature_table = NULL,
-                             sample_meta = NULL,
-                             group_col = NULL,
-                             group_1 = NULL,
-                             group_2 = NULL,
-                             selected_lipid_class = NULL) {
-  # get only the selected lipid class
-  class_data <- feature_table[feature_table$lipid_class == selected_lipid_class, ]
-
-  # which saturations are there
-  saturation <- sort(unique(class_data$unsat_sum))
-
-  groups <- c(group_1, group_2)
-
-  # initialize some things
-  db_data <- vector(mode = "list",
-                    length = length(saturation))
-  names(db_data) <- as.character(saturation)
-
-  db_data <- lapply(db_data, function(x) {
-    setNames(data.frame(group1 = rep(NA, 1),
-                        group2 = rep(NA, 1),
-                        doubleBond = rep(NA, 1),
-                        foldChange = rep(NA, 1)),
-             c(group_1, group_2, "doubleBond", "foldChange"))
-  })
-
-  # do the calculations
-  for(a in saturation) {
-    for(b in groups) {
-      # get the correct lipids
-      sel_lipids <- rownames(class_data)[class_data$unsat_sum == a]
-      # get the correct samples
-      sel_samples <- rownames(sample_meta)[sample_meta[, group_col] == b]
-      # calculate the average over the samples after summing the lipid species
-      db_data[[as.character(a)]][[b]] <- mean(rowSums(data_table[rownames(data_table) %in% sel_samples,
-                                                                 colnames(data_table) %in% sel_lipids,
-                                                                 drop = FALSE],
-                                                      na.rm = TRUE),
-                                              na.rm = TRUE)
-    }
-    db_data[[as.character(a)]][["foldChange"]] <- db_data[[as.character(a)]][[1]] / db_data[[as.character(a)]][[2]]
-    db_data[[as.character(a)]][["doubleBond"]] <- a
-  }
-
-  # make one nice data.frame
-  db_data <- do.call(rbind.data.frame, db_data)
-  db_data$doubleBond <- as.factor(db_data$doubleBond)
-
-  return(db_data)
+  return(subplot)
 }
 
 
@@ -1430,12 +1234,21 @@ satindex_calc_db <- function(data_table = NULL,
 fa_analysis_calc <- function(data_table = NULL,
                              feature_table = NULL,
                              sample_meta = NULL,
-                             selected_lipidclass = NULL) {
+                             selected_lipidclass = NULL,
+                             fa_norm = FALSE) {
   ## Features
   feature_table$lipid <- rownames(feature_table)
 
+  # fix TG's
+  idx_tg <- feature_table$lipid[feature_table$lipid_class == "TG"]
+  data_table[, idx_tg] <- data_table[, idx_tg] / 3
+
+  # get the species from the selected lipid classes
   if(selected_lipidclass == "All") {
-    # all lipids, but remove PA and TG
+    # all lipids, but remove PA
+    sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA"))]
+  } else if(selected_lipidclass == "All_noTG") {
+    # all lipids, but remove PA
     sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA", "TG"))]
   } else {
     sel_feat_idx <- feature_table$lipid[feature_table$lipid_class %in% selected_lipidclass]
@@ -1447,10 +1260,10 @@ fa_analysis_calc <- function(data_table = NULL,
   sel_data_table <- data_table[, sel_feat_idx]
 
   # get the unique chain lengths and unsaturation
-  uniq_carbon <- sort(union(unique(sel_feature_table$carbons_1),
+  uniq_carbon <- sort(union(unique(sel_feature_table$carbons_1[sel_feature_table$lipid_class != "TG"]),
                             unique(sel_feature_table$carbons_2)))
   uniq_carbon <- uniq_carbon[uniq_carbon != 0]
-  uniq_unsat <- sort(union(unique(sel_feature_table$unsat_1),
+  uniq_unsat <- sort(union(unique(sel_feature_table$unsat_1[sel_feature_table$lipid_class != "TG"]),
                            unique(sel_feature_table$unsat_2)))
 
   # Initialize results data.frame
@@ -1487,9 +1300,275 @@ fa_analysis_calc <- function(data_table = NULL,
   })
   res <- res[, !empty_idx]
 
+  # normalise by total FA's
+  if(fa_norm) {
+    res <- res / rowSums(res, na.rm = TRUE)
+  }
+
   return(res)
 }
 
+
+fa_analysis_rev_calc <- function(data_table = NULL,
+                                 feature_table = NULL,
+                                 sample_meta = NULL,
+                                 selected_fa = NULL,
+                                 fa_norm = FALSE) {
+  uniq_lipid_classes <- unique(feature_table$lipid_class[!(feature_table$lipid_class %in% c("PA"))])
+
+  ## Features
+  feature_table$lipid <- rownames(feature_table)
+
+  sel_feat_idx <- feature_table$lipid[!(feature_table$lipid_class %in% c("PA"))]
+  sel_feature_table <- feature_table[feature_table$lipid %in% sel_feat_idx, ]
+
+  ## Data
+  # select the correct data
+  sel_data_table <- data_table[, sel_feat_idx]
+
+  # Initialize results data.frame
+  res <- as.data.frame(matrix(ncol = length(uniq_lipid_classes),
+                              nrow = nrow(sel_data_table)))
+  colnames(res) <- uniq_lipid_classes
+  rownames(res) <- rownames(sel_data_table)
+
+  # do the calculations
+  fa_norm_tot <- 0
+  for(lipid_class in uniq_lipid_classes) {
+    for(fa_tail in selected_fa) {
+      split_fa <- as.numeric(unlist(strsplit(fa_tail,
+                                             split = ":",
+                                             fixed = TRUE)))
+      sel_lipids <- sel_feature_table$lipid[sel_feature_table$lipid_class == lipid_class &
+                                              ((sel_feature_table$carbons_1 == split_fa[1] &
+                                                  sel_feature_table$unsat_1 == split_fa[2]) |
+                                                 (sel_feature_table$carbons_2 == split_fa[1] &
+                                                    sel_feature_table$unsat_2 == split_fa[2]))]
+      sel_lipids_double <- sel_feature_table$lipid[sel_feature_table$lipid == lipid_class &
+                                                     (sel_feature_table$carbons_1 == split_fa[1] &
+                                                        sel_feature_table$unsat_1 == split_fa[2]) &
+                                                     (sel_feature_table$carbons_2 == split_fa[1] &
+                                                        sel_feature_table$unsat_2 == split_fa[2])]
+
+      res[, lipid_class] <- rowSums(sel_data_table[, c(sel_lipids, sel_lipids_double), drop = FALSE], na.rm = TRUE)
+    } # end selected_fa
+  } # end lipid_class
+
+  # fix the TG's
+  res[, "TG"] <- res[, "TG"] / 3
+
+  # remove empty columns
+  empty_idx <- apply(res, 2, function(x) {
+    all(x == 0)
+  })
+  res <- res[, !empty_idx]
+
+  # get rid of the zero's
+  res[res == 0] <- NA
+
+  # normalise by total FA's
+  if(fa_norm) {
+    res <- res / rowSums(res, na.rm = TRUE)
+  }
+
+  return(res)
+}
+
+#--------------------------------------------------------- FA composition   ----
+fa_comp_hm_calc <- function(data_table = NULL,
+                            feature_table = NULL,
+                            group_col = NULL,
+                            selected_group = NULL,
+                            sample_meta = NULL,
+                            selected_lipidclass = NULL) {
+  ## samples
+  idx_samples <- rownames(sample_meta)[sample_meta[, group_col] == selected_group]
+  hm_data <- data_table[idx_samples, , drop = FALSE]
+
+  ## features
+  feature_table$lipid <- rownames(feature_table)
+  if(selected_lipidclass == "All") {
+    selected_features <- feature_table
+  } else {
+    selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
+  }
+  # get the unique chain lengths and unsaturation
+  uniq_carbon <- c(min(selected_features$carbons_sum), max(selected_features$carbons_sum))
+  uniq_unsat <- c(min(selected_features$unsat_sum), max(selected_features$unsat_sum))
+
+  ## calculations
+  # initialize result matrix
+  res <- matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+                nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+  colnames(res) <- uniq_carbon[1]:uniq_carbon[2]
+  rownames(res) <- uniq_unsat[1]:uniq_unsat[2]
+  for(a in rownames(res)) { # unsaturation
+    for(b in colnames(res)) { # carbons
+      idx_lipids <- selected_features$lipid[selected_features$carbons_sum == b &
+                                              selected_features$unsat_sum == a]
+      if(length(idx_lipids) > 0) {
+        res[a, b] <- sum(hm_data[, idx_lipids], na.rm = TRUE)
+      } else {
+        res[a, b] <- 0
+      }
+    }
+  }
+
+  # calculate the proportion
+  res <- res / sum(res)
+
+  return(res)
+}
+
+
+fa_comp_heatmap <- function(data = NULL,
+                            hline = NULL,
+                            vline = NULL,
+                            color_limits = NULL,
+                            color_palette = NULL,
+                            y_pos_right = FALSE,
+                            showlegend = FALSE) {
+  # prepare data
+  data_df <- as.data.frame(data)
+  data_df$row <- rownames(data)
+
+  data_df <- data_df |>
+    tidyr::pivot_longer(cols = -row,
+                        names_to = "col",
+                        values_to = "value")
+  data_df$row <- as.numeric(data_df$row)
+  data_df$col <- as.numeric(data_df$col)
+
+  # make heatmap
+  fig <- plotly::plot_ly(data = data_df,
+                         x = ~col,
+                         y = ~row,
+                         z = ~value,
+                         type = "heatmap",
+                         colors = color_palette,
+                         hovertemplate = paste(
+                           "Total carbons: %{x:d}<br>",
+                           "Total double bond: %{y:d}<br>",
+                           "Proportion: %{z:.3f}",
+                           "<extra></extra>"
+                         )) |>
+    plotly::colorbar(limits = color_limits,
+                     title = "Proportion") |>
+    plotly::style(xgap = 3,
+                  ygap = 3)
+
+  if(!showlegend) {
+    fig <- fig |>
+      plotly::hide_colorbar()
+  }
+  fig <- fig |>
+    # vertical line
+    plotly::add_segments(
+      x = vline,
+      xend = vline,
+      y = min(data_df$row) - 0.5,
+      yend = max(data_df$row) + 0.5,
+      inherit = FALSE,
+      line = list(color = "black",
+                  width = 2,
+                  dash = "dot"),
+      showlegend = FALSE
+    ) |>
+    # horizotal line
+    plotly::add_segments(
+      x = min(data_df$col) - 0.5,
+      xend = max(data_df$col) + 0.5,
+      y = hline,
+      yend = hline,
+      inherit = FALSE,
+      line = list(color = "black",
+                  width = 2,
+                  dash = "dot"),
+      showlegend = FALSE
+    ) |>
+    plotly::layout(
+      font = list(
+        size = 9
+      ),
+      xaxis = list(
+        tick0 = 1,
+        dtick = 1,
+        zeroline = FALSE,
+        showgrid = FALSE,
+        fixedrange = TRUE,
+        ticklen = 3,
+        title = list(
+          text = "Number of carbon atoms",
+          standoff = 5,
+          font = list(
+            size = 10
+          )
+        )
+      )
+    ) |>
+    plotly::add_annotations(
+      x = c(max(data_df$col), vline),
+      y = c(hline, max(data_df$row)),
+      text = c(sprintf("Avg. %0.1f", hline), sprintf("Avg. %0.1f", vline)),
+      font = list(size = 10),
+      xref = "x",
+      yref = "y",
+      showarrow = FALSE,
+      xanchor = c("right", "left"),
+      yanchor = c("bottom", "middle")
+    )
+
+  if(y_pos_right) {
+    fig <- fig |>
+      plotly::layout(
+        font = list(
+          size = 9
+        ),
+        yaxis = list(
+          tick0 = 1,
+          dtick = 1,
+          zeroline = FALSE,
+          showgrid = FALSE,
+          range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+          side = "right",
+          fixedrange = TRUE,
+          ticklen = 3,
+          title = list(
+            text = "Number of double bonds",
+            standoff = 3,
+            font = list(
+              size = 10
+            )
+          )
+        )
+      )
+  } else {
+    fig <- fig |>
+      plotly::layout(
+        font = list(
+          size = 9
+        ),
+        yaxis = list(
+          tick0 = 1,
+          dtick = 1,
+          zeroline = FALSE,
+          showgrid = FALSE,
+          range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+          fixedrange = TRUE,
+          ticklen = 3,
+          title = list(
+            text = "Number of double bonds",
+            standoff = 3,
+            font = list(
+              size = 10
+            )
+          )
+        )
+      )
+  }
+
+  return(fig)
+}
 
 #--------------------------------------------------------- Input validation ----
 iv_check_select_input <- function(value, choices, name_plot, message) {
@@ -1607,7 +1686,7 @@ qc_rsd_violin <- function(data = NULL,
     ggplot2::labs(title = title,
                   x = "Lipid class",
                   y = "Relative standard deviation") +
-  ggplot2::theme_minimal()
+    ggplot2::theme_minimal()
 
   ply <- plotly::ggplotly(p)
 
@@ -1622,87 +1701,122 @@ example_lipidomics = function(name,
                               slot = NA,
                               experiment_id = NULL) {
   # get the meta data
+  # set the interesting columns
+  meta_columns <- c("experimentTitle", "experimentId", "defaultColumn", "batchNumber",
+                    "processDate", "experimentIdOrg", "analystId", "sampleId",
+                    "referenceGroup", "sampleReferral", "harvestDate", "sampleType",
+                    "genoType", "parentCellLineBrainregion", "cellLineName", "sex", "cultureConditions",
+                    "treatmentDiagnosis", "notes", "lab", "Machine")
   meta_data = soda_read_table(file.path("data", "Database", "SampleMasterfile.xlsx"))
   data_files = unique(meta_data$batchNumber[meta_data$experimentId == experiment_id])
   data_files = data_files[!is.na(data_files)]
-  meta_data = meta_data[meta_data$batchNumber %in% data_files &
-                          (meta_data$experimentId %in% experiment_id |
-                             meta_data$experimentId %in% data_files), 1:18]
-  rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
+  if(length(data_files) > 0) {
+    meta_data = meta_data[meta_data$batchNumber %in% data_files &
+                            (meta_data$experimentId %in% experiment_id |
+                               meta_data$experimentId %in% data_files), meta_columns]
+    rownames(meta_data) <- paste(meta_data[, "batchNumber"], meta_data[, "analystId"], sep = "_")
+    # create a new column for the blank group filtering, initialize with NA
+    meta_data$group_col_blank <- NA
 
-  # get the lipid data
-  data_tables <- vector("list", length = length(data_files))
-  for(a in 1:length(data_files)) {
-    file_path = file.path("data", "Database", data_files[a], paste0(data_files[a], "_output_merge.xlsx"))
-    data_tables[[a]] = soda_read_table(file_path = file_path)
-    data_tables[[a]][, "rownames"] <- paste(data_files[a], data_tables[[a]][, "ID"], sep = "_")
-  }
-  lips_data = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
-  rownames(lips_data) <- lips_data[, "rownames"]
-  lips_data[, "rownames"] <- NULL
+    # get the lipid data
+    data_tables <- vector("list", length = length(data_files))
+    for(a in 1:length(data_files)) {
+      file_path = file.path("data", "Database", data_files[a], paste0(data_files[a], "_output_merge.xlsx"))
+      data_tables[[a]] = soda_read_table(file_path = file_path)
+      data_tables[[a]][, "rownames"] <- paste(data_files[a], data_tables[[a]][, "ID"], sep = "_")
+    }
+    lips_data = Reduce(function(x, y) merge(x, y, all = TRUE), data_tables)
+    rownames(lips_data) <- lips_data[, "rownames"]
+    lips_data[, "rownames"] <- NULL
 
-  # The imported data needs to be filtered because sometimes a batch consist out of multiple experiments
-  lips_data = lips_data[lips_data[, "ID"] %in% meta_data[, "analystId"], ]
+    # The imported data needs to be filtered because sometimes a batch consist out of multiple experiments
+    lips_data = lips_data[lips_data[, "ID"] %in% meta_data[, "analystId"], ]
 
-  # create the r6 object
-  r6 = Lips_exp$new(name = name,
-                    id = id,
-                    slot = slot,
-                    preloaded = TRUE,
-                    data_file = data_files,
-                    experiment_id = experiment_id)
+    # create the r6 object
+    r6 = Lips_exp$new(name = name,
+                      id = id,
+                      slot = slot,
+                      preloaded = TRUE,
+                      data_file = data_files,
+                      experiment_id = experiment_id)
 
-  r6$tables$imp_meta = meta_data
-  r6$tables$imp_data = lips_data
+    r6$tables$imp_meta = meta_data
+    r6$tables$imp_data = lips_data
 
-  r6$indices$id_col_meta = 'analystId'
-  r6$indices$id_col_data = 'ID'
+    r6$indices$id_col_meta = 'analystId'
+    r6$indices$id_col_data = 'ID'
 
-  r6$indices$group_col = 'genoType'
-  r6$indices$batch_col = 'batchNumber'
-  r6$set_raw_meta()
+    r6$indices$group_col = unique(meta_data$defaultColumn)[1]
+    r6$indices$batch_col = 'batchNumber'
+    r6$set_raw_meta()
 
-  type_vector = r6$tables$imp_meta[, 'cellType']
-  blank_idx = grep(pattern = 'blank',
-                   x = type_vector,
-                   ignore.case = TRUE)
-  qc_idx = grep(pattern = 'Quality',
-                x = type_vector,
-                ignore.case = TRUE)
-  pool_idx = grep(pattern = 'Pool',
+    type_vector = r6$tables$imp_meta[, "sampleType"]
+    blank_idx = grep(pattern = 'blank',
+                     x = type_vector,
+                     ignore.case = TRUE)
+    qc_idx = grep(pattern = 'Quality',
                   x = type_vector,
                   ignore.case = TRUE)
+    pool_idx = grep(pattern = 'Pool',
+                    x = type_vector,
+                    ignore.case = TRUE)
 
-  sample_idx = 1:nrow(r6$tables$imp_meta)
-  sample_idx = setdiff(sample_idx, c(blank_idx, qc_idx, pool_idx))
+    sample_idx = 1:nrow(r6$tables$imp_meta)
+    sample_idx = setdiff(sample_idx, c(blank_idx, qc_idx, pool_idx))
 
-  r6$indices$idx_blanks = blank_idx
-  r6$indices$idx_qcs = qc_idx
-  r6$indices$idx_pools = pool_idx
-  r6$indices$idx_samples = sample_idx
+    r6$indices$idx_blanks = blank_idx
+    r6$indices$idx_qcs = qc_idx
+    r6$indices$idx_pools = pool_idx
+    r6$indices$idx_samples = sample_idx
 
-  r6$indices$rownames_blanks = rownames(r6$tables$imp_meta)[blank_idx]
-  r6$indices$rownames_qcs = rownames(r6$tables$imp_meta)[qc_idx]
-  r6$indices$rownames_pools = rownames(r6$tables$imp_meta)[pool_idx]
-  r6$indices$rownames_samples = rownames(r6$tables$imp_meta)[sample_idx]
+    r6$indices$rownames_blanks = rownames(r6$tables$imp_meta)[blank_idx]
+    r6$indices$rownames_qcs = rownames(r6$tables$imp_meta)[qc_idx]
+    r6$indices$rownames_pools = rownames(r6$tables$imp_meta)[pool_idx]
+    r6$indices$rownames_samples = rownames(r6$tables$imp_meta)[sample_idx]
 
-  r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
+    r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
+    # create the new groups for the blank group filtering
+    r6$tables$raw_meta[, "group_col_blank"] <- tolower(
+      paste(
+        r6$tables$raw_meta[, "sampleType"],
+        r6$tables$raw_meta[, "genoType"],
+        r6$tables$raw_meta[, "treatmentDiagnosis"],
+        r6$tables$raw_meta[, "parentCellLineBrainregion"],
+        # r6$tables$raw_meta[, "sex"],
+        r6$tables$raw_meta[, "cultureConditions"],
+        sep = "_")
+    )
 
-  # extract the blanks and the qc samples
-  r6$get_blank_table()
-  r6$get_qc_table()
+    # extract the blanks and the qc samples
+    r6$get_blank_table()
+    r6$get_qc_table()
 
-  r6$set_raw_data(apply_imputation = FALSE,
-                  impute_before = FALSE,
-                  apply_filtering = TRUE,
-                  imputation_function = 'minimum',
-                  val_threshold = 0.6,
-                  blank_multiplier = 2,
-                  sample_threshold = 0.8,
-                  group_threshold = 0.8,
-                  norm_col = '')
+    r6$set_raw_data(apply_imputation = FALSE,
+                    impute_before = FALSE,
+                    apply_filtering = TRUE,
+                    imputation_function = 'minimum',
+                    val_threshold = 0.6,
+                    blank_multiplier = 2,
+                    sample_threshold = 0.8,
+                    group_threshold = 0.6,
+                    norm_col = '')
 
-  r6$derive_data_tables()
+    r6$derive_data_tables()
+
+    # set which variables are available for colering
+    idx_meta <- apply(r6$tables$raw_meta[, r6$hardcoded_settings$meta_column], 2, function(x) {
+      length(unique(x)) >= 2
+    })
+
+    r6$hardcoded_settings$meta_column <- r6$hardcoded_settings$meta_column[idx_meta]
+  } else {
+    r6 <- Lips_exp$new(name = "Error",
+                       id = id,
+                       slot = slot,
+                       preloaded = TRUE,
+                       data_file = data_files,
+                       experiment_id = experiment_id)
+  }
 
   return(r6)
 }
