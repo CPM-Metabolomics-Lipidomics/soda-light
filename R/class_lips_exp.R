@@ -897,7 +897,9 @@ Lips_exp = R6::R6Class(
       fig = plotly::plot_ly(colors = unname(colors),
                             width = width,
                             height = height,
-                            hovertemplate = paste("Lipid class: %{x}<br>Value: %{y:.3g}%"))
+                            hovertemplate = paste("Lipid class: %{x}<br>",
+                                                  "Value: %{y:.3g}%",
+                                                  "<extra></extra>"))
       for (col in colnames(plot_table)) {
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
                                 name = col, color = colors[col], type  = "bar")
@@ -968,7 +970,12 @@ Lips_exp = R6::R6Class(
       j = 1
       for (c in class_list) {
         i = 1
-        subplot = plot_ly(colors = unname(colors), width = width, height = height)
+        subplot = plot_ly(colors = unname(colors),
+                          width = width,
+                          height = height,
+                          hovertemplate = paste("Group: %{x}<br>",
+                                                "Value: %{y:.3g}%",
+                                                "<extra></extra>"))
         for(g in groups){
           if(g %in% cleared_groups) {
             first_bool = FALSE
@@ -996,7 +1003,9 @@ Lips_exp = R6::R6Class(
                               marker = list(color = 'rgb(100,100,100)'), alpha = 1,
                               legendgroup=i, showlegend = FALSE,
                               text = s,
-                              hoverinfo = "text")
+                              hoverinfo = "text",
+                              hovertemplate = paste("Median: %{median:0.3g}",
+                                                    "<extra></extra>"))
 
           # add the title to the plot
           subplot = subplot |>
