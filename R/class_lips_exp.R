@@ -894,7 +894,10 @@ Lips_exp = R6::R6Class(
 
       # Produce the plot
       i = 1
-      fig = plotly::plot_ly(colors = unname(colors), width = width, height = height)
+      fig = plotly::plot_ly(colors = unname(colors),
+                            width = width,
+                            height = height,
+                            hovertemplate = paste("Lipid class: %{x}<br>Value: %{y:.3g}%"))
       for (col in colnames(plot_table)) {
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
                                 name = col, color = colors[col], type  = "bar")
