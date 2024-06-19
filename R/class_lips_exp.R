@@ -898,7 +898,8 @@ Lips_exp = R6::R6Class(
                             width = width,
                             height = height,
                             hovertemplate = paste("Lipid class: %{x}<br>",
-                                                  "Value: %{y:.3g}%",
+                                                  "Value: %{y:.3g}%<br>",
+                                                  paste0("Group: ", g),
                                                   "<extra></extra>"))
       for (col in colnames(plot_table)) {
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
@@ -1003,9 +1004,7 @@ Lips_exp = R6::R6Class(
                               marker = list(color = 'rgb(100,100,100)'), alpha = 1,
                               legendgroup=i, showlegend = FALSE,
                               text = s,
-                              hoverinfo = "text",
-                              hovertemplate = paste("Median: %{median:0.3g}",
-                                                    "<extra></extra>"))
+                              hoverinfo = "text")
 
           # add the title to the plot
           subplot = subplot |>
