@@ -1622,7 +1622,11 @@ qc_trend_plot <- function(data = NULL,
     ggplot2::ggplot(ggplot2::aes(x = ID,
                                  y = log2fc,
                                  group = lipid,
-                                 color = lipidclass)) +
+                                 color = lipidclass,
+                                 text = paste("Sample name:", ID, "<br>",
+                                              "Log2(fold change): ", round(log2fc, 3), "<br>",
+                                              "Lipid: ", lipid, "<br>",
+                                              "Lipid class:", lipidclass))) +
     ggplot2::geom_line(alpha = 0.3) +
     ggplot2::geom_point(size = 1,
                         alpha = 0.3) +
@@ -1638,7 +1642,8 @@ qc_trend_plot <- function(data = NULL,
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "bottom")
 
-  ply <- plotly::ggplotly(p)
+  ply <- plotly::ggplotly(p,
+                          tooltip = "text")
 
   ply <- plotly::layout(ply,
                         xaxis = list(tickangle = 45))
@@ -1688,10 +1693,12 @@ qc_rsd_violin <- function(data = NULL,
                   y = "Relative standard deviation") +
     ggplot2::theme_minimal()
 
-  ply <- plotly::ggplotly(p)
+  ply <- plotly::ggplotly(p,
+                          tooltip = "none")
 
   ply <- plotly::layout(ply,
-                        xaxis = list(tickangle = 45))
+                        xaxis = list(tickangle = 45)) |>
+    plotly::style(hoverinfo = "none")
 
   return(ply)
 }
