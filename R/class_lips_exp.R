@@ -1535,7 +1535,10 @@ Lips_exp = R6::R6Class(
         y = ~y,
         type = "bar",
         showlegend = FALSE,
-        color = I("gray")
+        color = I("gray"),
+        hovertemplate = paste("Number of carbons: %{x}<br>",
+                              "Proportion: %{y:.3g}<br>",
+                              "<extra></extra>")
       ) |>
         plotly::layout(
           xaxis = list(showticklabels = FALSE,
@@ -1559,7 +1562,10 @@ Lips_exp = R6::R6Class(
         type = "bar",
         showlegend = FALSE,
         orientation = "h",
-        color = I("gray")
+        color = I("gray"),
+        hovertemplate = paste("Number of double bonds: %{y}<br>",
+                              "Proportion: %{x:.3g}<br>",
+                              "<extra></extra>")
       ) |>
         plotly::layout(
           xaxis = list(
@@ -1594,7 +1600,10 @@ Lips_exp = R6::R6Class(
         y = ~y,
         type = "bar",
         showlegend = FALSE,
-        color = I("gray")
+        color = I("gray"),
+        hovertemplate = paste("Number of carbons: %{x}<br>",
+                              "Proportion: %{y:.3g}<br>",
+                              "<extra></extra>")
       )|>
         plotly::layout(
           xaxis = list(
@@ -1620,7 +1629,10 @@ Lips_exp = R6::R6Class(
         type = "bar",
         showlegend = FALSE,
         orientation = "h",
-        color = I("gray")
+        color = I("gray"),
+        hovertemplate = paste("Number of double bonds: %{y}<br>",
+                              "Proportion: %{x:.3g}<br>",
+                              "<extra></extra>")
       ) |>
         plotly::layout(
           yaxis = list(
