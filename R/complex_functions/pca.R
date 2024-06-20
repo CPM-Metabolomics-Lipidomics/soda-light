@@ -230,7 +230,12 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
     colors <- grDevices::colorRampPalette(colors)(length(unique(groups)))
     colors <- setNames(colors, unique(groups))
 
-    plot = plotly::plot_ly(data = data_table, width = width, height = height)
+    plot = plotly::plot_ly(data = data_table,
+                           width = width,
+                           height = height,
+                           hovertemplate = paste("(%{x:.3g}, %{y:.3g})<br>",
+                                                 "%{text}",
+                                                 "<extra></extra>"))
 
     if(is.null(groups_shape)) {
       plot <- plot %>%
@@ -296,7 +301,12 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
     colors <- grDevices::colorRampPalette(colors)(length(unique(groups)))
     colors <- setNames(colors, unique(groups))
 
-    plot = plot_ly(data = data_table, width = width, height = height) %>%
+    plot = plot_ly(data = data_table,
+                   width = width,
+                   height = height,
+                   hovertemplate = paste("(%{x:.3g}, %{y:.3g})<br>",
+                                         "%{text}",
+                                         "<extra></extra>")) %>%
 
       add_segments(
         x = 0,
