@@ -1403,7 +1403,9 @@ Lips_exp = R6::R6Class(
 
       # plotting
       i <- 1
-      fig <- plotly::plot_ly(colors = unname(colors), width = width, height = height)
+      fig <- plotly::plot_ly(colors = unname(colors),
+                             width = width,
+                             height = height)
       for (grp in unique(plot_table$group)) {
         fig <- fig |>
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
@@ -1412,8 +1414,13 @@ Lips_exp = R6::R6Class(
                             color = colors[i],
                             type = "bar",
                             name = grp,
+                            text = ~stdev,
                             error_y = ~ list(array = stdev,
-                                             color = "#000000"))
+                                             color = "#000000"),
+                            hovertemplate = paste("Fatty acid chain: %{x}<br>",
+                                                  "Value: %{y:.3g} +/- %{text:0.3g}<br>",
+                                                  paste0("Group: ", grp),
+                                                  "<extra></extra>"))
         fig <- fig |>
           plotly::layout(legend = list(orientation = 'h',
                                        xanchor = "center",
