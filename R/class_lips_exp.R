@@ -25,7 +25,7 @@ Lips_exp = R6::R6Class(
       class_distribution = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
-        color_palette = 'Spectral',
+        color_palette = 'Set1',
         img_format = "png"
       ),
 
@@ -33,7 +33,7 @@ Lips_exp = R6::R6Class(
       class_comparison = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
-        color_palette = 'Spectral',
+        color_palette = 'Set1',
         img_format = "png"
       ),
 
@@ -50,7 +50,7 @@ Lips_exp = R6::R6Class(
         fc_threshold = 2,
         marker_size = 8,
         opacity = 1,
-        color_palette = 'Spectral',
+        color_palette = 'Set1',
         selected_function = "mean",
         selected_test = "t-Test",
         img_format = "png"
@@ -85,7 +85,7 @@ Lips_exp = R6::R6Class(
         displayed_pc_2 = 2,
         completeObs = F,
         displayed_plots = 'both',
-        colors_palette = 'Spectral',
+        colors_palette = 'Set1',
         img_format = "png"
       ),
 
@@ -98,7 +98,7 @@ Lips_exp = R6::R6Class(
         selected_view = "lipidclass",
         selected_lipidclass = "All",
         fa_norm = FALSE,
-        color_palette = "Spectral",
+        color_palette = "Set1",
         img_format = "png"
       ),
 
@@ -736,7 +736,7 @@ Lips_exp = R6::R6Class(
                               fc_threshold = 2,
                               marker_size = 8,
                               opacity = 1,
-                              color_palette = 'Spectral',
+                              color_palette = 'Set1',
                               selected_function = "mean",
                               selected_test = "t-Test",
                               img_format = "png")
@@ -768,7 +768,7 @@ Lips_exp = R6::R6Class(
                      displayed_pc_2 = 2,
                      completeObs = F,
                      displayed_plots = 'both',
-                     colors_palette = 'Spectral',
+                     colors_palette = 'Set1',
                      img_format = "png")
 
       self$param_fa_analysis_plot(data_table = self$tables$total_norm_data,
@@ -779,7 +779,7 @@ Lips_exp = R6::R6Class(
                                   selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
                                   selected_fa = self$params$fa_analysis_plot$selected_fa,
                                   fa_norm = self$params$fa_analysis_plot$fa_norm,
-                                  color_palette = 'Spectral',
+                                  color_palette = 'Set1',
                                   img_format = "png")
 
       self$param_fa_comp_plot(
