@@ -1,9 +1,146 @@
 # Utility functions
-base::source('./R/complex_functions/volcano.R')
-base::source('./R/complex_functions/pca.R')
+#--------------------------------------------------------- Color functions ----
+
+colors_switch = function(selection) {
+  switch(EXPR = selection,
+         'Blues' = 9,
+         'BuGn' = 9,
+         'BuPu' = 9,
+         'GnBu' = 9,
+         'Greens' = 9,
+         'Greys' = 9,
+         'Oranges' = 9,
+         'OrRd' = 9,
+         'PuBu' = 9,
+         'PuBuGn' = 9,
+         'PuRd' = 9,
+         'Purples' = 9,
+         'RdPu' = 9,
+         'Reds' = 9,
+         'YlGn' = 9,
+         'YlGnBu' = 9,
+         'YlOrBr' = 9,
+         'YlOrRd' = 9,
+         'BrBG' = 11,
+         'PiYG' = 11,
+         'PRGn' = 11,
+         'PuOr' = 11,
+         'RdBu' = 11,
+         'RdGy' = 11,
+         'RdYlBu' = 11,
+         'RdYlGn' = 11,
+         'Spectral' = 11,
+         'Accent' = 8,
+         'Dark2' = 8,
+         'Paired' = 12,
+         'Pastel1' = 9,
+         'Pastel2' = 8,
+         'Set1' = 9,
+         'Set2' = 8,
+         'Set3' = 12,
+         'Magma' = 256,
+         'Inferno' = 256,
+         'Plasma' = 256,
+         'Viridis' = 256,
+         'Cividis' = 256,
+         'Rocket' = 256,
+         'Mako' = 256,
+         'Turbo' = 256,
+         'plotly_1' = 10,
+         'plotly_2' = 10,
+         'ggplot2' = 10
+  )
+}
+
+viridis_switch = function(color_palette) {
+  switch(EXPR = color_palette,
+         "Magma" = "A",
+         "Inferno" = "B",
+         "Plasma" = "C",
+         "Viridis" = "D",
+         "Cividis" = "E",
+         "Rocket" = "F",
+         "Mako" = "G",
+         "Turbo" = "H"
+  )
+}
+
+custom_colors_switch = function(color_palette) {
+  switch(EXPR = color_palette,
+         'plotly_1' = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", '#8c564b', "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"),
+         'plotly_2' = c("#636efa", "#ef553b", "#00cc96", "#d62728", "#9467bd", '#8c564b', "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"),
+         'ggplot2' = c("#F8766D", "#D89000", "#A3A500", "#39B600", "#00BF7D", "#00BFC4", "#00B0F6", "#9590FF", "#E76BF3", "#FF62BC")
+  )
+}
+
+get_colors = function(color_count, color_palette) {
+  if (color_palette %in% c('Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo')) {
+    short_name = viridis_switch(color_palette)
+    color_palette =  viridisLite::viridis(n = color_count, alpha = 1, begin = 0, end = 1, direction = -1, option = short_name)
+  } else if (color_palette %in% c('plotly_1', 'plotly_2', 'ggplot2')) {
+    color_palette = custom_colors_switch(color_palette)
+  } else {
+    color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+  }
+  return(color_palette)
+}
+
+create_color_scale = function(color_palette) {
+  # Calculate evenly spaced positions for each color
+  positions = base::seq(0, 1, length.out = length(color_palette))
+
+  # Combine the positions and colors into the correct format for Plotly
+  custom_colorscale = stats::setNames(as.list(color_palette), as.character(positions))
+
+  # Convert the list to the format Plotly expects (list of lists with position and color)
+  plotly_colorscale = lapply(names(custom_colorscale), function(x) c(as.numeric(x), custom_colorscale[[x]]))
+  return(plotly_colorscale)
+}
+
+get_color_palette = function(groups, color_palette, reverse_color_palette = F, force_scale = F, force_list = F) {
+
+  # Checks
+  if (force_scale & force_list) {
+    stop("force_scale and force_list cannot both be TRUE")
+  }
+
+  # Get unique groups
+  unique_groups = sort(unique(groups))
+
+  # Get the color palette values
+  color_count = colors_switch(color_palette)
+  color_palette = get_colors(color_count = color_count, color_palette = color_palette)
+  if (reverse_color_palette) {
+    color_palette = base::rev(color_palette)
+  }
+
+  # Is data numeric or string
+  if (is_coercible_to_numeric(groups)) {
+    groups = base::as.numeric(groups)
+
+    # Is data continuous or discrete
+    if (((length(unique_groups) > 25) | force_scale) & !force_list) {
+      # If continuous, export a color scale (for plotly)
+      out_colors = create_color_scale(color_palette)
+      print("Rico")
+      print(out_colors)
+    } else {
+      # If low number of groups, export simple dict
+      out_colors = grDevices::colorRampPalette(color_palette)(length(unique_groups))
+      out_colors = ggplot2::scale_color_gradientn(colours = color_palette, limits = range(unique_groups))
+      out_colors = out_colors$rescale(unique_groups)
+      out_colors = color_palette[findInterval(out_colors, seq(min(out_colors), max(out_colors), length.out = length(color_palette)))]
+      out_colors = setNames(out_colors, as.character(unique_groups))
+    }
+  } else {
+    # For string categorical data, export a simple dict
+    out_colors = grDevices::colorRampPalette(color_palette)(length(unique_groups))
+    out_colors = setNames(out_colors, as.character(unique_groups))
+  }
+  return(out_colors)
+}
 
 #--------------------------------------------------------- Switch functions ----
-
 experiment_switch = function(selection) {
   switch(EXPR = selection,
          'Lipidomics' = 'lips',
@@ -1184,6 +1321,526 @@ get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, 
               "p_value_bh_adj" = p_value_bh_adj))
 }
 
+#------------------------------------------------------------ Volcano plot -----
+volcano_main = function(fc_vals = volcano_table$fold_change,
+                        p_vals = volcano_table$q_val_bh,
+                        names = rownames(volcano_table),
+                        y_label = '-Log10(p-value)',
+                        left_label = 'Left',
+                        right_label = 'Right',
+                        groups = NULL,
+                        displayed_plot = 'main',
+                        color_palette = 'Spectral',
+                        p_val_threshold = 0.05,
+                        fc_threshold = 2,
+                        marker_size = 6,
+                        opacity = 1) {
+
+  # Checks
+  if (!(displayed_plot %in% c('main', 'all', 'left', 'right', 'top'))) {
+    stop("displayed_plot should be one of ['main', 'all', 'left', 'right', 'top']")
+  }
+
+  data = data.frame(
+    fold_change = fc_vals,
+    p_values = p_vals,
+    names = names
+  )
+
+  if(nchar(left_label) != nchar(right_label)) {
+    if(nchar(left_label) > nchar(right_label)) {
+      num <- nchar(left_label) - nchar(right_label)
+      r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;", paste(rep("&nbsp;", num), collapse = ""))
+      l_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    } else {
+      num <- nchar(right_label) - nchar(left_label)
+      r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+      l_label <- paste0(paste(rep("&nbsp;", num), collapse = ""), "&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    }
+  } else {
+    r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+    l_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+  }
+  plot_label = paste0(l_label, ' vs ', r_label)
+
+  # Format data
+  data$log2_fold_change = log2(data$fold_change)
+  data$log10_p_values = -log10(data$p_values)
+
+  if (is.null(groups)) {
+    data$groups = 'Inconclusive'
+    data$groups[(data$p_values > p_val_threshold) & (data$log2_fold_change < log2(fc_threshold)) & (data$log2_fold_change > -log2(fc_threshold))] = 'Not significant'
+    data$groups[((data$p_values < p_val_threshold) | (is.na(data$p_values))) & (data$log2_fold_change > log2(fc_threshold))] = "Overexpressed"
+    data$groups[((data$p_values < p_val_threshold) | (is.na(data$p_values))) & (data$log2_fold_change < -log2(fc_threshold))] = "Underexpressed"
+    colors = setNames(c('#bebebe', '#787878', '#FF0000', '#0000FF'), c('Not significant', 'Inconclusive', 'Overexpressed', 'Underexpressed'))
+    data$color = unname(colors[data$groups])
+
+  } else {
+    data$groups = as.character(groups)
+    # colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+    # colors = colorRampPalette(colors)(length(unique(groups)))
+    # colors = setNames(colors, unique(groups))
+    colors <- get_color_palette(groups = groups,
+                                color_palette = color_palette)
+    data$color = unname(colors[data$groups])
+  }
+
+  # Add count data
+  replacement_vector = table(data$groups)
+  original_names = names(replacement_vector)
+  replacement_vector = paste0(names(replacement_vector), ' (', replacement_vector, ')')
+  names(replacement_vector) = original_names
+  data$groups = replacement_vector[data$groups]
+
+  # Produce the data tables & plots
+  if (length(which(is.na(data$log10_p_values))) > 0) { # Top violin
+    top_data = data[which(is.na(data$log10_p_values)),]
+    data = data[-which(is.na(data$log10_p_values)),]
+    inf_idx = which(base::is.infinite(top_data$log2_fold_change))
+    if(length(inf_idx) > 0) {
+      top_data = top_data[-inf_idx, ]
+    }
+    print(paste0('Dropped ', length(inf_idx), ' features with no FC nor p-values.'))
+
+    top_violin = plot_volcano_violin(data = top_data,
+                                     threshold = log2(fc_threshold),
+                                     side = 'top',
+                                     opacity = opacity,
+                                     marker_size = marker_size,
+                                     show_legend = F)
+
+  } else {top_data = NULL}
+
+  if (length(which(data$fold_change == -Inf)) > 0) { # Left violin
+    left_data = data[which(data$fold_change == -Inf),]
+    data = data[-which(data$fold_change == -Inf),]
+
+    left_violin = plot_volcano_violin(data = left_data,
+                                      threshold = -log10(p_val_threshold),
+                                      side = 'left',
+                                      label = left_label,
+                                      y_label = y_label,
+                                      opacity = opacity,
+                                      marker_size = marker_size,
+                                      show_legend = F)
+
+  } else {left_data = NULL}
+
+  if (length(which(data$fold_change == Inf)) > 0) { # right violin
+    right_data = data[which(data$fold_change == Inf),]
+    data = data[-which(data$fold_change == Inf),]
+
+    right_violin = plot_volcano_violin(data = right_data,
+                                       threshold = -log10(p_val_threshold),
+                                       side = 'right',
+                                       label = right_label,
+                                       y_label = y_label,
+                                       opacity = opacity,
+                                       marker_size = marker_size,
+                                       show_legend = F)
+
+  } else {right_data = NULL}
+
+
+
+  # Main plot y_label
+  main_plot = plot_volcano(data = data,
+                           label = plot_label,
+                           marker_size = marker_size,
+                           p_val_threshold = p_val_threshold,
+                           fc_threshold = fc_threshold,
+                           opacity = opacity,
+                           y_axis_title = y_label,
+                           show_y_title = T)
+
+  # Blank plot
+  blank_plot = plotly::plot_ly(type = 'scatter', mode = 'markers')
+  blank_plot = plotly::layout(blank_plot,
+                              title = 'Error',
+                              xaxis = list(zeroline = F,
+                                           showticklabels = F,
+                                           showgrid = F),
+                              yaxis = list(zeroline = F,
+                                           showticklabels = F,
+                                           showgrid = F))
+
+
+
+  if (is.null(left_data) & is.null(right_data) & is.null(top_data) | (displayed_plot == 'main')) { # Only main
+
+    out_plot = main_plot
+
+  } else if (!is.null(top_data) & (displayed_plot == 'top')) { # Export top violin
+
+    out_plot = top_violin
+
+  } else if (!is.null(left_data) & (displayed_plot == 'left')) { # Export left violin
+
+    out_plot = left_violin
+
+  } else if (!is.null(right_data) & (displayed_plot == 'right')) { # Export right violin
+
+    out_plot = right_violin
+
+
+  } else if (is.null(left_data) & is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top only
+
+    out_plot = plotly::subplot(
+      top_violin,
+      main_plot,
+      nrows = 2,
+      shareX = TRUE,
+      titleY = TRUE,
+      heights = c(0.1, 0.9)
+    )
+
+  } else if (!is.null(left_data) & is.null(right_data) & is.null(top_data) & (displayed_plot == 'all')) { # Left only
+
+    out_plot = plotly::subplot(
+      list(left_violin, main_plot),
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      widths = c(0.1, 0.9)
+    )
+
+  } else if (is.null(left_data) & !is.null(right_data) & is.null(top_data) & (displayed_plot == 'all')) { # Right only
+
+    out_plot = plotly::subplot(
+      list(main_plot, right_violin),
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      widths = c(0.9, 0.1)
+    )
+
+  } else if (!is.null(left_data) & !is.null(right_data) & is.null(top_data) & (displayed_plot == 'all')) { # Left and Right
+
+    out_plot = plotly::subplot(
+      matrix(list(left_violin, main_plot, right_violin),
+             ncol = 3, byrow = TRUE),
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      widths = c(0.1, 0.8, 0.1)
+    )
+
+  } else if (!is.null(left_data) & !is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # All violins
+
+    out_plot = plotly::subplot(
+      list(blank_plot, top_violin, blank_plot,
+           left_violin, main_plot, right_violin),
+      nrows = 2,
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      margin = 0.02,
+      widths = c(0.1, 0.8, 0.1),
+      heights = c(0.1, 0.9)
+    )
+
+  } else if (!is.null(left_data) & is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top and left
+
+    out_plot = plotly::subplot(
+      list(blank_plot, top_violin,
+           left_violin, main_plot),
+      nrows = 2,
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      margin = 0.02,
+      widths = c(0.1, 0.9),
+      heights = c(0.1, 0.9)
+    )
+
+  } else if (is.null(left_data) & !is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top and right
+
+    out_plot = plotly::subplot(
+      list(top_violin, blank_plot,
+           main_plot, right_violin),
+      nrows = 2,
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      margin = 0.02,
+      widths = c(0.9, 0.1),
+      heights = c(0.1, 0.9)
+    )
+
+  } else {
+    warning('Selected plot unavailable, returning blank.')
+    out_plot = blank_plot
+  }
+
+  return(out_plot)
+
+}
+
+plot_volcano_violin = function(data, threshold, side, label, y_label, opacity = 1, marker_size = 6, show_legend = F) {
+
+  if (!(side %in% c('left', 'right', 'top'))) {
+    stop('side must be in [left, right, top]')
+  }
+
+  if (side == 'left') {
+    col_line = 'blue'
+    col_fill = 'lightblue'
+  } else if (side == 'right') {
+    col_line = 'red'
+    col_fill = 'pink'
+  } else if (side == 'top') {
+    return(plot_volcano_violin_top(data = data,
+                                   threshold = threshold,
+                                   opacity = opacity,
+                                   marker_size = marker_size,
+                                   show_legend = show_legend))
+  }
+
+  x_val = paste0(label, ' only')
+
+  p = plotly::plot_ly()
+
+  # add violin
+  p = plotly::add_trace(p,
+                        y = data$log10_p_values,
+                        x = x_val, type = "violin",
+                        box = list(visible = FALSE),
+                        line = list(color = 'darkgray'),
+                        fillcolor = 'ghostwhite',
+                        meanline = list(visible = FALSE),
+                        opacity = opacity,
+                        points = FALSE,
+                        name = data$groups[1],
+                        legendgroup = data$groups[1],
+                        hoverinfo = 'none',
+                        showlegend = F)
+
+  # add the points
+  for (group in unique(data$groups)) {
+    group_table = data[data$groups == group, ]
+    # get the significant ones
+    idx_signif <- group_table$log10_p_values >= threshold
+
+    # opacity
+    group_table$opacity[idx_signif] <- opacity
+    group_table$opacity[!idx_signif] <- 0.6 * opacity
+
+    p = plotly::add_trace(p,
+                          type = "scatter",
+                          mode = "markers",
+                          y = group_table$log10_p_values,
+                          x = x_val,
+                          marker = list(size = marker_size,
+                                        color = group_table$color[1],
+                                        opacity = group_table$opacity,
+                                        line = list(width = 0.5, color = 'white')),
+                          name = group,
+                          legendgroup = group,
+                          text = group_table$names,
+                          hoverinfo = 'text',
+                          showlegend = show_legend)
+  }
+
+  p = plotly::layout(p,
+                     shapes = list(
+                       list(
+                         type = "line",
+                         x0 = -0.3,
+                         x1 = 0.3,
+                         y0 = threshold,
+                         y1 = threshold,
+                         line = list(color = "black", width = 1, dash = "dot")
+                       )
+                     ),
+                     xaxis = list(
+                       title = list(
+                         text = x_val
+                       )
+                     ),
+                     yaxis = list(
+                       title = list(
+                         text = y_label
+                       )
+                     )
+  )
+
+  return(p)
+}
+
+plot_volcano_violin_top = function(data,
+                                   threshold,
+                                   opacity,
+                                   marker_size,
+                                   show_legend) {
+
+  p = plotly::plot_ly()
+
+  p = plotly::add_trace(p,
+                        y = 'No p-value',
+                        x = data$log2_fold_change,
+                        type = "violin",
+                        box = list(visible = FALSE),
+                        line = list(color = 'darkgray'),
+                        fillcolor = 'ghostwhite',
+                        meanline = list(visible = F),
+                        opacity = opacity,
+                        points = FALSE,
+                        name = 'Not significant',
+                        legendgroup = 'Not significant',
+                        hoverinfo = 'none',
+                        showlegend = F,
+                        orientation = 'h')
+
+  for (group in unique(data$groups)) {
+    group_table = data[data$groups == group,]
+
+    p = plotly::add_trace(p,
+                          type = "scatter",
+                          mode = "markers",
+                          y = 'No p-value',
+                          x = group_table$log2_fold_change,
+                          marker = list(size = marker_size, color = group_table$color[1], opacity = opacity, line = list(width = 0.5, color = 'white')),
+                          name = group,
+                          legendgroup = group,
+                          text = group_table$names,
+                          hoverinfo = 'text',
+                          showlegend = show_legend)
+
+  }
+
+  p = plotly::layout(p,
+                     xaxis = list(title = "Log2(Fold Change)"),
+                     shapes = list(
+                       # Vertical line at x = -1
+                       list(
+                         type = "line",
+                         x0 = -threshold,
+                         x1 = -threshold,
+                         y0 = -0.3,
+                         y1 = 0.3,
+                         line = list(color = "black", width = 1, dash = "dot")
+                       ),
+                       # Vertical line at x = 1
+                       list(
+                         type = "line",
+                         x0 = threshold,
+                         x1 = threshold,
+                         y0 = -0.3,
+                         y1 = 0.3,
+                         line = list(color = "black", width = 1, dash = "dot")
+                       )
+                     ))
+  return(p)
+}
+
+plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05, fc_threshold = 2, opacity = 1, show_y_title = F , y_axis_title = '-Log10(p-value)') {
+
+  if (!show_y_title){
+    y_axis_title = NULL
+  }
+
+  main_plot = plotly::plot_ly()
+
+  sort_group <- sort_legend(text = data$groups)
+
+  for (group in sort_group) {
+    subset_data = data[data$groups == group, ]
+    # get the significant ones
+    idx_signif <- subset_data$p_values <= p_val_threshold
+
+    # opacity
+    subset_data$opacity[idx_signif] <- opacity
+    subset_data$opacity[!idx_signif] <- 0.6 * opacity
+
+    # significant data
+    main_plot = plotly::add_trace(
+      main_plot,
+      x = subset_data$log2_fold_change,
+      y = subset_data$log10_p_values,
+      text = subset_data$names,
+      color = I(subset_data$color),
+      type = "scatter",
+      mode = "markers",
+      marker = list(size = marker_size,
+                    opacity = subset_data$opacity,
+                    line = list(width = 0.5, color = 'white')),
+      legendgroup = group,
+      name = group,
+      showlegend = TRUE,
+      hoverinfo = 'text'
+    )
+  }
+
+  main_plot = plotly::layout(main_plot,
+                             title = list(text = label,
+                                          xref = "paper"),
+                             xaxis = list(title = "Log2(Fold Change)",
+                                          zeroline = T,
+                                          range = c(-ceiling(max(abs(data$log2_fold_change))),
+                                                    ceiling(max(abs(data$log2_fold_change)))
+                                          )
+                             ),
+                             yaxis = list(title = y_axis_title),
+                             hovermode = "closest",
+                             shapes = list(
+                               # Vertical line at x = -1
+                               list(
+                                 type = "line",
+                                 x0 = -log2(fc_threshold),
+                                 x1 = -log2(fc_threshold),
+                                 y0 = 0,
+                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
+                                 line = list(color = "black", width = 1, dash = "dot")
+                               ),
+                               # Vertical line at x = 1
+                               list(
+                                 type = "line",
+                                 x0 = log2(fc_threshold),
+                                 x1 = log2(fc_threshold),
+                                 y0 = 0,
+                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
+                                 line = list(color = "black", width = 1, dash = "dot")
+                               ),
+                               # Horizontal line at y = -log10(0.05)
+                               list(
+                                 type = "line",
+                                 x0 = -1.2 * round(max(abs(data$log2_fold_change))),
+                                 x1 = 1.2 * round(max(abs(data$log2_fold_change))),
+                                 y0 = -log10(p_val_threshold),
+                                 y1 = -log10(p_val_threshold),
+                                 line = list(color = "black", width = 1, dash = "dot")
+                               )
+                             ))
+  return(main_plot)
+}
+
+
+# sort the legend alphabetically and make sure numbers are sorted correctly
+sort_legend <- function(text = NULL) {
+  uniq_text <- unique(text)
+  # is the vector numeric
+  if(all(grepl(pattern = "^[0-9.]+ \\([0-9]*\\)$",
+               x = uniq_text))) {
+    num_text <- gsub(x = uniq_text,
+                     pattern = "^([0-9.]+) \\([0-9]*\\)$",
+                     replacement = "\\1")
+    idx <- sort(x = as.numeric(num_text),
+                index.return = TRUE)$ix
+    res <- uniq_text[idx]
+  } else {
+    idx <- sort(x = uniq_text,
+                index.return = TRUE)$ix
+    res <- uniq_text[idx]
+  }
+
+  return(res)
+}
 
 #------------------------------------------------------------ heatmap stuff ----
 calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
@@ -1227,6 +1884,395 @@ calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
   subplot$height <- subplot$height[subplot$height != 0]
 
   return(subplot)
+}
+
+
+#----------------------------------------------------------------- PCA plot ----
+pca_main = function(data_table, sample_groups = NULL, sample_groups_shape = NULL, feature_groups = NULL, nPcs = 2, displayed_pc_1 = 1, displayed_pc_2 = 2, pca_method = 'svd', completeObs = T, displayed_plots = "both", colors_palette = "Spectral", return_data = FALSE, width = NULL, height = NULL) {
+
+  # Check if arguments are valid
+  if (!(pca_method %in% pcaMethods::listPcaMethods())){
+    print(paste0('Invalid pca_method: must be one of [', paste(pcaMethods::listPcaMethods(), collapse = ', '), '], defaulting to svd'))
+    pca_method = 'svd'
+  }
+
+  if ((pca_method %in% c('robustPca', 'nlpca', 'llsImpute'))){
+    print(paste0(pca_method, ' is not currently supported, defaulting to svd'))
+    pca_method = 'svd'
+  }
+
+  if (!(displayed_plots %in% c('both', 'loadings', 'scores', 'variance'))){
+    print('Error: displayed_plots must be in both, loadings or scores')
+    return()
+  }
+
+  if (max(c(displayed_pc_1, displayed_pc_2)) > nPcs) {
+    print('At least one displayed PC outside of nPcs range, adjusting nPcs')
+    nPcs = max(c(displayed_pc_1, displayed_pc_2))
+  }
+
+  if (displayed_pc_1 == displayed_pc_2) {
+    print('displayed PCs are the same, defaulting to PC1 and PC2')
+    displayed_pc_1 = 1
+    displayed_pc_2 = 2
+  }
+
+  # Apply PCA
+  pca_data = pcaMethods::pca(object = data_table,
+                             method = pca_method,
+                             nPcs = nPcs,
+                             scale = "none",
+                             cv = "q2",
+                             completeObs = completeObs)
+
+  # Plot depending on the type requested
+  if (displayed_plots == 'both') {
+    fig = c()
+    fig[[1]] = plot_pca(x = pca_data@scores[,paste0('PC', displayed_pc_1)],
+                        y = pca_data@scores[,paste0('PC', displayed_pc_2)],
+                        label_1 = paste0('PC', displayed_pc_1),
+                        label_2 = paste0('PC', displayed_pc_2),
+                        weight_1 = round(pca_data@R2[displayed_pc_1], 3),
+                        weight_2 = round(pca_data@R2[displayed_pc_2], 3),
+                        names = rownames(data_table),
+                        type = 'scores',
+                        groups = sample_groups,
+                        groups_shape = sample_groups_shape,
+                        colors = colors_palette,
+                        marker_size = 8,
+                        width = width,
+                        height = height)
+
+
+    fig[[2]] = plot_pca(x = pca_data@loadings[, paste0('PC', displayed_pc_1)],
+                        y = pca_data@loadings[, paste0('PC', displayed_pc_2)],
+                        label_1 = paste0('PC', displayed_pc_1),
+                        label_2 = paste0('PC', displayed_pc_2),
+                        weight_1 = round(pca_data@R2[displayed_pc_1], 3),
+                        weight_2 = round(pca_data@R2[displayed_pc_2], 3),
+                        names = colnames(data_table),
+                        type = 'loadings',
+                        groups = feature_groups,
+                        colors = colors_palette,
+                        marker_size = 5,
+                        width = width,
+                        height = height)
+
+    fig = plotly::subplot(fig, nrows = 1, margin = 0.035, titleX = T, titleY = T)
+
+    fig = plotly::layout(fig, title = "PCA scores and loadings")
+
+
+  } else if (displayed_plots == 'loadings'){
+
+    fig = plot_pca(x = pca_data@loadings[, paste0('PC', displayed_pc_1)],
+                   y = pca_data@loadings[, paste0('PC', displayed_pc_2)],
+                   label_1 = paste0('PC', displayed_pc_1),
+                   label_2 = paste0('PC', displayed_pc_2),
+                   weight_1 = round(pca_data@R2[displayed_pc_1], 3),
+                   weight_2 = round(pca_data@R2[displayed_pc_2], 3),
+                   names = colnames(data_table),
+                   type = 'loadings',
+                   groups = feature_groups,
+                   colors = colors_palette,
+                   marker_size = 5,
+                   width = width,
+                   height = height)
+
+  } else if (displayed_plots == 'scores') {
+
+    fig = plot_pca(x = pca_data@scores[,paste0('PC', displayed_pc_1)],
+                   y = pca_data@scores[,paste0('PC', displayed_pc_2)],
+                   label_1 = paste0('PC', displayed_pc_1),
+                   label_2 = paste0('PC', displayed_pc_2),
+                   weight_1 = round(pca_data@R2[displayed_pc_1], 3),
+                   weight_2 = round(pca_data@R2[displayed_pc_2], 3),
+                   names = rownames(data_table),
+                   type = 'scores',
+                   groups = sample_groups,
+                   groups_shape = sample_groups_shape,
+                   colors = colors_palette,
+                   marker_size = 8,
+                   width = width,
+                   height = height)
+  } else if (displayed_plots == 'variance') {
+
+    fig = plot_explained_variance(variance_explained = pca_data@R2,
+                                  width = width,
+                                  height = height)
+  }
+
+  if (return_data) {
+    return(list(
+      pca_data = pca_data,
+      fig = fig))
+  } else {
+    return(fig)
+  }
+
+
+}
+
+
+plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, groups = NULL, groups_shape = NULL, colors = "Spectral", marker_size = 5, width = NULL, height = NULL) {
+
+  if (!(type %in% c("scores", "loadings"))) {
+    print('Error: type must either be scores or loadings.')
+    return()
+  }
+
+  if (is.null(groups) & (type == "scores")) { # Score plot without groups (should not exist)
+    data_table = data.frame(
+      x = x,
+      y = y,
+      names = names
+    )
+
+    conf_ellipse = ellipse::ellipse(x = stats::cov(cbind(data_table$x, data_table$y)),
+                                    centre = c(mean(data_table$x), mean(data_table$y)),
+                                    level = 0.95)
+
+    plot = plotly::plot_ly(data = data_table, width = width, height = height) %>%
+
+      add_markers(
+        x = ~x,
+        y = ~y,
+        text = ~names,
+        mode = "markers+text",
+        marker = list(size = marker_size),
+      ) %>%
+
+      add_trace(
+        data = as.data.frame(conf_ellipse),
+        x = ~x,
+        y = ~y,
+        mode = "lines",
+        line = list(color = 'gray',
+                    width = 1),
+        inherit = FALSE,
+        name = "Hotelling T2 (95%)",
+        showlegend = TRUE,
+        type = "scatter"
+      ) %>%
+
+      layout(
+        title = "PCA Scores Plot",
+        xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
+        yaxis = list(title = paste0(label_2, ' (', weight_2 * 100, '%)'), zeroline = TRUE)
+      )
+
+    return(plot)
+
+  } else if (is.null(groups) & (type == "loadings")) { # Loadings plot without groups
+
+    data_table = data.frame(
+      x = x,
+      y = y,
+      names = names
+    )
+
+    plot = plot_ly(data = data_table, width = width, height = height) %>%
+
+      add_segments(
+        x = 0,
+        y = 0,
+        xend = ~x,
+        yend = ~y,
+        line = list(dash = "solid"),
+        showlegend = FALSE
+      ) %>%
+
+      add_markers(
+        x = ~x,
+        y = ~y,
+        text = ~names,
+        mode = "markers+text",
+        marker = list(size = marker_size),
+        showlegend = FALSE
+      ) %>%
+
+      layout(
+        title = "PCA Loadings Plot",
+        xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
+        yaxis = list(title = paste0(label_2, ' (', weight_2 * 100, '%)'), zeroline = TRUE)
+      )
+
+    return(plot)
+
+  } else if (!is.null(groups) & (type == "scores")) { # Score plot with groups
+    data_table = data.frame(
+      x = x,
+      y = y,
+      names = names,
+      groups = as.factor(groups)
+    )
+
+    if(!is.null(groups_shape)) {
+      data_table$groups_shape <- as.factor(groups_shape)
+    }
+
+    conf_ellipse = ellipse::ellipse(x = stats::cov(cbind(data_table$x, data_table$y)),
+                                    centre = c(mean(data_table$x), mean(data_table$y)),
+                                    level = 0.95)
+
+    # Color score plot
+    colors <- get_color_palette(groups = groups,
+                                color_palette = colors)
+
+    plot = plotly::plot_ly(data = data_table,
+                           width = width,
+                           height = height,
+                           hovertemplate = paste("(%{x:.3g}, %{y:.3g})<br>",
+                                                 # "Group: %{color}<br>",
+                                                 "%{text}",
+                                                 "<extra></extra>"))
+
+    if(is.null(groups_shape)) {
+      plot <- plot %>%
+        add_markers(
+          x = ~x,
+          y = ~y,
+          text = ~names,
+          mode = "markers+text",
+          marker = list(size = marker_size),
+          color = ~groups,
+          colors = colors,
+          legendgroup = ~groups,
+          showlegend = TRUE
+        )
+    } else {
+      plot <- plot %>%
+        add_markers(
+          x = ~x,
+          y = ~y,
+          text = ~names,
+          mode = "markers+text",
+          marker = list(size = marker_size),
+          color = ~groups,
+          symbol = ~groups_shape,
+          colors = colors,
+          legendgroup = ~groups,
+          showlegend = TRUE
+        )
+    }
+
+    plot <- plot %>%
+      add_trace(
+        data = as.data.frame(conf_ellipse),
+        x = ~x,
+        y = ~y,
+        mode = "lines",
+        line = list(color = 'gray',
+                    width = 1),
+        inherit = FALSE,
+        name = "Hotelling T2 (95%)",
+        showlegend = TRUE,
+        type = "scatter"
+      ) %>%
+      layout(
+        title = "PCA Scores Plot",
+        xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
+        yaxis = list(title = paste0(label_2, ' (', weight_2 * 100, '%)'), zeroline = TRUE)
+      )
+
+    return(plot)
+
+  } else if (!is.null(groups) & (type == "loadings")) {
+
+    data_table = data.frame(
+      x = x,
+      y = y,
+      names = names,
+      groups = as.factor(groups)
+    )
+
+    # Colors loadings plot
+    colors <- get_color_palette(groups = groups,
+                                color_palette = colors)
+
+    plot = plot_ly(data = data_table,
+                   width = width,
+                   height = height,
+                   hovertemplate = paste("(%{x:.3g}, %{y:.3g})<br>",
+                                         # "Lipid class: %{color}<br>",
+                                         "%{text}",
+                                         "<extra></extra>")) %>%
+
+      add_segments(
+        x = 0,
+        y = 0,
+        xend = ~x,
+        yend = ~y,
+        line = list(dash = "solid"),
+        color = ~groups,
+        colors = colors,
+        legendgroup = ~groups,
+        showlegend = FALSE
+      ) %>%
+
+      add_markers(
+        x = ~x,
+        y = ~y,
+        text = ~names,
+        mode = "markers+text",
+        marker = list(size = marker_size),
+        color = ~groups,
+        colors = colors,
+        legendgroup = ~groups,
+        showlegend = TRUE
+      ) %>%
+
+      layout(
+        title = "PCA Loadings Plot",
+        xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
+        yaxis = list(title = paste0(label_2, ' (', weight_2 * 100, '%)'), zeroline = TRUE)
+      )
+
+    return(plot)
+
+  }
+}
+
+plot_explained_variance = function(variance_explained, width, height) {
+
+  if (variance_explained[1] < 1) {
+    variance_explained = variance_explained * 100
+  }
+
+  cumulative_variance = base::cumsum(variance_explained)
+
+  plot = plotly::plot_ly(x = 1:length(variance_explained),
+                         y = variance_explained,
+                         type = 'bar',
+                         name = 'Variance Explained',
+                         marker = list(color = 'lightblue'),
+                         width = width,
+                         height = height,
+                         hovertemplate = paste("PC: %{x}<br>",
+                                               "Var. expl.: %{y:.3g}%)<br>",
+                                               "<extra></extra>"))
+
+  # Add line for cumulative variance
+  plot = plot %>%
+    add_trace(x = 1:length(variance_explained),
+              y = cumulative_variance,
+              type = 'scatter',
+              mode = 'lines+markers',
+              name = 'Cumulative Variance',
+              line = list(color = 'red'),
+              marker = list(color = 'red'),
+              hovertemplate = paste("PC: %{x}<br>",
+                                    "Cum. var. expl.: %{y:.3g}%)<br>",
+                                    "<extra></extra>"))
+
+  # Customize the layout
+  plot = plot %>%
+    layout(title = "Variance Explained by Each PC",
+           xaxis = list(title = "Principal Component"),
+           yaxis = list(title = "Variance Explained (%)", rangemode = "tozero"),
+           barmode = 'overlay')
+
+  return(plot)
 }
 
 

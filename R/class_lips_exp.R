@@ -130,7 +130,9 @@ Lips_exp = R6::R6Class(
                         "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds",
                         "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
                         "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
-                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
+                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3",
+                        "Magma", "Inferno", "Plasma", "Viridis", "Cividis", "Rocket",
+                        "Mako", "Turbo", "plotly_1", "plotly_2", "ggplot2"),
       image_format = c("png", "svg", "jpeg", "webp"),
 
       # plot specific
@@ -888,9 +890,8 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$class_distribution_table = plot_table
 
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(group_list))
-      colors = setNames(colors, group_list)
+      colors <- get_color_palette(groups = group_list,
+                                  color_palette = color_palette)
 
       # Produce the plot
       i = 1
@@ -959,9 +960,8 @@ Lips_exp = R6::R6Class(
                               textangle = 270, showarrow = FALSE, xref='paper',
                               yref='paper')
 
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(groups))
-      colors = setNames(colors, groups)
+      colors <- get_color_palette(groups = groups,
+                                  color_palette = color_palette)
 
       # Plot list will be the list of subplots
       plot_list = c()
@@ -1206,9 +1206,18 @@ Lips_exp = R6::R6Class(
       # Get the color palette
       color_count = colors_switch(color_palette)
       color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      if (reverse_palette) {
-        color_palette = base::rev(color_palette)
-      }
+      print("Rico")
+      print(color_palette)
+      # color_palette <- get_color_palette(group = 1,
+      #                                    color_palette = color_palette,
+      #                                    force_scale = TRUE,
+      #                                    reverse_color_palette = reverse_palette)
+      # if (reverse_palette) {
+      #   # color_palette = base::rev(color_palette)
+      #   color_palette <- get_color_palette(groups = color_count,
+      #                                      color_palette = color_palette,
+      #                                      reverse_color_palette = TRUE)
+      # }
 
       # customise the x-axis labels
       # use group name and the last 3 number of the sample name
@@ -1373,9 +1382,11 @@ Lips_exp = R6::R6Class(
       self$tables$fa_analysis_table <- plot_table
 
       group_list = sort(unique(plot_table$group))
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(group_list))
-      colors = setNames(colors, group_list)
+      # colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+      # colors = colorRampPalette(colors)(length(group_list))
+      # colors = setNames(colors, group_list)
+      colors <- get_color_palette(groups = group_list,
+                                  color_palette = color_palette)
 
       # set the main title for FA overview per lipid class
       if(selected_view == "lipidclass") {
@@ -1463,11 +1474,10 @@ Lips_exp = R6::R6Class(
                             width = NULL,
                             height = NULL) {
       # Get the color palette
-      color_count = colors_switch(color_palette)
-      color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      # if (reverse_palette) {
-      #   color_palette = base::rev(color_palette)
-      # }
+      # color_count = colors_switch(color_palette)
+      # color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+      color_palette <- get_color_palette(groups = c(group_1, group_2),
+                                         color_palette = color_palette)
 
       ## left side
       # heatmap
