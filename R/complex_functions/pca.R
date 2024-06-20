@@ -359,7 +359,7 @@ plot_explained_variance = function(variance_explained, width, height) {
                          width = width,
                          height = height,
                          hovertemplate = paste("PC: %{x}<br>",
-                                               "Value: %{y:.3g}%)<br>",
+                                               "Var. expl.: %{y:.3g}%)<br>",
                                                "<extra></extra>"))
 
   # Add line for cumulative variance
@@ -370,7 +370,10 @@ plot_explained_variance = function(variance_explained, width, height) {
               mode = 'lines+markers',
               name = 'Cumulative Variance',
               line = list(color = 'red'),
-              marker = list(color = 'red'))
+              marker = list(color = 'red'),
+              hovertemplate = paste("PC: %{x}<br>",
+                                    "Cum. var. expl.: %{y:.3g}%)<br>",
+                                    "<extra></extra>"))
 
   # Customize the layout
   plot = plot %>%
