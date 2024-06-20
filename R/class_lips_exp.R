@@ -25,7 +25,7 @@ Lips_exp = R6::R6Class(
       class_distribution = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
-        color_palette = 'Spectral',
+        color_palette = 'Set1',
         img_format = "png"
       ),
 
@@ -33,7 +33,7 @@ Lips_exp = R6::R6Class(
       class_comparison = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
-        color_palette = 'Spectral',
+        color_palette = 'Set1',
         img_format = "png"
       ),
 
@@ -50,7 +50,7 @@ Lips_exp = R6::R6Class(
         fc_threshold = 2,
         marker_size = 8,
         opacity = 1,
-        color_palette = 'Spectral',
+        color_palette = 'Set1',
         selected_function = "mean",
         selected_test = "t-Test",
         img_format = "png"
@@ -85,7 +85,7 @@ Lips_exp = R6::R6Class(
         displayed_pc_2 = 2,
         completeObs = F,
         displayed_plots = 'both',
-        colors_palette = 'Spectral',
+        colors_palette = 'Set1',
         img_format = "png"
       ),
 
@@ -98,7 +98,7 @@ Lips_exp = R6::R6Class(
         selected_view = "lipidclass",
         selected_lipidclass = "All",
         fa_norm = FALSE,
-        color_palette = "Spectral",
+        color_palette = "Set1",
         img_format = "png"
       ),
 
@@ -736,7 +736,7 @@ Lips_exp = R6::R6Class(
                               fc_threshold = 2,
                               marker_size = 8,
                               opacity = 1,
-                              color_palette = 'Spectral',
+                              color_palette = 'Set1',
                               selected_function = "mean",
                               selected_test = "t-Test",
                               img_format = "png")
@@ -768,7 +768,7 @@ Lips_exp = R6::R6Class(
                      displayed_pc_2 = 2,
                      completeObs = F,
                      displayed_plots = 'both',
-                     colors_palette = 'Spectral',
+                     colors_palette = 'Set1',
                      img_format = "png")
 
       self$param_fa_analysis_plot(data_table = self$tables$total_norm_data,
@@ -779,7 +779,7 @@ Lips_exp = R6::R6Class(
                                   selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
                                   selected_fa = self$params$fa_analysis_plot$selected_fa,
                                   fa_norm = self$params$fa_analysis_plot$fa_norm,
-                                  color_palette = 'Spectral',
+                                  color_palette = 'Set1',
                                   img_format = "png")
 
       self$param_fa_comp_plot(
@@ -894,7 +894,13 @@ Lips_exp = R6::R6Class(
 
       # Produce the plot
       i = 1
-      fig = plotly::plot_ly(colors = unname(colors), width = width, height = height)
+      fig = plotly::plot_ly(colors = unname(colors),
+                            width = width,
+                            height = height,
+                            hovertemplate = paste("Lipid class: %{x}<br>",
+                                                  "Value: %{y:.3g}%<br>",
+                                                  paste0("Group: ", g),
+                                                  "<extra></extra>"))
       for (col in colnames(plot_table)) {
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
                                 name = col, color = colors[col], type  = "bar")
@@ -965,7 +971,12 @@ Lips_exp = R6::R6Class(
       j = 1
       for (c in class_list) {
         i = 1
-        subplot = plot_ly(colors = unname(colors), width = width, height = height)
+        subplot = plot_ly(colors = unname(colors),
+                          width = width,
+                          height = height,
+                          hovertemplate = paste("Group: %{x}<br>",
+                                                "Value: %{y:.3g}%",
+                                                "<extra></extra>"))
         for(g in groups){
           if(g %in% cleared_groups) {
             first_bool = FALSE
@@ -1392,7 +1403,9 @@ Lips_exp = R6::R6Class(
 
       # plotting
       i <- 1
-      fig <- plotly::plot_ly(colors = unname(colors), width = width, height = height)
+      fig <- plotly::plot_ly(colors = unname(colors),
+                             width = width,
+                             height = height)
       for (grp in unique(plot_table$group)) {
         fig <- fig |>
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
@@ -1401,8 +1414,13 @@ Lips_exp = R6::R6Class(
                             color = colors[i],
                             type = "bar",
                             name = grp,
+                            text = ~stdev,
                             error_y = ~ list(array = stdev,
-                                             color = "#000000"))
+                                             color = "#000000"),
+                            hovertemplate = paste("Fatty acid chain: %{x}<br>",
+                                                  "Value: %{y:.3g} +/- %{text:0.3g}<br>",
+                                                  paste0("Group: ", grp),
+                                                  "<extra></extra>"))
         fig <- fig |>
           plotly::layout(legend = list(orientation = 'h',
                                        xanchor = "center",
@@ -1517,7 +1535,10 @@ Lips_exp = R6::R6Class(
         y = ~y,
         type = "bar",
         showlegend = FALSE,
-        color = I("gray")
+        color = I("gray"),
+        hovertemplate = paste("Number of carbons: %{x}<br>",
+                              "Proportion: %{y:.3g}<br>",
+                              "<extra></extra>")
       ) |>
         plotly::layout(
           xaxis = list(showticklabels = FALSE,
@@ -1541,7 +1562,10 @@ Lips_exp = R6::R6Class(
         type = "bar",
         showlegend = FALSE,
         orientation = "h",
-        color = I("gray")
+        color = I("gray"),
+        hovertemplate = paste("Number of double bonds: %{y}<br>",
+                              "Proportion: %{x:.3g}<br>",
+                              "<extra></extra>")
       ) |>
         plotly::layout(
           xaxis = list(
@@ -1576,7 +1600,10 @@ Lips_exp = R6::R6Class(
         y = ~y,
         type = "bar",
         showlegend = FALSE,
-        color = I("gray")
+        color = I("gray"),
+        hovertemplate = paste("Number of carbons: %{x}<br>",
+                              "Proportion: %{y:.3g}<br>",
+                              "<extra></extra>")
       )|>
         plotly::layout(
           xaxis = list(
@@ -1602,7 +1629,10 @@ Lips_exp = R6::R6Class(
         type = "bar",
         showlegend = FALSE,
         orientation = "h",
-        color = I("gray")
+        color = I("gray"),
+        hovertemplate = paste("Number of double bonds: %{y}<br>",
+                              "Proportion: %{x:.3g}<br>",
+                              "<extra></extra>")
       ) |>
         plotly::layout(
           yaxis = list(

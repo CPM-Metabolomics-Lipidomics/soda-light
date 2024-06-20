@@ -225,7 +225,17 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
                                     centre = c(mean(data_table$x), mean(data_table$y)),
                                     level = 0.95)
 
-    plot = plotly::plot_ly(data = data_table, width = width, height = height)
+    # Color score plot
+    colors <- RColorBrewer::brewer.pal(as.numeric(colors_switch(colors)), colors)
+    colors <- grDevices::colorRampPalette(colors)(length(unique(groups)))
+    colors <- setNames(colors, unique(groups))
+
+    plot = plotly::plot_ly(data = data_table,
+                           width = width,
+                           height = height,
+                           hovertemplate = paste("(%{x:.3g}, %{y:.3g})<br>",
+                                                 "%{text}",
+                                                 "<extra></extra>"))
 
     if(is.null(groups_shape)) {
       plot <- plot %>%
@@ -286,7 +296,17 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
       groups = as.factor(groups)
     )
 
-    plot = plot_ly(data = data_table, width = width, height = height) %>%
+    # Colors loadings plot
+    colors <- RColorBrewer::brewer.pal(as.numeric(colors_switch(colors)), colors)
+    colors <- grDevices::colorRampPalette(colors)(length(unique(groups)))
+    colors <- setNames(colors, unique(groups))
+
+    plot = plot_ly(data = data_table,
+                   width = width,
+                   height = height,
+                   hovertemplate = paste("(%{x:.3g}, %{y:.3g})<br>",
+                                         "%{text}",
+                                         "<extra></extra>")) %>%
 
       add_segments(
         x = 0,
@@ -337,7 +357,10 @@ plot_explained_variance = function(variance_explained, width, height) {
                          name = 'Variance Explained',
                          marker = list(color = 'lightblue'),
                          width = width,
-                         height = height)
+                         height = height,
+                         hovertemplate = paste("PC: %{x}<br>",
+                                               "Var. expl.: %{y:.3g}%)<br>",
+                                               "<extra></extra>"))
 
   # Add line for cumulative variance
   plot = plot %>%
@@ -347,7 +370,10 @@ plot_explained_variance = function(variance_explained, width, height) {
               mode = 'lines+markers',
               name = 'Cumulative Variance',
               line = list(color = 'red'),
-              marker = list(color = 'red'))
+              marker = list(color = 'red'),
+              hovertemplate = paste("PC: %{x}<br>",
+                                    "Cum. var. expl.: %{y:.3g}%)<br>",
+                                    "<extra></extra>"))
 
   # Customize the layout
   plot = plot %>%
