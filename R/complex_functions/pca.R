@@ -357,7 +357,10 @@ plot_explained_variance = function(variance_explained, width, height) {
                          name = 'Variance Explained',
                          marker = list(color = 'lightblue'),
                          width = width,
-                         height = height)
+                         height = height,
+                         hovertemplate = paste("PC: %{x}<br>",
+                                               "Value: %{y:.3g}%)<br>",
+                                               "<extra></extra>"))
 
   # Add line for cumulative variance
   plot = plot %>%
