@@ -2,9 +2,8 @@
 #----------------------------------------------------------------- About UI ----
 about_ui = function(id){
   ns = shiny::NS(id)
-  shiny::fluidRow(
-    shiny::includeMarkdown("./help/welcome.md")
-  )
+
+  shiny::includeMarkdown("./man/about.md")
 }
 
 #----------------------------------------------------------- About server ----
