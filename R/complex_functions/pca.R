@@ -225,6 +225,11 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
                                     centre = c(mean(data_table$x), mean(data_table$y)),
                                     level = 0.95)
 
+    # Color score plot
+    colors <- RColorBrewer::brewer.pal(as.numeric(colors_switch(colors)), colors)
+    colors <- grDevices::colorRampPalette(colors)(length(unique(groups)))
+    colors <- setNames(colors, unique(groups))
+
     plot = plotly::plot_ly(data = data_table, width = width, height = height)
 
     if(is.null(groups_shape)) {
@@ -285,6 +290,11 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
       names = names,
       groups = as.factor(groups)
     )
+
+    # Colors loadings plot
+    colors <- RColorBrewer::brewer.pal(as.numeric(colors_switch(colors)), colors)
+    colors <- grDevices::colorRampPalette(colors)(length(unique(groups)))
+    colors <- setNames(colors, unique(groups))
 
     plot = plot_ly(data = data_table, width = width, height = height) %>%
 
