@@ -250,7 +250,7 @@ lipidomics_plot_list = function() {
                 # "Double bond plot" = "select_double_bond_plot",
                 # "Saturation index" = "select_satindex_plot",
                 "Fatty acid analysis" = "select_fa_analysis_plot",
-                "Fatty acid composition" = "select_fa_composition"
+                "Composition analysis" = "select_fa_composition"
   )
   return(plot_list)
 }
@@ -2462,21 +2462,41 @@ fa_comp_hm_calc.fa <- function(data_table = NULL,
   ## features
   feature_table$lipid <- rownames(feature_table)
   if(selected_lipidclass == "All") {
-    selected_features <- feature_table
+    # leave PA's out
+    selected_features <- feature_table[feature_table$lipid_class != "PA", ]
   } else {
     selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
   }
   # get the unique chain lengths and unsaturation
-  if(selected_lipidclass %in% c("Cer", "HexCER", "LacCER", "TG")) {
-    uniq_carbon <- c(min(selected_features$carbons_2),
-                     max(selected_features$carbons_2))
-    uniq_unsat <- c(min(selected_features$unsat_2),
-                    max(selected_features$unsat_2))
+  # special lipid classes
+  tail1_only <- c("CE", "FA", "LPC", "LPE")
+  tail2_only <- c("Cer", "HexCER", "LacCER", "TG")
+
+  if(selected_lipidclass == "All") {
+    uniq_carbon <- c(min(c(selected_features$carbons_2[selected_features$lipid_class %in% tail2_only],
+                           selected_features$carbons_1[!(selected_features$lipid_class %in% tail2_only)],
+                           selected_features$carbons_2[!(selected_features$lipid_class %in% c(tail1_only, tail2_only))])),
+                     max(c(selected_features$carbons_2[selected_features$lipid_class %in% tail2_only],
+                           selected_features$carbons_1[!(selected_features$lipid_class %in% tail2_only)],
+                           selected_features$carbons_2[!(selected_features$lipid_class %in% c(tail1_only, tail2_only))])))
+    uniq_unsat <- c(min(c(selected_features$unsat_2[selected_features$lipid_class %in% tail2_only],
+                          selected_features$unsat_1[!(selected_features$lipid_class %in% tail2_only)],
+                          selected_features$unsat_2[!(selected_features$lipid_class %in% c(tail1_only, tail2_only))])),
+                    max(c(selected_features$unsat_2[selected_features$lipid_class %in% tail2_only],
+                          selected_features$unsat_1[!(selected_features$lipid_class %in% tail2_only)],
+                          selected_features$unsat_2[!(selected_features$lipid_class %in% c(tail1_only, tail2_only))])))
   } else {
-    uniq_carbon <- c(min(c(selected_features$carbons_1, selected_features$carbons_2[selected_features$carbons_2 != 0])),
-                     max(c(selected_features$carbons_1, selected_features$carbons_2)))
-    uniq_unsat <- c(min(c(selected_features$unsat_1, selected_features$unsat_2)),
-                    max(c(selected_features$unsat_1, selected_features$unsat_2)))
+    if(selected_lipidclass %in% tail2_only) {
+      uniq_carbon <- c(min(selected_features$carbons_2),
+                       max(selected_features$carbons_2))
+      uniq_unsat <- c(min(selected_features$unsat_2),
+                      max(selected_features$unsat_2))
+    } else {
+      uniq_carbon <- c(min(c(selected_features$carbons_1, selected_features$carbons_2[selected_features$carbons_2 != 0])),
+                       max(c(selected_features$carbons_1, selected_features$carbons_2)))
+      uniq_unsat <- c(min(c(selected_features$unsat_1, selected_features$unsat_2)),
+                      max(c(selected_features$unsat_1, selected_features$unsat_2)))
+    }
   }
 
   ## calculations
@@ -2528,11 +2548,8 @@ fa_comp_hm_calc.total <- function(data_table = NULL,
 
   ## features
   feature_table$lipid <- rownames(feature_table)
-  if(selected_lipidclass == "All") {
-    selected_features <- feature_table
-  } else {
-    selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
-  }
+  selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
+
   # get the unique chain lengths and unsaturation
   uniq_carbon <- c(min(selected_features$carbons_sum), max(selected_features$carbons_sum))
   uniq_unsat <- c(min(selected_features$unsat_sum), max(selected_features$unsat_sum))
@@ -2565,6 +2582,7 @@ fa_comp_hm_calc.total <- function(data_table = NULL,
 fa_comp_heatmap <- function(data = NULL,
                             hline = NULL,
                             vline = NULL,
+                            composition = NULL,
                             color_limits = NULL,
                             color_palette = NULL,
                             y_pos_right = FALSE,
@@ -2639,7 +2657,9 @@ fa_comp_heatmap <- function(data = NULL,
         fixedrange = TRUE,
         ticklen = 3,
         title = list(
-          text = "Number of carbon atoms",
+          text = ifelse(composition == "fa_tail",
+                        "Number of carbon atoms",
+                        "Number of total carbon atoms"),
           standoff = 5,
           font = list(
             size = 10
@@ -2675,7 +2695,9 @@ fa_comp_heatmap <- function(data = NULL,
           fixedrange = TRUE,
           ticklen = 3,
           title = list(
-            text = "Number of double bonds",
+            text = ifelse(composition == "fa_tail",
+                          "Number of double bonds",
+                          "Number of total double bonds"),
             standoff = 3,
             font = list(
               size = 10
@@ -2698,7 +2720,9 @@ fa_comp_heatmap <- function(data = NULL,
           fixedrange = TRUE,
           ticklen = 3,
           title = list(
-            text = "Number of double bonds",
+            text = ifelse(composition == "fa_tail",
+                          "Number of double bonds",
+                          "Number of total double bonds"),
             standoff = 3,
             font = list(
               size = 10

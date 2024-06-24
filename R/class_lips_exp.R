@@ -1548,6 +1548,7 @@ Lips_exp = R6::R6Class(
       fig_hm_left <- fa_comp_heatmap(data = hm_left_data,
                                      vline = avg_carbon_left,
                                      hline = avg_unsat_left,
+                                     composition = composition,
                                      color_limits = c(min_value, max_value),
                                      color_palette = color_palette)
 
@@ -1611,6 +1612,7 @@ Lips_exp = R6::R6Class(
       fig_hm_right <- fa_comp_heatmap(data = hm_right_data,
                                       vline = avg_carbon_right,
                                       hline = avg_unsat_right,
+                                      composition = composition,
                                       color_limits = c(min_value, max_value),
                                       color_palette = color_palette,
                                       y_pos_right = TRUE,
@@ -1729,7 +1731,9 @@ Lips_exp = R6::R6Class(
                              titleX = TRUE,
                              titleY = TRUE) |>
         plotly::layout(title = list(
-          text = paste0("<b>Lipid class: ", selected_lipidclass, "</b>"),
+          text = ifelse(selected_lipidclass == "All",
+                        paste0("<b>Lipid class: ", selected_lipidclass, " (excl. PA)</b>"),
+                        paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
           size = 14
         ),
         annotations = annotations) |>
@@ -1737,7 +1741,5 @@ Lips_exp = R6::R6Class(
 
       self$plots$fa_comp_plot <- fig
     }
-
-
   )
 )
