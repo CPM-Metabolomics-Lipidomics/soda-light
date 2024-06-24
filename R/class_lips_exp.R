@@ -106,6 +106,7 @@ Lips_exp = R6::R6Class(
       fa_comp_plot = list(
         data_table = "Total normalized table",
         sample_meta = "Raw meta table",
+        composition = "fa_tail",
         feature_meta = NULL,
         group_col = NULL,
         group_1 = NULL,
@@ -252,6 +253,12 @@ Lips_exp = R6::R6Class(
         )
       ),
       fa_analysis = list(
+      ),
+      fa_composition = list(
+        composition_options = list(
+          "Fatty acid tail" = "fa_tail",
+          "Total lipid" = "total_lipid"
+        )
       )
     ),
 
@@ -461,9 +468,10 @@ Lips_exp = R6::R6Class(
       self$params$fa_analysis_plot$img_format = img_format
     },
 
-    param_fa_comp_plot = function(data_table, sample_meta, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
+    param_fa_comp_plot = function(data_table, sample_meta, composition, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
       self$params$fa_comp_plot$data_table = data_table
       self$params$fa_comp_plot$sample_meta = sample_meta
+      self$params$fa_comp_plot$composition = composition
       self$params$fa_comp_plot$feature_meta = feature_meta
       self$params$fa_comp_plot$group_col = group_col
       self$params$fa_comp_plot$group_1 = group_1
@@ -787,6 +795,7 @@ Lips_exp = R6::R6Class(
       self$param_fa_comp_plot(
         data_table = self$tables$total_norm_data,
         sample_meta = self$tables$raw_meta,
+        composition = self$params$fa_comp_plot$composition,
         feature_meta = self$tables$feature_table,
         group_col = self$indices$group_col,
         group_1 = unique(self$tables$raw_meta[, self$indices$group_col])[1],
@@ -1465,6 +1474,7 @@ Lips_exp = R6::R6Class(
     # plot Fatty acid composition heatmaps
     plot_fa_comp = function(data_table = self$tables$total_norm_data,
                             sample_meta = self$tables$raw_meta,
+                            composition = self$params$fa_comp_plot$composition,
                             feature_table = self$tables$feature_table,
                             group_col = self$params$fa_comp_plot$group_col,
                             group_1 = self$params$fa_comp_plot$group_1,
@@ -1473,6 +1483,9 @@ Lips_exp = R6::R6Class(
                             color_palette = self$params$fa_comp_plot$color_palette,
                             width = NULL,
                             height = NULL) {
+      print("Rico")
+      print(composition)
+
       # Get the color palette
       # color_count = colors_switch(color_palette)
       # color_palette = RColorBrewer::brewer.pal(color_count, color_palette)

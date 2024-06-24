@@ -1854,6 +1854,12 @@ fa_comp_server = function(r6, input, output, session) {
   output$fa_comp_sidebar_ui = shiny::renderUI({
     shiny::tagList(
       shiny::selectInput(
+        inputId = ns("fa_comp_composition"),
+        label = "Select composition",
+        choices = r6$hardcoded_settings$fa_composition$composition_options,
+        selected = r6$params$fa_comp_plot$composition
+      ),
+      shiny::selectInput(
         inputId = ns("fa_comp_metacol"),
         label = "Select group column",
         choices = r6$hardcoded_settings$meta_column,
@@ -1949,6 +1955,7 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
   # Generate the plot
   shiny::observeEvent(
     c(shiny::req(length(input$fa_comp_metagroup) == 2),
+      input$fa_comp_composition,
       input$fa_comp_selected_lipidclass,
       input$fa_comp_color_palette,
       input$fa_comp_img_format),
@@ -1965,6 +1972,7 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
         r6$param_fa_comp_plot(
           data_table = r6$tables$total_norm_data,
           sample_meta = r6$tables$raw_meta,
+          composition = input$fa_comp_composition,
           feature_meta = r6$tables$feature_table,
           group_col = input$fa_comp_metacol,
           group_1 = input$fa_comp_metagroup[1],
