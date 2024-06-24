@@ -106,6 +106,7 @@ Lips_exp = R6::R6Class(
       fa_comp_plot = list(
         data_table = "Total normalized table",
         sample_meta = "Raw meta table",
+        composition = "fa_tail",
         feature_meta = NULL,
         group_col = NULL,
         group_1 = NULL,
@@ -130,7 +131,9 @@ Lips_exp = R6::R6Class(
                         "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds",
                         "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
                         "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
-                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
+                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3",
+                        "Magma", "Inferno", "Plasma", "Viridis", "Cividis", "Rocket",
+                        "Mako", "Turbo", "plotly_1", "plotly_2", "ggplot2"),
       image_format = c("png", "svg", "jpeg", "webp"),
 
       # plot specific
@@ -250,6 +253,12 @@ Lips_exp = R6::R6Class(
         )
       ),
       fa_analysis = list(
+      ),
+      fa_composition = list(
+        composition_options = list(
+          "Fatty acid tail" = "fa_tail",
+          "Total lipid" = "total_lipid"
+        )
       )
     ),
 
@@ -459,9 +468,10 @@ Lips_exp = R6::R6Class(
       self$params$fa_analysis_plot$img_format = img_format
     },
 
-    param_fa_comp_plot = function(data_table, sample_meta, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
+    param_fa_comp_plot = function(data_table, sample_meta, composition, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
       self$params$fa_comp_plot$data_table = data_table
       self$params$fa_comp_plot$sample_meta = sample_meta
+      self$params$fa_comp_plot$composition = composition
       self$params$fa_comp_plot$feature_meta = feature_meta
       self$params$fa_comp_plot$group_col = group_col
       self$params$fa_comp_plot$group_1 = group_1
@@ -785,6 +795,7 @@ Lips_exp = R6::R6Class(
       self$param_fa_comp_plot(
         data_table = self$tables$total_norm_data,
         sample_meta = self$tables$raw_meta,
+        composition = self$params$fa_comp_plot$composition,
         feature_meta = self$tables$feature_table,
         group_col = self$indices$group_col,
         group_1 = unique(self$tables$raw_meta[, self$indices$group_col])[1],
@@ -888,9 +899,8 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$class_distribution_table = plot_table
 
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(group_list))
-      colors = setNames(colors, group_list)
+      colors <- get_color_palette(groups = group_list,
+                                  color_palette = color_palette)
 
       # Produce the plot
       i = 1
@@ -959,9 +969,8 @@ Lips_exp = R6::R6Class(
                               textangle = 270, showarrow = FALSE, xref='paper',
                               yref='paper')
 
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(groups))
-      colors = setNames(colors, groups)
+      colors <- get_color_palette(groups = groups,
+                                  color_palette = color_palette)
 
       # Plot list will be the list of subplots
       plot_list = c()
@@ -1206,9 +1215,18 @@ Lips_exp = R6::R6Class(
       # Get the color palette
       color_count = colors_switch(color_palette)
       color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      if (reverse_palette) {
-        color_palette = base::rev(color_palette)
-      }
+      print("Rico")
+      print(color_palette)
+      # color_palette <- get_color_palette(group = 1,
+      #                                    color_palette = color_palette,
+      #                                    force_scale = TRUE,
+      #                                    reverse_color_palette = reverse_palette)
+      # if (reverse_palette) {
+      #   # color_palette = base::rev(color_palette)
+      #   color_palette <- get_color_palette(groups = color_count,
+      #                                      color_palette = color_palette,
+      #                                      reverse_color_palette = TRUE)
+      # }
 
       # customise the x-axis labels
       # use group name and the last 3 number of the sample name
@@ -1373,9 +1391,11 @@ Lips_exp = R6::R6Class(
       self$tables$fa_analysis_table <- plot_table
 
       group_list = sort(unique(plot_table$group))
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(group_list))
-      colors = setNames(colors, group_list)
+      # colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+      # colors = colorRampPalette(colors)(length(group_list))
+      # colors = setNames(colors, group_list)
+      colors <- get_color_palette(groups = group_list,
+                                  color_palette = color_palette)
 
       # set the main title for FA overview per lipid class
       if(selected_view == "lipidclass") {
@@ -1454,6 +1474,7 @@ Lips_exp = R6::R6Class(
     # plot Fatty acid composition heatmaps
     plot_fa_comp = function(data_table = self$tables$total_norm_data,
                             sample_meta = self$tables$raw_meta,
+                            composition = self$params$fa_comp_plot$composition,
                             feature_table = self$tables$feature_table,
                             group_col = self$params$fa_comp_plot$group_col,
                             group_1 = self$params$fa_comp_plot$group_1,
@@ -1463,16 +1484,16 @@ Lips_exp = R6::R6Class(
                             width = NULL,
                             height = NULL) {
       # Get the color palette
-      color_count = colors_switch(color_palette)
-      color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      # if (reverse_palette) {
-      #   color_palette = base::rev(color_palette)
-      # }
+      # color_count = colors_switch(color_palette)
+      # color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+      color_palette <- get_color_palette(groups = c(group_1, group_2),
+                                         color_palette = color_palette)
 
       ## left side
       # heatmap
       hm_left_data <- fa_comp_hm_calc(data_table = data_table,
                                       sample_meta = sample_meta,
+                                      composition = composition,
                                       feature_table = feature_table,
                                       group_col = group_col,
                                       selected_group = group_1,
@@ -1497,6 +1518,7 @@ Lips_exp = R6::R6Class(
       # heatmap
       hm_right_data <- fa_comp_hm_calc(data_table = data_table,
                                        sample_meta = sample_meta,
+                                       composition = composition,
                                        feature_table = feature_table,
                                        group_col = group_col,
                                        selected_group = group_2,
@@ -1526,6 +1548,7 @@ Lips_exp = R6::R6Class(
       fig_hm_left <- fa_comp_heatmap(data = hm_left_data,
                                      vline = avg_carbon_left,
                                      hline = avg_unsat_left,
+                                     composition = composition,
                                      color_limits = c(min_value, max_value),
                                      color_palette = color_palette)
 
@@ -1589,6 +1612,7 @@ Lips_exp = R6::R6Class(
       fig_hm_right <- fa_comp_heatmap(data = hm_right_data,
                                       vline = avg_carbon_right,
                                       hline = avg_unsat_right,
+                                      composition = composition,
                                       color_limits = c(min_value, max_value),
                                       color_palette = color_palette,
                                       y_pos_right = TRUE,
@@ -1707,7 +1731,9 @@ Lips_exp = R6::R6Class(
                              titleX = TRUE,
                              titleY = TRUE) |>
         plotly::layout(title = list(
-          text = paste0("<b>Lipid class: ", selected_lipidclass, "</b>"),
+          text = ifelse(selected_lipidclass == "All",
+                        paste0("<b>Lipid class: ", selected_lipidclass, " (excl. PA)</b>"),
+                        paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
           size = 14
         ),
         annotations = annotations) |>
@@ -1715,7 +1741,5 @@ Lips_exp = R6::R6Class(
 
       self$plots$fa_comp_plot <- fig
     }
-
-
   )
 )
