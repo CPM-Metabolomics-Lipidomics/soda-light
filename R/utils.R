@@ -833,7 +833,6 @@ lips_get_del_cols = function(data_table,
     above_threshold = rep(0, length(del_cols))
     names(above_threshold) = del_cols
     for (b in unique(imp_meta[group_idx, batch_col])) {
-
       batch_idx = which(imp_meta[, batch_col] == b)
       batch_blanks = base::intersect(batch_idx, idx_blanks)
       batch_samples = base::intersect(batch_idx, group_idx)
@@ -849,7 +848,7 @@ lips_get_del_cols = function(data_table,
 
       # Find features / columns below threshold
       for (col in del_cols) {
-        above_threshold[col] = above_threshold[col] + sum(data_table[batch_samples,col] >= threshold[col], na.rm = T)
+        above_threshold[col] = above_threshold[col] + sum(data_table[batch_samples, col] >= threshold[col], na.rm = T)
       }
     }
     above_threshold = above_threshold / length(group_idx) >= group_threshold
@@ -865,7 +864,6 @@ lips_get_del_cols = function(data_table,
 }
 
 #------------------------------------------------------- Plotting functions ----
-
 pca_plot_scores = function(x, y, meta_table, group_col, width, height, colour_list){
   groups = unique(meta_table[,group_col])
   fig = plotly::plot_ly(colors = colour_list, width = width, height = height)
@@ -1204,6 +1202,7 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
         # if one of the groups doesn't contain enough data
         return(NA)
       } else if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
+        # if both groups contain constant data
         return(1)
       } else {
         return(stats::t.test(x, y)$p.value)
@@ -1232,93 +1231,93 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
 
 
 get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, test){
-
-  if (used_function == "median") {
-    av_function = function(x) {return(median(x, na.rm = T))}
-  } else {
-    av_function = function(x) {return(mean(x, na.rm = T))}
-  }
-
-  if (test == "Wilcoxon") {
-    test_function=function(x,y){
-
-      if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
-        return(1)
-      } else{
-        return(stats::wilcox.test(x, y)$p.value)
-      }
-    }
-  } else if (test == "t-Test") {
-    test_function=function(x,y){
-
-      if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
-        return(1)
-      } else{
-        return(stats::t.test(x, y)$p.value)
-      }
-    }
-
-  }
-
-  # Collect fold change and p-values
-  fold_change = c()
-  p_value = c()
-
-  sorted_cols = sort(colnames(data_table))
-
-  for (col in sorted_cols) {
-
-    # If both groups contain data
-    if (length(na.exclude(data_table[idx_group_1, col])) > 0 & length(na.exclude(data_table[idx_group_2, col])) > 0) {
-
-      # If at least one of the groups contains only one value
-      if ((length(na.exclude(data_table[idx_group_1, col])) == 1) | (length(na.exclude(data_table[idx_group_2, col])) == 1)) {
-        fold_change = c(fold_change, av_function(data_table[idx_group_2, col]) / av_function(data_table[idx_group_1, col]))
-        p_value = c(p_value, NA)
-      } else {
-
-        # If there is actual comparable data
-        fold_change = c(fold_change, av_function(data_table[idx_group_2, col]) / av_function(data_table[idx_group_1, col]))
-        p_value = c(p_value, test_function(data_table[idx_group_1, col], data_table[idx_group_2, col]))
-      }
-
-    } else {
-      # If at least one of the groups is full NA, default values
-      p_value = c(p_value, 666)
-      # For fold changes, if it is the denominator
-      if (length(na.exclude(data_table[idx_group_1, col])) == 0) {
-        fold_change = c(fold_change, 777)
-      } else {
-        # If it is the numerator
-        fold_change = c(fold_change, 666)
-      }
-    }
-  }
-
-  # Imputation of Inf for when denominator average is 0
-  fold_change[fold_change == Inf] = 1.01*max(fold_change[!(fold_change == 777) & !(fold_change == 666) & !(fold_change == Inf)], na.rm = T)
-
-  # Imputation of 0 for when numerator average is 0
-  fold_change[fold_change == 0] = 0.99*min(fold_change[!(fold_change == 0)], na.rm = T)
-
-  # Imputation of NAs for denominator FC with a value slightly above max FC
-  fold_change[fold_change == 777] = 1.01*max(fold_change[!(fold_change == 777) & !(fold_change == 666) & !(fold_change == Inf)], na.rm = T)
-
-  # Imputation of NAs for nominator FC with a value slightly below min FC
-  fold_change[fold_change == 666] = 0.99*min(fold_change[!(fold_change == 0)], na.rm = T)
-
-  # Imputation of NAs for when both numerators and denominator medians are 0
-  fold_change[is.na(fold_change)] = 1
-
-  # Imputation of NAs for p-values to be the min p-val
-  p_value[p_value == 666] = 0.99*min(p_value, na.rm = T)
-
-  # Adjust p-value
-  p_value_bh_adj = p.adjust(p_value, method = "BH")
-
-  return(list("fold_change" = fold_change,
-              "p_value" = p_value,
-              "p_value_bh_adj" = p_value_bh_adj))
+  stop("Not be used anymore")
+  # if (used_function == "median") {
+  #   av_function = function(x) {return(median(x, na.rm = T))}
+  # } else {
+  #   av_function = function(x) {return(mean(x, na.rm = T))}
+  # }
+  #
+  # if (test == "Wilcoxon") {
+  #   test_function=function(x,y){
+  #
+  #     if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
+  #       return(1)
+  #     } else{
+  #       return(stats::wilcox.test(x, y)$p.value)
+  #     }
+  #   }
+  # } else if (test == "t-Test") {
+  #   test_function=function(x,y){
+  #
+  #     if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
+  #       return(1)
+  #     } else{
+  #       return(stats::t.test(x, y)$p.value)
+  #     }
+  #   }
+  #
+  # }
+  #
+  # # Collect fold change and p-values
+  # fold_change = c()
+  # p_value = c()
+  #
+  # sorted_cols = sort(colnames(data_table))
+  #
+  # for (col in sorted_cols) {
+  #
+  #   # If both groups contain data
+  #   if (length(na.exclude(data_table[idx_group_1, col])) > 0 & length(na.exclude(data_table[idx_group_2, col])) > 0) {
+  #
+  #     # If at least one of the groups contains only one value
+  #     if ((length(na.exclude(data_table[idx_group_1, col])) == 1) | (length(na.exclude(data_table[idx_group_2, col])) == 1)) {
+  #       fold_change = c(fold_change, av_function(data_table[idx_group_2, col]) / av_function(data_table[idx_group_1, col]))
+  #       p_value = c(p_value, NA)
+  #     } else {
+  #
+  #       # If there is actual comparable data
+  #       fold_change = c(fold_change, av_function(data_table[idx_group_2, col]) / av_function(data_table[idx_group_1, col]))
+  #       p_value = c(p_value, test_function(data_table[idx_group_1, col], data_table[idx_group_2, col]))
+  #     }
+  #
+  #   } else {
+  #     # If at least one of the groups is full NA, default values
+  #     p_value = c(p_value, 666)
+  #     # For fold changes, if it is the denominator
+  #     if (length(na.exclude(data_table[idx_group_1, col])) == 0) {
+  #       fold_change = c(fold_change, 777)
+  #     } else {
+  #       # If it is the numerator
+  #       fold_change = c(fold_change, 666)
+  #     }
+  #   }
+  # }
+  #
+  # # Imputation of Inf for when denominator average is 0
+  # fold_change[fold_change == Inf] = 1.01*max(fold_change[!(fold_change == 777) & !(fold_change == 666) & !(fold_change == Inf)], na.rm = T)
+  #
+  # # Imputation of 0 for when numerator average is 0
+  # fold_change[fold_change == 0] = 0.99*min(fold_change[!(fold_change == 0)], na.rm = T)
+  #
+  # # Imputation of NAs for denominator FC with a value slightly above max FC
+  # fold_change[fold_change == 777] = 1.01*max(fold_change[!(fold_change == 777) & !(fold_change == 666) & !(fold_change == Inf)], na.rm = T)
+  #
+  # # Imputation of NAs for nominator FC with a value slightly below min FC
+  # fold_change[fold_change == 666] = 0.99*min(fold_change[!(fold_change == 0)], na.rm = T)
+  #
+  # # Imputation of NAs for when both numerators and denominator medians are 0
+  # fold_change[is.na(fold_change)] = 1
+  #
+  # # Imputation of NAs for p-values to be the min p-val
+  # p_value[p_value == 666] = 0.99*min(p_value, na.rm = T)
+  #
+  # # Adjust p-value
+  # p_value_bh_adj = p.adjust(p_value, method = "BH")
+  #
+  # return(list("fold_change" = fold_change,
+  #             "p_value" = p_value,
+  #             "p_value_bh_adj" = p_value_bh_adj))
 }
 
 #------------------------------------------------------------ Volcano plot -----
@@ -2915,6 +2914,18 @@ example_lipidomics = function(name,
     r6$tables$imp_meta = meta_data
     r6$tables$imp_data = lips_data
 
+    # create the new groups for the blank group filtering
+    r6$tables$imp_meta[, "group_col_blank"] <- tolower(
+      paste(
+        r6$tables$imp_meta[, "sampleType"],
+        r6$tables$imp_meta[, "genoType"],
+        r6$tables$imp_meta[, "treatmentDiagnosis"],
+        r6$tables$imp_meta[, "parentCellLineBrainregion"],
+        # r6$tables$imp_meta[, "sex"],
+        r6$tables$imp_meta[, "cultureConditions"],
+        sep = "_")
+    )
+
     r6$indices$id_col_meta = 'analystId'
     r6$indices$id_col_data = 'ID'
 
@@ -2946,18 +2957,8 @@ example_lipidomics = function(name,
     r6$indices$rownames_pools = rownames(r6$tables$imp_meta)[pool_idx]
     r6$indices$rownames_samples = rownames(r6$tables$imp_meta)[sample_idx]
 
+    # keep only the samples in the raw meta
     r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
-    # create the new groups for the blank group filtering
-    r6$tables$raw_meta[, "group_col_blank"] <- tolower(
-      paste(
-        r6$tables$raw_meta[, "sampleType"],
-        r6$tables$raw_meta[, "genoType"],
-        r6$tables$raw_meta[, "treatmentDiagnosis"],
-        r6$tables$raw_meta[, "parentCellLineBrainregion"],
-        # r6$tables$raw_meta[, "sex"],
-        r6$tables$raw_meta[, "cultureConditions"],
-        sep = "_")
-    )
 
     # extract the blanks and the qc samples
     r6$get_blank_table()
@@ -2975,7 +2976,7 @@ example_lipidomics = function(name,
 
     r6$derive_data_tables()
 
-    # set which variables are available for colering
+    # set which variables are available for coloring
     idx_meta <- apply(r6$tables$raw_meta[, r6$hardcoded_settings$meta_column], 2, function(x) {
       length(unique(x)) >= 2
     })
@@ -3106,7 +3107,7 @@ example_transcriptomics = function(name = 'trns_example', id = NA, slot = NA, da
                   val_threshold = 0.6,
                   blank_multiplier = 2,
                   sample_threshold = 0.8,
-                  group_threshold = 0.8,
+                  group_threshold = 0.2,
                   norm_col = '')
 
   r6$derive_data_tables()
