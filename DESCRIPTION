@@ -1,6 +1,6 @@
 Package: SODA LIGHT
 Title: Simple Omics Data Analysis
-Version: 0.1.99.9177
+Version: 0.1.99.9178
 Authors@R: c(
     person("Yassene", "Mohammed", , "y.mohammed@lumc.nl", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0003-3265-3332")),
