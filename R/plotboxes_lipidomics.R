@@ -1905,11 +1905,17 @@ fa_comp_server = function(r6, input, output, session) {
 
 fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   iv_fa_comp <- shinyvalidate::InputValidator$new()
+  iv_fa_comp$add_rule("fa_comp_composition", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_metacol", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_metagroup", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_selected_lipidclass", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_color_palette", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_img_format", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_composition",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$fa_composition$composition_options,
+                      name_plot = r6$name,
+                      message = "FA composition analysis: Incorrect composition selected!")
   iv_fa_comp$add_rule("fa_comp_metacol",
                       iv_check_select_input,
                       choices = r6$hardcoded_settings$meta_column,
