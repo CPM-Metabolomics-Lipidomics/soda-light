@@ -2423,10 +2423,105 @@ fa_analysis_rev_calc <- function(data_table = NULL,
 #--------------------------------------------------------- FA composition   ----
 fa_comp_hm_calc <- function(data_table = NULL,
                             feature_table = NULL,
+                            composition = NULL,
                             group_col = NULL,
                             selected_group = NULL,
                             sample_meta = NULL,
                             selected_lipidclass = NULL) {
+
+  res <- switch(
+    composition,
+    "fa_tail" = fa_comp_hm_calc.fa(data_table = data_table,
+                                   feature_table = feature_table,
+                                   group_col = group_col,
+                                   selected_group = selected_group,
+                                   sample_meta = sample_meta,
+                                   selected_lipidclass = selected_lipidclass),
+    "total_lipid" = fa_comp_hm_calc.total(data_table = data_table,
+                                          feature_table = feature_table,
+                                          group_col = group_col,
+                                          selected_group = selected_group,
+                                          sample_meta = sample_meta,
+                                          selected_lipidclass = selected_lipidclass)
+  )
+
+  return(res)
+}
+
+fa_comp_hm_calc.fa <- function(data_table = NULL,
+                               feature_table = NULL,
+                               composition = NULL,
+                               group_col = NULL,
+                               selected_group = NULL,
+                               sample_meta = NULL,
+                               selected_lipidclass = NULL) {
+  ## samples
+  idx_samples <- rownames(sample_meta)[sample_meta[, group_col] == selected_group]
+  hm_data <- data_table[idx_samples, , drop = FALSE]
+
+  ## features
+  feature_table$lipid <- rownames(feature_table)
+  if(selected_lipidclass == "All") {
+    selected_features <- feature_table
+  } else {
+    selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
+  }
+  # get the unique chain lengths and unsaturation
+  if(selected_lipidclass %in% c("Cer", "HexCER", "LacCER", "TG")) {
+    uniq_carbon <- c(min(selected_features$carbons_2),
+                     max(selected_features$carbons_2))
+    uniq_unsat <- c(min(selected_features$unsat_2),
+                    max(selected_features$unsat_2))
+  } else {
+    uniq_carbon <- c(min(c(selected_features$carbons_1, selected_features$carbons_2[selected_features$carbons_2 != 0])),
+                     max(c(selected_features$carbons_1, selected_features$carbons_2)))
+    uniq_unsat <- c(min(c(selected_features$unsat_1, selected_features$unsat_2)),
+                    max(c(selected_features$unsat_1, selected_features$unsat_2)))
+  }
+
+  ## calculations
+  # initialize result matrix
+  res <- matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+                nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+  colnames(res) <- uniq_carbon[1]:uniq_carbon[2]
+  rownames(res) <- uniq_unsat[1]:uniq_unsat[2]
+
+  for(a in rownames(res)) { # unsaturation
+    for(b in colnames(res)) { # carbons
+      idx_lipids <- selected_features$lipid[(selected_features$carbons_1 == b &
+                                              selected_features$unsat_1 == a) |
+                                              (selected_features$carbons_2 == b &
+                                                 selected_features$unsat_2 == a)]
+
+      idx_lipids_double <- selected_features$lipid[(selected_features$carbons_1 == b &
+                                                      selected_features$unsat_1 == a) &
+                                                     (selected_features$carbons_2 == b &
+                                                        selected_features$unsat_2 == a)]
+      if(length(idx_lipids) > 0) {
+        res[a, b] <- sum(hm_data[, idx_lipids], na.rm = TRUE)
+      } else {
+        res[a, b] <- 0
+      }
+
+      # compensate for if a specific tails appears twice in a lipid, sum again
+      if(length(idx_lipids_double) > 0) {
+        res[a, b] <- sum(res[a, b], hm_data[, idx_lipids_double], na.rm = TRUE)
+      }
+    }
+  }
+
+  # calculate the proportion
+  res <- res / sum(res)
+
+  return(res)
+}
+
+fa_comp_hm_calc.total <- function(data_table = NULL,
+                                  feature_table = NULL,
+                                  group_col = NULL,
+                                  selected_group = NULL,
+                                  sample_meta = NULL,
+                                  selected_lipidclass = NULL) {
   ## samples
   idx_samples <- rownames(sample_meta)[sample_meta[, group_col] == selected_group]
   hm_data <- data_table[idx_samples, , drop = FALSE]

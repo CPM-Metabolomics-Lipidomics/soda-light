@@ -1942,6 +1942,28 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       name_plot = r6$name,
                       message = "FA composition analysis: Incorrect image format selected!")
 
+  # auto-update the lipid classes
+  shiny::observeEvent(input$fa_comp_composition, {
+    if(r6$name == "Error") {
+      output$fa_comp_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      if(input$fa_comp_composition == "fa_tail") {
+        lipidclass_choices <- c("All", unique(r6$tables$feature_table$lipid_class))
+      } else {
+        lipidclass_choices <- unique(r6$tables$feature_table$lipid_class)
+      }
+
+      shiny::updateSelectizeInput(
+        inputId = "fa_comp_selected_lipidclass",
+        session = session,
+        choices = lipidclass_choices,
+        selected = r6$params$fa_comp_plot$selected_lipidclass,
+      )
+    }
+  })
+
   # auto-update selected groups
   shiny::observeEvent(input$fa_comp_metacol, {
     if(r6$name == "Error") {

@@ -1483,9 +1483,6 @@ Lips_exp = R6::R6Class(
                             color_palette = self$params$fa_comp_plot$color_palette,
                             width = NULL,
                             height = NULL) {
-      print("Rico")
-      print(composition)
-
       # Get the color palette
       # color_count = colors_switch(color_palette)
       # color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
@@ -1496,6 +1493,7 @@ Lips_exp = R6::R6Class(
       # heatmap
       hm_left_data <- fa_comp_hm_calc(data_table = data_table,
                                       sample_meta = sample_meta,
+                                      composition = composition,
                                       feature_table = feature_table,
                                       group_col = group_col,
                                       selected_group = group_1,
@@ -1520,6 +1518,7 @@ Lips_exp = R6::R6Class(
       # heatmap
       hm_right_data <- fa_comp_hm_calc(data_table = data_table,
                                        sample_meta = sample_meta,
+                                       composition = composition,
                                        feature_table = feature_table,
                                        group_col = group_col,
                                        selected_group = group_2,
