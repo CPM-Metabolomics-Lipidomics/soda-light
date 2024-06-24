@@ -2470,7 +2470,7 @@ fa_comp_hm_calc.fa <- function(data_table = NULL,
   # get the unique chain lengths and unsaturation
   # special lipid classes
   tail1_only <- c("CE", "FA", "LPC", "LPE")
-  tail2_only <- c("Cer", "HexCER", "LacCER", "TG")
+  tail2_only <- c("Cer", "HexCER", "LacCER", "SM", "TG")
 
   if(selected_lipidclass == "All") {
     uniq_carbon <- c(min(c(selected_features$carbons_2[selected_features$lipid_class %in% tail2_only],
