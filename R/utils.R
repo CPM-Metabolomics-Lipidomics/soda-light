@@ -1,9 +1,146 @@
 # Utility functions
-base::source('./R/complex_functions/volcano.R')
-base::source('./R/complex_functions/pca.R')
+#--------------------------------------------------------- Color functions ----
+
+colors_switch = function(selection) {
+  switch(EXPR = selection,
+         'Blues' = 9,
+         'BuGn' = 9,
+         'BuPu' = 9,
+         'GnBu' = 9,
+         'Greens' = 9,
+         'Greys' = 9,
+         'Oranges' = 9,
+         'OrRd' = 9,
+         'PuBu' = 9,
+         'PuBuGn' = 9,
+         'PuRd' = 9,
+         'Purples' = 9,
+         'RdPu' = 9,
+         'Reds' = 9,
+         'YlGn' = 9,
+         'YlGnBu' = 9,
+         'YlOrBr' = 9,
+         'YlOrRd' = 9,
+         'BrBG' = 11,
+         'PiYG' = 11,
+         'PRGn' = 11,
+         'PuOr' = 11,
+         'RdBu' = 11,
+         'RdGy' = 11,
+         'RdYlBu' = 11,
+         'RdYlGn' = 11,
+         'Spectral' = 11,
+         'Accent' = 8,
+         'Dark2' = 8,
+         'Paired' = 12,
+         'Pastel1' = 9,
+         'Pastel2' = 8,
+         'Set1' = 9,
+         'Set2' = 8,
+         'Set3' = 12,
+         'Magma' = 256,
+         'Inferno' = 256,
+         'Plasma' = 256,
+         'Viridis' = 256,
+         'Cividis' = 256,
+         'Rocket' = 256,
+         'Mako' = 256,
+         'Turbo' = 256,
+         'plotly_1' = 10,
+         'plotly_2' = 10,
+         'ggplot2' = 10
+  )
+}
+
+viridis_switch = function(color_palette) {
+  switch(EXPR = color_palette,
+         "Magma" = "A",
+         "Inferno" = "B",
+         "Plasma" = "C",
+         "Viridis" = "D",
+         "Cividis" = "E",
+         "Rocket" = "F",
+         "Mako" = "G",
+         "Turbo" = "H"
+  )
+}
+
+custom_colors_switch = function(color_palette) {
+  switch(EXPR = color_palette,
+         'plotly_1' = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", '#8c564b', "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"),
+         'plotly_2' = c("#636efa", "#ef553b", "#00cc96", "#d62728", "#9467bd", '#8c564b', "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"),
+         'ggplot2' = c("#F8766D", "#D89000", "#A3A500", "#39B600", "#00BF7D", "#00BFC4", "#00B0F6", "#9590FF", "#E76BF3", "#FF62BC")
+  )
+}
+
+get_colors = function(color_count, color_palette) {
+  if (color_palette %in% c('Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo')) {
+    short_name = viridis_switch(color_palette)
+    color_palette =  viridisLite::viridis(n = color_count, alpha = 1, begin = 0, end = 1, direction = -1, option = short_name)
+  } else if (color_palette %in% c('plotly_1', 'plotly_2', 'ggplot2')) {
+    color_palette = custom_colors_switch(color_palette)
+  } else {
+    color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+  }
+  return(color_palette)
+}
+
+create_color_scale = function(color_palette) {
+  # Calculate evenly spaced positions for each color
+  positions = base::seq(0, 1, length.out = length(color_palette))
+
+  # Combine the positions and colors into the correct format for Plotly
+  custom_colorscale = stats::setNames(as.list(color_palette), as.character(positions))
+
+  # Convert the list to the format Plotly expects (list of lists with position and color)
+  plotly_colorscale = lapply(names(custom_colorscale), function(x) c(as.numeric(x), custom_colorscale[[x]]))
+  return(plotly_colorscale)
+}
+
+get_color_palette = function(groups, color_palette, reverse_color_palette = F, force_scale = F, force_list = F) {
+
+  # Checks
+  if (force_scale & force_list) {
+    stop("force_scale and force_list cannot both be TRUE")
+  }
+
+  # Get unique groups
+  unique_groups = sort(unique(groups))
+
+  # Get the color palette values
+  color_count = colors_switch(color_palette)
+  color_palette = get_colors(color_count = color_count, color_palette = color_palette)
+  if (reverse_color_palette) {
+    color_palette = base::rev(color_palette)
+  }
+
+  # Is data numeric or string
+  if (is_coercible_to_numeric(groups)) {
+    groups = base::as.numeric(groups)
+
+    # Is data continuous or discrete
+    if (((length(unique_groups) > 25) | force_scale) & !force_list) {
+      # If continuous, export a color scale (for plotly)
+      out_colors = create_color_scale(color_palette)
+      print("Rico")
+      print(out_colors)
+    } else {
+      # If low number of groups, export simple dict
+      out_colors = grDevices::colorRampPalette(color_palette)(length(unique_groups))
+      out_colors = ggplot2::scale_color_gradientn(colours = color_palette, limits = range(unique_groups))
+      out_colors = out_colors$rescale(unique_groups)
+      out_colors = color_palette[findInterval(out_colors, seq(min(out_colors), max(out_colors), length.out = length(color_palette)))]
+      out_colors = setNames(out_colors, as.character(unique_groups))
+    }
+  } else {
+    # For string categorical data, export a simple dict
+    out_colors = grDevices::colorRampPalette(color_palette)(length(unique_groups))
+    out_colors = setNames(out_colors, as.character(unique_groups))
+  }
+  return(out_colors)
+}
 
 #--------------------------------------------------------- Switch functions ----
-
 experiment_switch = function(selection) {
   switch(EXPR = selection,
          'Lipidomics' = 'lips',
@@ -113,7 +250,7 @@ lipidomics_plot_list = function() {
                 # "Double bond plot" = "select_double_bond_plot",
                 # "Saturation index" = "select_satindex_plot",
                 "Fatty acid analysis" = "select_fa_analysis_plot",
-                "Fatty acid composition" = "select_fa_composition"
+                "Composition analysis" = "select_fa_composition"
   )
   return(plot_list)
 }
@@ -696,7 +833,6 @@ lips_get_del_cols = function(data_table,
     above_threshold = rep(0, length(del_cols))
     names(above_threshold) = del_cols
     for (b in unique(imp_meta[group_idx, batch_col])) {
-
       batch_idx = which(imp_meta[, batch_col] == b)
       batch_blanks = base::intersect(batch_idx, idx_blanks)
       batch_samples = base::intersect(batch_idx, group_idx)
@@ -712,7 +848,7 @@ lips_get_del_cols = function(data_table,
 
       # Find features / columns below threshold
       for (col in del_cols) {
-        above_threshold[col] = above_threshold[col] + sum(data_table[batch_samples,col] >= threshold[col], na.rm = T)
+        above_threshold[col] = above_threshold[col] + sum(data_table[batch_samples, col] >= threshold[col], na.rm = T)
       }
     }
     above_threshold = above_threshold / length(group_idx) >= group_threshold
@@ -728,7 +864,6 @@ lips_get_del_cols = function(data_table,
 }
 
 #------------------------------------------------------- Plotting functions ----
-
 pca_plot_scores = function(x, y, meta_table, group_col, width, height, colour_list){
   groups = unique(meta_table[,group_col])
   fig = plotly::plot_ly(colors = colour_list, width = width, height = height)
@@ -1041,9 +1176,14 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
         if(all(is.na(x))) {
           x <- y
         }
-        return(stats::wilcox.test(x)$p.value)
+        if(sum(!is.na(x)) >= 2) {
+          return(stats::wilcox.test(x)$p.value)
+        } else {
+          # if one of the groups doesn't contain enough data
+          return(NA)
+        }
       } else if(sum(!is.na(x)) < 2 | sum(!is.na(y)) < 2) {
-        # if one of the groups doesn't contain enough data
+        # if the groups doesn't contain enough data
         return(NA)
       } else if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
         return(1)
@@ -1062,11 +1202,17 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
         if(all(is.na(x))) {
           x <- y
         }
-        return(stats::t.test(x)$p.value)
+        if(sum(!is.na(x)) >= 2) {
+          return(stats::t.test(x)$p.value)
+        } else {
+          # if the groups doesn't contain enough data
+          return(NA)
+        }
       } else if(sum(!is.na(x)) < 2 | sum(!is.na(y)) < 2) {
         # if one of the groups doesn't contain enough data
         return(NA)
       } else if(all(x == mean(x, na.rm = T)) & all(y == mean(y, na.rm = T))) {
+        # if both groups contain constant data
         return(1)
       } else {
         return(stats::t.test(x, y)$p.value)
@@ -1095,95 +1241,615 @@ get_p_val = function(data_table, idx_group_1, idx_group_2, used_function, impute
 
 
 get_fc_and_pval = function(data_table, idx_group_1, idx_group_2, used_function, test){
-
-  if (used_function == "median") {
-    av_function = function(x) {return(median(x, na.rm = T))}
-  } else {
-    av_function = function(x) {return(mean(x, na.rm = T))}
-  }
-
-  if (test == "Wilcoxon") {
-    test_function=function(x,y){
-
-      if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
-        return(1)
-      } else{
-        return(stats::wilcox.test(x, y)$p.value)
-      }
-    }
-  } else if (test == "t-Test") {
-    test_function=function(x,y){
-
-      if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
-        return(1)
-      } else{
-        return(stats::t.test(x, y)$p.value)
-      }
-    }
-
-  }
-
-  # Collect fold change and p-values
-  fold_change = c()
-  p_value = c()
-
-  sorted_cols = sort(colnames(data_table))
-
-  for (col in sorted_cols) {
-
-    # If both groups contain data
-    if (length(na.exclude(data_table[idx_group_1, col])) > 0 & length(na.exclude(data_table[idx_group_2, col])) > 0) {
-
-      # If at least one of the groups contains only one value
-      if ((length(na.exclude(data_table[idx_group_1, col])) == 1) | (length(na.exclude(data_table[idx_group_2, col])) == 1)) {
-        fold_change = c(fold_change, av_function(data_table[idx_group_2, col]) / av_function(data_table[idx_group_1, col]))
-        p_value = c(p_value, NA)
-      } else {
-
-        # If there is actual comparable data
-        fold_change = c(fold_change, av_function(data_table[idx_group_2, col]) / av_function(data_table[idx_group_1, col]))
-        p_value = c(p_value, test_function(data_table[idx_group_1, col], data_table[idx_group_2, col]))
-      }
-
-    } else {
-      # If at least one of the groups is full NA, default values
-      p_value = c(p_value, 666)
-      # For fold changes, if it is the denominator
-      if (length(na.exclude(data_table[idx_group_1, col])) == 0) {
-        fold_change = c(fold_change, 777)
-      } else {
-        # If it is the numerator
-        fold_change = c(fold_change, 666)
-      }
-    }
-  }
-
-  # Imputation of Inf for when denominator average is 0
-  fold_change[fold_change == Inf] = 1.01*max(fold_change[!(fold_change == 777) & !(fold_change == 666) & !(fold_change == Inf)], na.rm = T)
-
-  # Imputation of 0 for when numerator average is 0
-  fold_change[fold_change == 0] = 0.99*min(fold_change[!(fold_change == 0)], na.rm = T)
-
-  # Imputation of NAs for denominator FC with a value slightly above max FC
-  fold_change[fold_change == 777] = 1.01*max(fold_change[!(fold_change == 777) & !(fold_change == 666) & !(fold_change == Inf)], na.rm = T)
-
-  # Imputation of NAs for nominator FC with a value slightly below min FC
-  fold_change[fold_change == 666] = 0.99*min(fold_change[!(fold_change == 0)], na.rm = T)
-
-  # Imputation of NAs for when both numerators and denominator medians are 0
-  fold_change[is.na(fold_change)] = 1
-
-  # Imputation of NAs for p-values to be the min p-val
-  p_value[p_value == 666] = 0.99*min(p_value, na.rm = T)
-
-  # Adjust p-value
-  p_value_bh_adj = p.adjust(p_value, method = "BH")
-
-  return(list("fold_change" = fold_change,
-              "p_value" = p_value,
-              "p_value_bh_adj" = p_value_bh_adj))
+  stop("Not be used anymore")
+  # if (used_function == "median") {
+  #   av_function = function(x) {return(median(x, na.rm = T))}
+  # } else {
+  #   av_function = function(x) {return(mean(x, na.rm = T))}
+  # }
+  #
+  # if (test == "Wilcoxon") {
+  #   test_function=function(x,y){
+  #
+  #     if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
+  #       return(1)
+  #     } else{
+  #       return(stats::wilcox.test(x, y)$p.value)
+  #     }
+  #   }
+  # } else if (test == "t-Test") {
+  #   test_function=function(x,y){
+  #
+  #     if(all(x==mean(x, na.rm = T))&all(y==mean(y, na.rm = T))) {
+  #       return(1)
+  #     } else{
+  #       return(stats::t.test(x, y)$p.value)
+  #     }
+  #   }
+  #
+  # }
+  #
+  # # Collect fold change and p-values
+  # fold_change = c()
+  # p_value = c()
+  #
+  # sorted_cols = sort(colnames(data_table))
+  #
+  # for (col in sorted_cols) {
+  #
+  #   # If both groups contain data
+  #   if (length(na.exclude(data_table[idx_group_1, col])) > 0 & length(na.exclude(data_table[idx_group_2, col])) > 0) {
+  #
+  #     # If at least one of the groups contains only one value
+  #     if ((length(na.exclude(data_table[idx_group_1, col])) == 1) | (length(na.exclude(data_table[idx_group_2, col])) == 1)) {
+  #       fold_change = c(fold_change, av_function(data_table[idx_group_2, col]) / av_function(data_table[idx_group_1, col]))
+  #       p_value = c(p_value, NA)
+  #     } else {
+  #
+  #       # If there is actual comparable data
+  #       fold_change = c(fold_change, av_function(data_table[idx_group_2, col]) / av_function(data_table[idx_group_1, col]))
+  #       p_value = c(p_value, test_function(data_table[idx_group_1, col], data_table[idx_group_2, col]))
+  #     }
+  #
+  #   } else {
+  #     # If at least one of the groups is full NA, default values
+  #     p_value = c(p_value, 666)
+  #     # For fold changes, if it is the denominator
+  #     if (length(na.exclude(data_table[idx_group_1, col])) == 0) {
+  #       fold_change = c(fold_change, 777)
+  #     } else {
+  #       # If it is the numerator
+  #       fold_change = c(fold_change, 666)
+  #     }
+  #   }
+  # }
+  #
+  # # Imputation of Inf for when denominator average is 0
+  # fold_change[fold_change == Inf] = 1.01*max(fold_change[!(fold_change == 777) & !(fold_change == 666) & !(fold_change == Inf)], na.rm = T)
+  #
+  # # Imputation of 0 for when numerator average is 0
+  # fold_change[fold_change == 0] = 0.99*min(fold_change[!(fold_change == 0)], na.rm = T)
+  #
+  # # Imputation of NAs for denominator FC with a value slightly above max FC
+  # fold_change[fold_change == 777] = 1.01*max(fold_change[!(fold_change == 777) & !(fold_change == 666) & !(fold_change == Inf)], na.rm = T)
+  #
+  # # Imputation of NAs for nominator FC with a value slightly below min FC
+  # fold_change[fold_change == 666] = 0.99*min(fold_change[!(fold_change == 0)], na.rm = T)
+  #
+  # # Imputation of NAs for when both numerators and denominator medians are 0
+  # fold_change[is.na(fold_change)] = 1
+  #
+  # # Imputation of NAs for p-values to be the min p-val
+  # p_value[p_value == 666] = 0.99*min(p_value, na.rm = T)
+  #
+  # # Adjust p-value
+  # p_value_bh_adj = p.adjust(p_value, method = "BH")
+  #
+  # return(list("fold_change" = fold_change,
+  #             "p_value" = p_value,
+  #             "p_value_bh_adj" = p_value_bh_adj))
 }
 
+#------------------------------------------------------------ Volcano plot -----
+volcano_main = function(fc_vals = volcano_table$fold_change,
+                        p_vals = volcano_table$q_val_bh,
+                        names = rownames(volcano_table),
+                        y_label = '-Log10(p-value)',
+                        left_label = 'Left',
+                        right_label = 'Right',
+                        groups = NULL,
+                        displayed_plot = 'main',
+                        color_palette = 'Spectral',
+                        p_val_threshold = 0.05,
+                        fc_threshold = 2,
+                        marker_size = 6,
+                        opacity = 1) {
+
+  # Checks
+  if (!(displayed_plot %in% c('main', 'all', 'left', 'right', 'top'))) {
+    stop("displayed_plot should be one of ['main', 'all', 'left', 'right', 'top']")
+  }
+
+  data = data.frame(
+    fold_change = fc_vals,
+    p_values = p_vals,
+    names = names
+  )
+
+  if(nchar(left_label) != nchar(right_label)) {
+    if(nchar(left_label) > nchar(right_label)) {
+      num <- nchar(left_label) - nchar(right_label)
+      r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;", paste(rep("&nbsp;", num), collapse = ""))
+      l_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    } else {
+      num <- nchar(right_label) - nchar(left_label)
+      r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+      l_label <- paste0(paste(rep("&nbsp;", num), collapse = ""), "&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+    }
+  } else {
+    r_label <- paste0(right_label, "&nbsp;&nbsp;&nbsp;&#8658;")
+    l_label <- paste0("&#8656;&nbsp;&nbsp;&nbsp;", left_label)
+  }
+  plot_label = paste0(l_label, ' vs ', r_label)
+
+  # Format data
+  data$log2_fold_change = log2(data$fold_change)
+  data$log10_p_values = -log10(data$p_values)
+
+  if (is.null(groups)) {
+    data$groups = 'Inconclusive'
+    data$groups[(data$p_values > p_val_threshold) & (data$log2_fold_change < log2(fc_threshold)) & (data$log2_fold_change > -log2(fc_threshold))] = 'Not significant'
+    data$groups[((data$p_values < p_val_threshold) | (is.na(data$p_values))) & (data$log2_fold_change > log2(fc_threshold))] = "Overexpressed"
+    data$groups[((data$p_values < p_val_threshold) | (is.na(data$p_values))) & (data$log2_fold_change < -log2(fc_threshold))] = "Underexpressed"
+    colors = setNames(c('#bebebe', '#787878', '#FF0000', '#0000FF'), c('Not significant', 'Inconclusive', 'Overexpressed', 'Underexpressed'))
+    data$color = unname(colors[data$groups])
+
+  } else {
+    data$groups = as.character(groups)
+    # colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
+    # colors = colorRampPalette(colors)(length(unique(groups)))
+    # colors = setNames(colors, unique(groups))
+    colors <- get_color_palette(groups = groups,
+                                color_palette = color_palette)
+    data$color = unname(colors[data$groups])
+  }
+
+  # Add count data
+  replacement_vector = table(data$groups)
+  original_names = names(replacement_vector)
+  replacement_vector = paste0(names(replacement_vector), ' (', replacement_vector, ')')
+  names(replacement_vector) = original_names
+  data$groups = replacement_vector[data$groups]
+
+  # Produce the data tables & plots
+  if (length(which(is.na(data$log10_p_values))) > 0) { # Top violin
+    top_data = data[which(is.na(data$log10_p_values)),]
+    data = data[-which(is.na(data$log10_p_values)),]
+    inf_idx = which(base::is.infinite(top_data$log2_fold_change))
+    if(length(inf_idx) > 0) {
+      top_data = top_data[-inf_idx, ]
+    }
+    print(paste0('Dropped ', length(inf_idx), ' features with no FC nor p-values.'))
+
+    top_violin = plot_volcano_violin(data = top_data,
+                                     threshold = log2(fc_threshold),
+                                     side = 'top',
+                                     opacity = opacity,
+                                     marker_size = marker_size,
+                                     show_legend = F)
+
+  } else {top_data = NULL}
+
+  if (length(which(data$fold_change == -Inf)) > 0) { # Left violin
+    left_data = data[which(data$fold_change == -Inf),]
+    data = data[-which(data$fold_change == -Inf),]
+
+    left_violin = plot_volcano_violin(data = left_data,
+                                      threshold = -log10(p_val_threshold),
+                                      side = 'left',
+                                      label = left_label,
+                                      y_label = y_label,
+                                      opacity = opacity,
+                                      marker_size = marker_size,
+                                      show_legend = F)
+
+  } else {left_data = NULL}
+
+  if (length(which(data$fold_change == Inf)) > 0) { # right violin
+    right_data = data[which(data$fold_change == Inf),]
+    data = data[-which(data$fold_change == Inf),]
+
+    right_violin = plot_volcano_violin(data = right_data,
+                                       threshold = -log10(p_val_threshold),
+                                       side = 'right',
+                                       label = right_label,
+                                       y_label = y_label,
+                                       opacity = opacity,
+                                       marker_size = marker_size,
+                                       show_legend = F)
+
+  } else {right_data = NULL}
+
+
+
+  # Main plot y_label
+  main_plot = plot_volcano(data = data,
+                           label = plot_label,
+                           marker_size = marker_size,
+                           p_val_threshold = p_val_threshold,
+                           fc_threshold = fc_threshold,
+                           opacity = opacity,
+                           y_axis_title = y_label,
+                           show_y_title = T)
+
+  # Blank plot
+  blank_plot = plotly::plot_ly(type = 'scatter', mode = 'markers')
+  blank_plot = plotly::layout(blank_plot,
+                              title = 'Error',
+                              xaxis = list(zeroline = F,
+                                           showticklabels = F,
+                                           showgrid = F),
+                              yaxis = list(zeroline = F,
+                                           showticklabels = F,
+                                           showgrid = F))
+
+
+
+  if (is.null(left_data) & is.null(right_data) & is.null(top_data) | (displayed_plot == 'main')) { # Only main
+
+    out_plot = main_plot
+
+  } else if (!is.null(top_data) & (displayed_plot == 'top')) { # Export top violin
+
+    out_plot = top_violin
+
+  } else if (!is.null(left_data) & (displayed_plot == 'left')) { # Export left violin
+
+    out_plot = left_violin
+
+  } else if (!is.null(right_data) & (displayed_plot == 'right')) { # Export right violin
+
+    out_plot = right_violin
+
+
+  } else if (is.null(left_data) & is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top only
+
+    out_plot = plotly::subplot(
+      top_violin,
+      main_plot,
+      nrows = 2,
+      shareX = TRUE,
+      titleY = TRUE,
+      heights = c(0.1, 0.9)
+    )
+
+  } else if (!is.null(left_data) & is.null(right_data) & is.null(top_data) & (displayed_plot == 'all')) { # Left only
+
+    out_plot = plotly::subplot(
+      list(left_violin, main_plot),
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      widths = c(0.1, 0.9)
+    )
+
+  } else if (is.null(left_data) & !is.null(right_data) & is.null(top_data) & (displayed_plot == 'all')) { # Right only
+
+    out_plot = plotly::subplot(
+      list(main_plot, right_violin),
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      widths = c(0.9, 0.1)
+    )
+
+  } else if (!is.null(left_data) & !is.null(right_data) & is.null(top_data) & (displayed_plot == 'all')) { # Left and Right
+
+    out_plot = plotly::subplot(
+      matrix(list(left_violin, main_plot, right_violin),
+             ncol = 3, byrow = TRUE),
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      widths = c(0.1, 0.8, 0.1)
+    )
+
+  } else if (!is.null(left_data) & !is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # All violins
+
+    out_plot = plotly::subplot(
+      list(blank_plot, top_violin, blank_plot,
+           left_violin, main_plot, right_violin),
+      nrows = 2,
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      margin = 0.02,
+      widths = c(0.1, 0.8, 0.1),
+      heights = c(0.1, 0.9)
+    )
+
+  } else if (!is.null(left_data) & is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top and left
+
+    out_plot = plotly::subplot(
+      list(blank_plot, top_violin,
+           left_violin, main_plot),
+      nrows = 2,
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      margin = 0.02,
+      widths = c(0.1, 0.9),
+      heights = c(0.1, 0.9)
+    )
+
+  } else if (is.null(left_data) & !is.null(right_data) & !is.null(top_data) & (displayed_plot == 'all')) { # Top and right
+
+    out_plot = plotly::subplot(
+      list(top_violin, blank_plot,
+           main_plot, right_violin),
+      nrows = 2,
+      shareX = TRUE,
+      shareY = TRUE,
+      titleX = TRUE,
+      titleY = TRUE,
+      margin = 0.02,
+      widths = c(0.9, 0.1),
+      heights = c(0.1, 0.9)
+    )
+
+  } else {
+    warning('Selected plot unavailable, returning blank.')
+    out_plot = blank_plot
+  }
+
+  return(out_plot)
+
+}
+
+plot_volcano_violin = function(data, threshold, side, label, y_label, opacity = 1, marker_size = 6, show_legend = F) {
+
+  if (!(side %in% c('left', 'right', 'top'))) {
+    stop('side must be in [left, right, top]')
+  }
+
+  if (side == 'left') {
+    col_line = 'blue'
+    col_fill = 'lightblue'
+  } else if (side == 'right') {
+    col_line = 'red'
+    col_fill = 'pink'
+  } else if (side == 'top') {
+    return(plot_volcano_violin_top(data = data,
+                                   threshold = threshold,
+                                   opacity = opacity,
+                                   marker_size = marker_size,
+                                   show_legend = show_legend))
+  }
+
+  x_val = paste0(label, ' only')
+
+  p = plotly::plot_ly()
+
+  # add violin
+  p = plotly::add_trace(p,
+                        y = data$log10_p_values,
+                        x = x_val, type = "violin",
+                        box = list(visible = FALSE),
+                        line = list(color = 'darkgray'),
+                        fillcolor = 'ghostwhite',
+                        meanline = list(visible = FALSE),
+                        opacity = opacity,
+                        points = FALSE,
+                        name = data$groups[1],
+                        legendgroup = data$groups[1],
+                        hoverinfo = 'none',
+                        showlegend = F)
+
+  # add the points
+  for (group in unique(data$groups)) {
+    group_table = data[data$groups == group, ]
+    # get the significant ones
+    idx_signif <- group_table$log10_p_values >= threshold
+
+    # opacity
+    group_table$opacity[idx_signif] <- opacity
+    group_table$opacity[!idx_signif] <- 0.6 * opacity
+
+    p = plotly::add_trace(p,
+                          type = "scatter",
+                          mode = "markers",
+                          y = group_table$log10_p_values,
+                          x = x_val,
+                          marker = list(size = marker_size,
+                                        color = group_table$color[1],
+                                        opacity = group_table$opacity,
+                                        line = list(width = 0.5, color = 'white')),
+                          name = group,
+                          legendgroup = group,
+                          text = group_table$names,
+                          hoverinfo = 'text',
+                          showlegend = show_legend)
+  }
+
+  p = plotly::layout(p,
+                     shapes = list(
+                       list(
+                         type = "line",
+                         x0 = -0.3,
+                         x1 = 0.3,
+                         y0 = threshold,
+                         y1 = threshold,
+                         line = list(color = "black", width = 1, dash = "dot")
+                       )
+                     ),
+                     xaxis = list(
+                       title = list(
+                         text = x_val
+                       )
+                     ),
+                     yaxis = list(
+                       title = list(
+                         text = y_label
+                       )
+                     )
+  )
+
+  return(p)
+}
+
+plot_volcano_violin_top = function(data,
+                                   threshold,
+                                   opacity,
+                                   marker_size,
+                                   show_legend) {
+
+  p = plotly::plot_ly()
+
+  p = plotly::add_trace(p,
+                        y = 'No p-value',
+                        x = data$log2_fold_change,
+                        type = "violin",
+                        box = list(visible = FALSE),
+                        line = list(color = 'darkgray'),
+                        fillcolor = 'ghostwhite',
+                        meanline = list(visible = F),
+                        opacity = opacity,
+                        points = FALSE,
+                        name = 'Not significant',
+                        legendgroup = 'Not significant',
+                        hoverinfo = 'none',
+                        showlegend = F,
+                        orientation = 'h')
+
+  for (group in unique(data$groups)) {
+    group_table = data[data$groups == group,]
+
+    p = plotly::add_trace(p,
+                          type = "scatter",
+                          mode = "markers",
+                          y = 'No p-value',
+                          x = group_table$log2_fold_change,
+                          marker = list(size = marker_size, color = group_table$color[1], opacity = opacity, line = list(width = 0.5, color = 'white')),
+                          name = group,
+                          legendgroup = group,
+                          text = group_table$names,
+                          hoverinfo = 'text',
+                          showlegend = show_legend)
+
+  }
+
+  p = plotly::layout(p,
+                     xaxis = list(title = "Log2(Fold Change)"),
+                     shapes = list(
+                       # Vertical line at x = -1
+                       list(
+                         type = "line",
+                         x0 = -threshold,
+                         x1 = -threshold,
+                         y0 = -0.3,
+                         y1 = 0.3,
+                         line = list(color = "black", width = 1, dash = "dot")
+                       ),
+                       # Vertical line at x = 1
+                       list(
+                         type = "line",
+                         x0 = threshold,
+                         x1 = threshold,
+                         y0 = -0.3,
+                         y1 = 0.3,
+                         line = list(color = "black", width = 1, dash = "dot")
+                       )
+                     ))
+  return(p)
+}
+
+plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05, fc_threshold = 2, opacity = 1, show_y_title = F , y_axis_title = '-Log10(p-value)') {
+
+  if (!show_y_title){
+    y_axis_title = NULL
+  }
+
+  main_plot = plotly::plot_ly()
+
+  sort_group <- sort_legend(text = data$groups)
+
+  for (group in sort_group) {
+    subset_data = data[data$groups == group, ]
+    # get the significant ones
+    idx_signif <- subset_data$p_values <= p_val_threshold
+
+    # opacity
+    subset_data$opacity[idx_signif] <- opacity
+    subset_data$opacity[!idx_signif] <- 0.6 * opacity
+
+    # significant data
+    main_plot = plotly::add_trace(
+      main_plot,
+      x = subset_data$log2_fold_change,
+      y = subset_data$log10_p_values,
+      text = subset_data$names,
+      color = I(subset_data$color),
+      type = "scatter",
+      mode = "markers",
+      marker = list(size = marker_size,
+                    opacity = subset_data$opacity,
+                    line = list(width = 0.5, color = 'white')),
+      legendgroup = group,
+      name = group,
+      showlegend = TRUE,
+      hoverinfo = 'text'
+    )
+  }
+
+  main_plot = plotly::layout(main_plot,
+                             title = list(text = label,
+                                          xref = "paper"),
+                             xaxis = list(title = "Log2(Fold Change)",
+                                          zeroline = T,
+                                          range = c(-ceiling(max(abs(data$log2_fold_change))),
+                                                    ceiling(max(abs(data$log2_fold_change)))
+                                          )
+                             ),
+                             yaxis = list(title = y_axis_title),
+                             hovermode = "closest",
+                             shapes = list(
+                               # Vertical line at x = -1
+                               list(
+                                 type = "line",
+                                 x0 = -log2(fc_threshold),
+                                 x1 = -log2(fc_threshold),
+                                 y0 = 0,
+                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
+                                 line = list(color = "black", width = 1, dash = "dot")
+                               ),
+                               # Vertical line at x = 1
+                               list(
+                                 type = "line",
+                                 x0 = log2(fc_threshold),
+                                 x1 = log2(fc_threshold),
+                                 y0 = 0,
+                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
+                                 line = list(color = "black", width = 1, dash = "dot")
+                               ),
+                               # Horizontal line at y = -log10(0.05)
+                               list(
+                                 type = "line",
+                                 x0 = -1.2 * round(max(abs(data$log2_fold_change))),
+                                 x1 = 1.2 * round(max(abs(data$log2_fold_change))),
+                                 y0 = -log10(p_val_threshold),
+                                 y1 = -log10(p_val_threshold),
+                                 line = list(color = "black", width = 1, dash = "dot")
+                               )
+                             ))
+  return(main_plot)
+}
+
+
+# sort the legend alphabetically and make sure numbers are sorted correctly
+sort_legend <- function(text = NULL) {
+  uniq_text <- unique(text)
+  # is the vector numeric
+  if(all(grepl(pattern = "^[0-9.]+ \\([0-9]*\\)$",
+               x = uniq_text))) {
+    num_text <- gsub(x = uniq_text,
+                     pattern = "^([0-9.]+) \\([0-9]*\\)$",
+                     replacement = "\\1")
+    idx <- sort(x = as.numeric(num_text),
+                index.return = TRUE)$ix
+    res <- uniq_text[idx]
+  } else {
+    idx <- sort(x = uniq_text,
+                index.return = TRUE)$ix
+    res <- uniq_text[idx]
+  }
+
+  return(res)
+}
 
 #------------------------------------------------------------ heatmap stuff ----
 calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
@@ -1227,6 +1893,395 @@ calc_subplot_size <- function(dendrogram = c("both", "row", "column", "none"),
   subplot$height <- subplot$height[subplot$height != 0]
 
   return(subplot)
+}
+
+
+#----------------------------------------------------------------- PCA plot ----
+pca_main = function(data_table, sample_groups = NULL, sample_groups_shape = NULL, feature_groups = NULL, nPcs = 2, displayed_pc_1 = 1, displayed_pc_2 = 2, pca_method = 'svd', completeObs = T, displayed_plots = "both", colors_palette = "Spectral", return_data = FALSE, width = NULL, height = NULL) {
+
+  # Check if arguments are valid
+  if (!(pca_method %in% pcaMethods::listPcaMethods())){
+    print(paste0('Invalid pca_method: must be one of [', paste(pcaMethods::listPcaMethods(), collapse = ', '), '], defaulting to svd'))
+    pca_method = 'svd'
+  }
+
+  if ((pca_method %in% c('robustPca', 'nlpca', 'llsImpute'))){
+    print(paste0(pca_method, ' is not currently supported, defaulting to svd'))
+    pca_method = 'svd'
+  }
+
+  if (!(displayed_plots %in% c('both', 'loadings', 'scores', 'variance'))){
+    print('Error: displayed_plots must be in both, loadings or scores')
+    return()
+  }
+
+  if (max(c(displayed_pc_1, displayed_pc_2)) > nPcs) {
+    print('At least one displayed PC outside of nPcs range, adjusting nPcs')
+    nPcs = max(c(displayed_pc_1, displayed_pc_2))
+  }
+
+  if (displayed_pc_1 == displayed_pc_2) {
+    print('displayed PCs are the same, defaulting to PC1 and PC2')
+    displayed_pc_1 = 1
+    displayed_pc_2 = 2
+  }
+
+  # Apply PCA
+  pca_data = pcaMethods::pca(object = data_table,
+                             method = pca_method,
+                             nPcs = nPcs,
+                             scale = "none",
+                             cv = "q2",
+                             completeObs = completeObs)
+
+  # Plot depending on the type requested
+  if (displayed_plots == 'both') {
+    fig = c()
+    fig[[1]] = plot_pca(x = pca_data@scores[,paste0('PC', displayed_pc_1)],
+                        y = pca_data@scores[,paste0('PC', displayed_pc_2)],
+                        label_1 = paste0('PC', displayed_pc_1),
+                        label_2 = paste0('PC', displayed_pc_2),
+                        weight_1 = round(pca_data@R2[displayed_pc_1], 3),
+                        weight_2 = round(pca_data@R2[displayed_pc_2], 3),
+                        names = rownames(data_table),
+                        type = 'scores',
+                        groups = sample_groups,
+                        groups_shape = sample_groups_shape,
+                        colors = colors_palette,
+                        marker_size = 8,
+                        width = width,
+                        height = height)
+
+
+    fig[[2]] = plot_pca(x = pca_data@loadings[, paste0('PC', displayed_pc_1)],
+                        y = pca_data@loadings[, paste0('PC', displayed_pc_2)],
+                        label_1 = paste0('PC', displayed_pc_1),
+                        label_2 = paste0('PC', displayed_pc_2),
+                        weight_1 = round(pca_data@R2[displayed_pc_1], 3),
+                        weight_2 = round(pca_data@R2[displayed_pc_2], 3),
+                        names = colnames(data_table),
+                        type = 'loadings',
+                        groups = feature_groups,
+                        colors = colors_palette,
+                        marker_size = 5,
+                        width = width,
+                        height = height)
+
+    fig = plotly::subplot(fig, nrows = 1, margin = 0.035, titleX = T, titleY = T)
+
+    fig = plotly::layout(fig, title = "PCA scores and loadings")
+
+
+  } else if (displayed_plots == 'loadings'){
+
+    fig = plot_pca(x = pca_data@loadings[, paste0('PC', displayed_pc_1)],
+                   y = pca_data@loadings[, paste0('PC', displayed_pc_2)],
+                   label_1 = paste0('PC', displayed_pc_1),
+                   label_2 = paste0('PC', displayed_pc_2),
+                   weight_1 = round(pca_data@R2[displayed_pc_1], 3),
+                   weight_2 = round(pca_data@R2[displayed_pc_2], 3),
+                   names = colnames(data_table),
+                   type = 'loadings',
+                   groups = feature_groups,
+                   colors = colors_palette,
+                   marker_size = 5,
+                   width = width,
+                   height = height)
+
+  } else if (displayed_plots == 'scores') {
+
+    fig = plot_pca(x = pca_data@scores[,paste0('PC', displayed_pc_1)],
+                   y = pca_data@scores[,paste0('PC', displayed_pc_2)],
+                   label_1 = paste0('PC', displayed_pc_1),
+                   label_2 = paste0('PC', displayed_pc_2),
+                   weight_1 = round(pca_data@R2[displayed_pc_1], 3),
+                   weight_2 = round(pca_data@R2[displayed_pc_2], 3),
+                   names = rownames(data_table),
+                   type = 'scores',
+                   groups = sample_groups,
+                   groups_shape = sample_groups_shape,
+                   colors = colors_palette,
+                   marker_size = 8,
+                   width = width,
+                   height = height)
+  } else if (displayed_plots == 'variance') {
+
+    fig = plot_explained_variance(variance_explained = pca_data@R2,
+                                  width = width,
+                                  height = height)
+  }
+
+  if (return_data) {
+    return(list(
+      pca_data = pca_data,
+      fig = fig))
+  } else {
+    return(fig)
+  }
+
+
+}
+
+
+plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, groups = NULL, groups_shape = NULL, colors = "Spectral", marker_size = 5, width = NULL, height = NULL) {
+
+  if (!(type %in% c("scores", "loadings"))) {
+    print('Error: type must either be scores or loadings.')
+    return()
+  }
+
+  if (is.null(groups) & (type == "scores")) { # Score plot without groups (should not exist)
+    data_table = data.frame(
+      x = x,
+      y = y,
+      names = names
+    )
+
+    conf_ellipse = ellipse::ellipse(x = stats::cov(cbind(data_table$x, data_table$y)),
+                                    centre = c(mean(data_table$x), mean(data_table$y)),
+                                    level = 0.95)
+
+    plot = plotly::plot_ly(data = data_table, width = width, height = height) %>%
+
+      add_markers(
+        x = ~x,
+        y = ~y,
+        text = ~names,
+        mode = "markers+text",
+        marker = list(size = marker_size),
+      ) %>%
+
+      add_trace(
+        data = as.data.frame(conf_ellipse),
+        x = ~x,
+        y = ~y,
+        mode = "lines",
+        line = list(color = 'gray',
+                    width = 1),
+        inherit = FALSE,
+        name = "Hotelling T2 (95%)",
+        showlegend = TRUE,
+        type = "scatter"
+      ) %>%
+
+      layout(
+        title = "PCA Scores Plot",
+        xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
+        yaxis = list(title = paste0(label_2, ' (', weight_2 * 100, '%)'), zeroline = TRUE)
+      )
+
+    return(plot)
+
+  } else if (is.null(groups) & (type == "loadings")) { # Loadings plot without groups
+
+    data_table = data.frame(
+      x = x,
+      y = y,
+      names = names
+    )
+
+    plot = plot_ly(data = data_table, width = width, height = height) %>%
+
+      add_segments(
+        x = 0,
+        y = 0,
+        xend = ~x,
+        yend = ~y,
+        line = list(dash = "solid"),
+        showlegend = FALSE
+      ) %>%
+
+      add_markers(
+        x = ~x,
+        y = ~y,
+        text = ~names,
+        mode = "markers+text",
+        marker = list(size = marker_size),
+        showlegend = FALSE
+      ) %>%
+
+      layout(
+        title = "PCA Loadings Plot",
+        xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
+        yaxis = list(title = paste0(label_2, ' (', weight_2 * 100, '%)'), zeroline = TRUE)
+      )
+
+    return(plot)
+
+  } else if (!is.null(groups) & (type == "scores")) { # Score plot with groups
+    data_table = data.frame(
+      x = x,
+      y = y,
+      names = names,
+      groups = as.factor(groups)
+    )
+
+    if(!is.null(groups_shape)) {
+      data_table$groups_shape <- as.factor(groups_shape)
+    }
+
+    conf_ellipse = ellipse::ellipse(x = stats::cov(cbind(data_table$x, data_table$y)),
+                                    centre = c(mean(data_table$x), mean(data_table$y)),
+                                    level = 0.95)
+
+    # Color score plot
+    colors <- get_color_palette(groups = groups,
+                                color_palette = colors)
+
+    plot = plotly::plot_ly(data = data_table,
+                           width = width,
+                           height = height,
+                           hovertemplate = paste("(%{x:.3g}, %{y:.3g})<br>",
+                                                 # "Group: %{color}<br>",
+                                                 "%{text}",
+                                                 "<extra></extra>"))
+
+    if(is.null(groups_shape)) {
+      plot <- plot %>%
+        add_markers(
+          x = ~x,
+          y = ~y,
+          text = ~names,
+          mode = "markers+text",
+          marker = list(size = marker_size),
+          color = ~groups,
+          colors = colors,
+          legendgroup = ~groups,
+          showlegend = TRUE
+        )
+    } else {
+      plot <- plot %>%
+        add_markers(
+          x = ~x,
+          y = ~y,
+          text = ~names,
+          mode = "markers+text",
+          marker = list(size = marker_size),
+          color = ~groups,
+          symbol = ~groups_shape,
+          colors = colors,
+          legendgroup = ~groups,
+          showlegend = TRUE
+        )
+    }
+
+    plot <- plot %>%
+      add_trace(
+        data = as.data.frame(conf_ellipse),
+        x = ~x,
+        y = ~y,
+        mode = "lines",
+        line = list(color = 'gray',
+                    width = 1),
+        inherit = FALSE,
+        name = "Hotelling T2 (95%)",
+        showlegend = TRUE,
+        type = "scatter"
+      ) %>%
+      layout(
+        title = "PCA Scores Plot",
+        xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
+        yaxis = list(title = paste0(label_2, ' (', weight_2 * 100, '%)'), zeroline = TRUE)
+      )
+
+    return(plot)
+
+  } else if (!is.null(groups) & (type == "loadings")) {
+
+    data_table = data.frame(
+      x = x,
+      y = y,
+      names = names,
+      groups = as.factor(groups)
+    )
+
+    # Colors loadings plot
+    colors <- get_color_palette(groups = groups,
+                                color_palette = colors)
+
+    plot = plot_ly(data = data_table,
+                   width = width,
+                   height = height,
+                   hovertemplate = paste("(%{x:.3g}, %{y:.3g})<br>",
+                                         # "Lipid class: %{color}<br>",
+                                         "%{text}",
+                                         "<extra></extra>")) %>%
+
+      add_segments(
+        x = 0,
+        y = 0,
+        xend = ~x,
+        yend = ~y,
+        line = list(dash = "solid"),
+        color = ~groups,
+        colors = colors,
+        legendgroup = ~groups,
+        showlegend = FALSE
+      ) %>%
+
+      add_markers(
+        x = ~x,
+        y = ~y,
+        text = ~names,
+        mode = "markers+text",
+        marker = list(size = marker_size),
+        color = ~groups,
+        colors = colors,
+        legendgroup = ~groups,
+        showlegend = TRUE
+      ) %>%
+
+      layout(
+        title = "PCA Loadings Plot",
+        xaxis = list(title = paste0(label_1, ' (', weight_1 * 100, '%)'), zeroline = TRUE),
+        yaxis = list(title = paste0(label_2, ' (', weight_2 * 100, '%)'), zeroline = TRUE)
+      )
+
+    return(plot)
+
+  }
+}
+
+plot_explained_variance = function(variance_explained, width, height) {
+
+  if (variance_explained[1] < 1) {
+    variance_explained = variance_explained * 100
+  }
+
+  cumulative_variance = base::cumsum(variance_explained)
+
+  plot = plotly::plot_ly(x = 1:length(variance_explained),
+                         y = variance_explained,
+                         type = 'bar',
+                         name = 'Variance Explained',
+                         marker = list(color = 'lightblue'),
+                         width = width,
+                         height = height,
+                         hovertemplate = paste("PC: %{x}<br>",
+                                               "Var. expl.: %{y:.3g}%)<br>",
+                                               "<extra></extra>"))
+
+  # Add line for cumulative variance
+  plot = plot %>%
+    add_trace(x = 1:length(variance_explained),
+              y = cumulative_variance,
+              type = 'scatter',
+              mode = 'lines+markers',
+              name = 'Cumulative Variance',
+              line = list(color = 'red'),
+              marker = list(color = 'red'),
+              hovertemplate = paste("PC: %{x}<br>",
+                                    "Cum. var. expl.: %{y:.3g}%)<br>",
+                                    "<extra></extra>"))
+
+  # Customize the layout
+  plot = plot %>%
+    layout(title = "Variance Explained by Each PC",
+           xaxis = list(title = "Principal Component"),
+           yaxis = list(title = "Variance Explained (%)", rangemode = "tozero"),
+           barmode = 'overlay')
+
+  return(plot)
 }
 
 
@@ -1377,10 +2432,38 @@ fa_analysis_rev_calc <- function(data_table = NULL,
 #--------------------------------------------------------- FA composition   ----
 fa_comp_hm_calc <- function(data_table = NULL,
                             feature_table = NULL,
+                            composition = NULL,
                             group_col = NULL,
                             selected_group = NULL,
                             sample_meta = NULL,
                             selected_lipidclass = NULL) {
+
+  res <- switch(
+    composition,
+    "fa_tail" = fa_comp_hm_calc.fa(data_table = data_table,
+                                   feature_table = feature_table,
+                                   group_col = group_col,
+                                   selected_group = selected_group,
+                                   sample_meta = sample_meta,
+                                   selected_lipidclass = selected_lipidclass),
+    "total_lipid" = fa_comp_hm_calc.total(data_table = data_table,
+                                          feature_table = feature_table,
+                                          group_col = group_col,
+                                          selected_group = selected_group,
+                                          sample_meta = sample_meta,
+                                          selected_lipidclass = selected_lipidclass)
+  )
+
+  return(res)
+}
+
+fa_comp_hm_calc.fa <- function(data_table = NULL,
+                               feature_table = NULL,
+                               composition = NULL,
+                               group_col = NULL,
+                               selected_group = NULL,
+                               sample_meta = NULL,
+                               selected_lipidclass = NULL) {
   ## samples
   idx_samples <- rownames(sample_meta)[sample_meta[, group_col] == selected_group]
   hm_data <- data_table[idx_samples, , drop = FALSE]
@@ -1388,10 +2471,94 @@ fa_comp_hm_calc <- function(data_table = NULL,
   ## features
   feature_table$lipid <- rownames(feature_table)
   if(selected_lipidclass == "All") {
-    selected_features <- feature_table
+    # leave PA's out
+    selected_features <- feature_table[feature_table$lipid_class != "PA", ]
   } else {
     selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
   }
+  # get the unique chain lengths and unsaturation
+  # special lipid classes
+  tail1_only <- c("CE", "FA", "LPC", "LPE")
+  tail2_only <- c("Cer", "HexCER", "LacCER", "SM", "TG")
+
+  if(selected_lipidclass == "All") {
+    uniq_carbon <- c(min(c(selected_features$carbons_2[selected_features$lipid_class %in% tail2_only],
+                           selected_features$carbons_1[!(selected_features$lipid_class %in% tail2_only)],
+                           selected_features$carbons_2[!(selected_features$lipid_class %in% c(tail1_only, tail2_only))])),
+                     max(c(selected_features$carbons_2[selected_features$lipid_class %in% tail2_only],
+                           selected_features$carbons_1[!(selected_features$lipid_class %in% tail2_only)],
+                           selected_features$carbons_2[!(selected_features$lipid_class %in% c(tail1_only, tail2_only))])))
+    uniq_unsat <- c(min(c(selected_features$unsat_2[selected_features$lipid_class %in% tail2_only],
+                          selected_features$unsat_1[!(selected_features$lipid_class %in% tail2_only)],
+                          selected_features$unsat_2[!(selected_features$lipid_class %in% c(tail1_only, tail2_only))])),
+                    max(c(selected_features$unsat_2[selected_features$lipid_class %in% tail2_only],
+                          selected_features$unsat_1[!(selected_features$lipid_class %in% tail2_only)],
+                          selected_features$unsat_2[!(selected_features$lipid_class %in% c(tail1_only, tail2_only))])))
+  } else {
+    if(selected_lipidclass %in% tail2_only) {
+      uniq_carbon <- c(min(selected_features$carbons_2),
+                       max(selected_features$carbons_2))
+      uniq_unsat <- c(min(selected_features$unsat_2),
+                      max(selected_features$unsat_2))
+    } else {
+      uniq_carbon <- c(min(c(selected_features$carbons_1, selected_features$carbons_2[selected_features$carbons_2 != 0])),
+                       max(c(selected_features$carbons_1, selected_features$carbons_2)))
+      uniq_unsat <- c(min(c(selected_features$unsat_1, selected_features$unsat_2)),
+                      max(c(selected_features$unsat_1, selected_features$unsat_2)))
+    }
+  }
+
+  ## calculations
+  # initialize result matrix
+  res <- matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+                nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+  colnames(res) <- uniq_carbon[1]:uniq_carbon[2]
+  rownames(res) <- uniq_unsat[1]:uniq_unsat[2]
+
+  for(a in rownames(res)) { # unsaturation
+    for(b in colnames(res)) { # carbons
+      idx_lipids <- selected_features$lipid[(selected_features$carbons_1 == b &
+                                              selected_features$unsat_1 == a) |
+                                              (selected_features$carbons_2 == b &
+                                                 selected_features$unsat_2 == a)]
+
+      idx_lipids_double <- selected_features$lipid[(selected_features$carbons_1 == b &
+                                                      selected_features$unsat_1 == a) &
+                                                     (selected_features$carbons_2 == b &
+                                                        selected_features$unsat_2 == a)]
+      if(length(idx_lipids) > 0) {
+        res[a, b] <- sum(hm_data[, idx_lipids], na.rm = TRUE)
+      } else {
+        res[a, b] <- 0
+      }
+
+      # compensate for if a specific tails appears twice in a lipid, sum again
+      if(length(idx_lipids_double) > 0) {
+        res[a, b] <- sum(res[a, b], hm_data[, idx_lipids_double], na.rm = TRUE)
+      }
+    }
+  }
+
+  # calculate the proportion
+  res <- res / sum(res)
+
+  return(res)
+}
+
+fa_comp_hm_calc.total <- function(data_table = NULL,
+                                  feature_table = NULL,
+                                  group_col = NULL,
+                                  selected_group = NULL,
+                                  sample_meta = NULL,
+                                  selected_lipidclass = NULL) {
+  ## samples
+  idx_samples <- rownames(sample_meta)[sample_meta[, group_col] == selected_group]
+  hm_data <- data_table[idx_samples, , drop = FALSE]
+
+  ## features
+  feature_table$lipid <- rownames(feature_table)
+  selected_features <- feature_table[feature_table$lipid_class == selected_lipidclass, ]
+
   # get the unique chain lengths and unsaturation
   uniq_carbon <- c(min(selected_features$carbons_sum), max(selected_features$carbons_sum))
   uniq_unsat <- c(min(selected_features$unsat_sum), max(selected_features$unsat_sum))
@@ -1424,6 +2591,7 @@ fa_comp_hm_calc <- function(data_table = NULL,
 fa_comp_heatmap <- function(data = NULL,
                             hline = NULL,
                             vline = NULL,
+                            composition = NULL,
                             color_limits = NULL,
                             color_palette = NULL,
                             y_pos_right = FALSE,
@@ -1498,7 +2666,9 @@ fa_comp_heatmap <- function(data = NULL,
         fixedrange = TRUE,
         ticklen = 3,
         title = list(
-          text = "Number of carbon atoms",
+          text = ifelse(composition == "fa_tail",
+                        "Number of carbon atoms",
+                        "Number of total carbon atoms"),
           standoff = 5,
           font = list(
             size = 10
@@ -1534,7 +2704,9 @@ fa_comp_heatmap <- function(data = NULL,
           fixedrange = TRUE,
           ticklen = 3,
           title = list(
-            text = "Number of double bonds",
+            text = ifelse(composition == "fa_tail",
+                          "Number of double bonds",
+                          "Number of total double bonds"),
             standoff = 3,
             font = list(
               size = 10
@@ -1557,7 +2729,9 @@ fa_comp_heatmap <- function(data = NULL,
           fixedrange = TRUE,
           ticklen = 3,
           title = list(
-            text = "Number of double bonds",
+            text = ifelse(composition == "fa_tail",
+                          "Number of double bonds",
+                          "Number of total double bonds"),
             standoff = 3,
             font = list(
               size = 10
@@ -1622,7 +2796,11 @@ qc_trend_plot <- function(data = NULL,
     ggplot2::ggplot(ggplot2::aes(x = ID,
                                  y = log2fc,
                                  group = lipid,
-                                 color = lipidclass)) +
+                                 color = lipidclass,
+                                 text = paste("Sample name:", ID, "<br>",
+                                              "Log2(fold change): ", round(log2fc, 3), "<br>",
+                                              "Lipid: ", lipid, "<br>",
+                                              "Lipid class:", lipidclass))) +
     ggplot2::geom_line(alpha = 0.3) +
     ggplot2::geom_point(size = 1,
                         alpha = 0.3) +
@@ -1638,7 +2816,8 @@ qc_trend_plot <- function(data = NULL,
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "bottom")
 
-  ply <- plotly::ggplotly(p)
+  ply <- plotly::ggplotly(p,
+                          tooltip = "text")
 
   ply <- plotly::layout(ply,
                         xaxis = list(tickangle = 45))
@@ -1688,10 +2867,12 @@ qc_rsd_violin <- function(data = NULL,
                   y = "Relative standard deviation") +
     ggplot2::theme_minimal()
 
-  ply <- plotly::ggplotly(p)
+  ply <- plotly::ggplotly(p,
+                          tooltip = "none")
 
   ply <- plotly::layout(ply,
-                        xaxis = list(tickangle = 45))
+                        xaxis = list(tickangle = 45)) |>
+    plotly::style(hoverinfo = "none")
 
   return(ply)
 }
@@ -1732,6 +2913,9 @@ example_lipidomics = function(name,
     # The imported data needs to be filtered because sometimes a batch consist out of multiple experiments
     lips_data = lips_data[lips_data[, "ID"] %in% meta_data[, "analystId"], ]
 
+    # If multiple datasets are merged the lipids need to be ordered
+    lips_data <- lips_data[, c("ID", sort(colnames(lips_data)[-1]))]
+
     # create the r6 object
     r6 = Lips_exp$new(name = name,
                       id = id,
@@ -1742,6 +2926,18 @@ example_lipidomics = function(name,
 
     r6$tables$imp_meta = meta_data
     r6$tables$imp_data = lips_data
+
+    # create the new groups for the blank group filtering
+    r6$tables$imp_meta[, "group_col_blank"] <- tolower(
+      paste(
+        r6$tables$imp_meta[, "sampleType"],
+        r6$tables$imp_meta[, "genoType"],
+        r6$tables$imp_meta[, "treatmentDiagnosis"],
+        r6$tables$imp_meta[, "parentCellLineBrainregion"],
+        # r6$tables$imp_meta[, "sex"],
+        r6$tables$imp_meta[, "cultureConditions"],
+        sep = "_")
+    )
 
     r6$indices$id_col_meta = 'analystId'
     r6$indices$id_col_data = 'ID'
@@ -1774,18 +2970,8 @@ example_lipidomics = function(name,
     r6$indices$rownames_pools = rownames(r6$tables$imp_meta)[pool_idx]
     r6$indices$rownames_samples = rownames(r6$tables$imp_meta)[sample_idx]
 
+    # keep only the samples in the raw meta
     r6$tables$raw_meta = r6$tables$raw_meta[r6$indices$rownames_samples, ]
-    # create the new groups for the blank group filtering
-    r6$tables$raw_meta[, "group_col_blank"] <- tolower(
-      paste(
-        r6$tables$raw_meta[, "sampleType"],
-        r6$tables$raw_meta[, "genoType"],
-        r6$tables$raw_meta[, "treatmentDiagnosis"],
-        r6$tables$raw_meta[, "parentCellLineBrainregion"],
-        # r6$tables$raw_meta[, "sex"],
-        r6$tables$raw_meta[, "cultureConditions"],
-        sep = "_")
-    )
 
     # extract the blanks and the qc samples
     r6$get_blank_table()
@@ -1803,7 +2989,7 @@ example_lipidomics = function(name,
 
     r6$derive_data_tables()
 
-    # set which variables are available for colering
+    # set which variables are available for coloring
     idx_meta <- apply(r6$tables$raw_meta[, r6$hardcoded_settings$meta_column], 2, function(x) {
       length(unique(x)) >= 2
     })
@@ -1934,7 +3120,7 @@ example_transcriptomics = function(name = 'trns_example', id = NA, slot = NA, da
                   val_threshold = 0.6,
                   blank_multiplier = 2,
                   sample_threshold = 0.8,
-                  group_threshold = 0.8,
+                  group_threshold = 0.2,
                   norm_col = '')
 
   r6$derive_data_tables()
