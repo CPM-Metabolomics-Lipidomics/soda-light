@@ -256,8 +256,15 @@ server = function(input, output, session) {
                session)
     print_tm(NULL, "App starting")
 
+    # moved from serv_lipidomics.R to here, app is loaded only once now
+    module_controler$xpx_total = shinybrowser::get_width()
+    module_controler$ypx_total = shinybrowser::get_height()
+    module_controler$xbs = 12
+    module_controler$xpx = shinybrowser::get_width()
+    module_controler$ypx = shinybrowser::get_height()
+
     # get the session client data
-    client_data <- shiny::isolate(session$clientData)
+    client_data <- session$clientData
 
     # get the url parameter
     # for easy development
@@ -278,19 +285,17 @@ server = function(input, output, session) {
     experiment_id = query[["experimentId"]]
 
     if(!is.null(query[["experimentId"]])) {
-      # # Create lipidomics r6 object
-      shiny::isolate({module_controler$r6_exp = example_lipidomics(name = "Lips_1",
-                                                                   id = NA,
-                                                                   slot = "exp_1",
-                                                                   experiment_id = experiment_id)})
-
+      # Create lipidomics r6 object
+      module_controler$r6_exp = example_lipidomics(name = "Lips_1",
+                                                   id = NA,
+                                                   slot = "exp_1",
+                                                   experiment_id = experiment_id)
 
       # server stuff is created here, should the data be passed here?
       # this causes everything to be executed twice during start up
       lipidomics_server(id = "mod_exp_1",
                         module_controler = shiny::isolate(module_controler),
                         sheet_id = sheet_id)
-
       # QC
       qc_server(id = "mod_qc",
                 module_controler = shiny::isolate(module_controler))

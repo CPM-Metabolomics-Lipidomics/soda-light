@@ -347,7 +347,7 @@ lipidomics_server = function(id, module_controler, sheet_id) {
       googlesheets4::sheet_append(ss = sheet_id,
                                   data = ip_df)
 
-      #------------------------------------------------------------ Info server ----
+      #-------------------------------------------------------- Info server ----
       # Download data and meta tables
       output$info_download_data <- shiny::downloadHandler(
         filename = function() {
@@ -487,11 +487,16 @@ lipidomics_server = function(id, module_controler, sheet_id) {
         y_plot = module_controler$dims$y_plot,
         x_plot_full = module_controler$dims$x_plot_full,
         y_plot_full = module_controler$dims$y_plot_full,
-        xpx_total = shinybrowser::get_width(),
-        ypx_total = shinybrowser::get_height(),
-        xbs = 12,
-        xpx = shinybrowser::get_width(),
-        ypx = shinybrowser::get_height()
+        xpx_total = module_controler$dims$xpx_total,
+        ypx_total = module_controler$dims$ypx_total,
+        xbs = module_controler$dims$xbs,
+        xpx = module_controler$dims$xpx,
+        ypx = module_controler$dims$ypx
+        # xpx_total = shinybrowser::get_width(),
+        # ypx_total = shinybrowser::get_height(),
+        # xbs = 12,
+        # xpx = shinybrowser::get_width(),
+        # ypx = shinybrowser::get_height()
       )
 
       color_palette = grDevices::colorRampPalette(RColorBrewer::brewer.pal(n = 11, name = 'Spectral'))(40)
