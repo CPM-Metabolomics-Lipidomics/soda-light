@@ -52,7 +52,7 @@ options(
 )
 
 # get the id of the file to edit
-sheet_id <- drive_get(path = "neurolipidatlas")$id
+sheet_id <- googledrive::drive_get(path = "neurolipidatlas")$id
 
 #-------------------------------------------------------- Tool tip settings ----
 # Set up for showing tooltips.
@@ -136,7 +136,6 @@ footer_ui = function() {
 
 sidebar_ui = function() {
   bs4Dash::dashboardSidebar(
-    tags$script('$(document).on("shiny:sessioninitialized",function(){$.get("https://api.ipify.org", function(response) {Shiny.setInputValue("getIP", response);});})'),
     skin = "light",
     bs4Dash::sidebarMenu(
       bs4Dash::menuItem(
@@ -162,8 +161,6 @@ sidebar_ui = function() {
       bs4Dash::menuItem(
         text = "iSODA",
         tabName = "iSODA",
-        # href = "https://cpm.lumc.nl/",
-        # newTab = TRUE,
         icon = shiny::icon("i")
       )
     )
@@ -220,17 +217,14 @@ ui = bs4Dash::dashboardPage(header = header,
                             freshTheme = "custom.css",
                             dark = NULL,
                             help = NULL)
-# ui = shinymanager::secure_app(bs4Dash::dashboardPage(header, sidebar, body))
-#------------------------------------------------------------------- Server ----
 
+#------------------------------------------------------------------- Server ----
 server = function(input, output, session) {
 
   options(shiny.maxRequestSize=300*1024^2)
 
   module_controler = shiny::reactiveValues(
-
     r6_exp = shiny::reactiveValues(),
-
     dims = list(
       x_box = 0.9,
       y_box = 0.72,
@@ -242,13 +236,6 @@ server = function(input, output, session) {
       ypx_total = NULL
     )
   )
-
-  # get client data, can not access url_search here, it is a reactive value
-  client_data <- session$clientData
-
-  # read the master database file
-  db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
-                                             sheet = 1))
 
   output$main_title <- shiny::renderUI({
     req(!is.null(module_controler$r6_exp$name))
@@ -265,10 +252,12 @@ server = function(input, output, session) {
 
   # Single omics modules
   shiny::observe({
-    shiny::req(client_data,
-               db_data)
+    shiny::req(module_controler,
+               session)
+    print_tm(NULL, "App starting")
 
-    print("Rico: app starting")
+    # get the session client data
+    client_data <- shiny::isolate(session$clientData)
 
     # get the url parameter
     # for easy development
@@ -283,58 +272,30 @@ server = function(input, output, session) {
       }
     } else {
       # for easy development
+      print_tm(NULL, "Default experimentId: NLA_005")
       query[["experimentId"]] <- "NLA_005" # "VDK_220223_01"
     }
     experiment_id = query[["experimentId"]]
 
-    print(paste("Rico: experimentId:", query[["experimentId"]]))
-
     if(!is.null(query[["experimentId"]])) {
-      # get the batches for the samples belonging to the experiment
-      data_files = unique(db_data$batchNumber[db_data$experimentId == query[["experimentId"]]])
-      data_files = data_files[!is.na(data_files)]
+      # # Create lipidomics r6 object
+      shiny::isolate({module_controler$r6_exp = example_lipidomics(name = "Lips_1",
+                                                                   id = NA,
+                                                                   slot = "exp_1",
+                                                                   experiment_id = experiment_id)})
 
-      # Create lipidomics r6 object
-      module_controler$r6_exp = example_lipidomics(name = "Lips_1",
-                                                   id = id,
-                                                   slot = "exp_1",
-                                                   experiment_id = experiment_id)
 
       # server stuff is created here, should the data be passed here?
-      # this causes everything to be executed twice during startup
+      # this causes everything to be executed twice during start up
       lipidomics_server(id = "mod_exp_1",
-                        module_controler = module_controler)
+                        module_controler = shiny::isolate(module_controler),
+                        sheet_id = sheet_id)
 
       # QC
       qc_server(id = "mod_qc",
-                module_controler = module_controler)
+                module_controler = shiny::isolate(module_controler))
     }
   })
-
-  observeEvent(input$getIP, {
-    query <- list("experimentId" = NULL)
-    query <- shiny::parseQueryString(client_data$url_search)
-
-    if (!is.null(query[["experimentId"]])) {
-      if(!grepl(pattern = "NLA_[0-9]{3}", #"^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
-                x = query[["experimentId"]])) {
-        query[["experimentId"]] <- "NLA_005"
-      }
-    } else {
-      # for easy development
-      query[["experimentId"]] <- "NLA_005" # "VDK_220223_01"
-    }
-
-    ip_df <- data.frame("date" = Sys.time(),
-                        "ip" = input$getIP,
-                        "session" = session$token,
-                        "dataset" = query[["experimentId"]])
-
-    googlesheets4::sheet_append(ss = sheet_id,
-                                data = ip_df)
-  },
-  ignoreNULL = FALSE,
-  ignoreInit = TRUE)
 
   # help
   about_server(id = 'mod_about', main_output = output)

@@ -2923,7 +2923,6 @@ example_lipidomics = function(name,
                       preloaded = TRUE,
                       data_file = data_files,
                       experiment_id = experiment_id)
-
     r6$tables$imp_meta = meta_data
     r6$tables$imp_data = lips_data
 
@@ -2996,6 +2995,7 @@ example_lipidomics = function(name,
 
     r6$hardcoded_settings$meta_column <- r6$hardcoded_settings$meta_column[idx_meta]
   } else {
+    print("error")
     r6 <- Lips_exp$new(name = "Error",
                        id = id,
                        slot = slot,

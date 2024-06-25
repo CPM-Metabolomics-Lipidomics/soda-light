@@ -38,10 +38,11 @@ qc_server = function(id, module_controler) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      print("Rico: qc started")
-
       # Get lipidomics r6 object
       r6 <- module_controler$r6_exp
+      m <- r6$name
+
+      print_tm(m, "QC server started")
 
       # rownames(r6$tables$imp_data) contains the names om the samples (sampleId)
       # QC_C is the QC cells
