@@ -12,7 +12,7 @@ about_server = function(id, main_output) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      print("Rico: about started")
+      print_tm(NULL, "About server started")
     }
   )
 }

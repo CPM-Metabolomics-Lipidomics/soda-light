@@ -115,15 +115,13 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
   }
 
   # Is data numeric or string
-  if (is_coercible_to_numeric(groups)) {
-    groups = base::as.numeric(groups)
+  if (is_coercible_to_numeric(unique_groups)) {
+    unique_groups = base::as.numeric(unique_groups)
 
     # Is data continuous or discrete
-    if (((length(unique_groups) > 25) | force_scale) & !force_list) {
+    if (((length(unique_groups) > 40) | force_scale) & !force_list) {
       # If continuous, export a color scale (for plotly)
       out_colors = create_color_scale(color_palette)
-      print("Rico")
-      print(out_colors)
     } else {
       # If low number of groups, export simple dict
       out_colors = grDevices::colorRampPalette(color_palette)(length(unique_groups))
@@ -675,6 +673,13 @@ z_score_normalisation = function(data_table) {
     scaled_row = centered_row / sd(centered_row, na.rm = T)
     return(scaled_row)
   })
+
+  # remove any column which contains only NA's
+  keep_cols <- apply(data_table, 2, function(x) {
+    !all(is.na(x))
+  })
+  data_table <- data_table[, keep_cols]
+
   return(data_table)
 }
 
@@ -2126,7 +2131,8 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
 
     # Color score plot
     colors <- get_color_palette(groups = groups,
-                                color_palette = colors)
+                                color_palette = colors,
+                                reverse_color_palette = TRUE)
 
     plot = plotly::plot_ly(data = data_table,
                            width = width,
@@ -2923,7 +2929,6 @@ example_lipidomics = function(name,
                       preloaded = TRUE,
                       data_file = data_files,
                       experiment_id = experiment_id)
-
     r6$tables$imp_meta = meta_data
     r6$tables$imp_data = lips_data
 
@@ -2996,6 +3001,7 @@ example_lipidomics = function(name,
 
     r6$hardcoded_settings$meta_column <- r6$hardcoded_settings$meta_column[idx_meta]
   } else {
+    print("error")
     r6 <- Lips_exp$new(name = "Error",
                        id = id,
                        slot = slot,

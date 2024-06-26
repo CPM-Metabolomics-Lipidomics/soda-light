@@ -2,8 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-
-
+.secrets/
 
 # some files for fixing
 R/fix_*
