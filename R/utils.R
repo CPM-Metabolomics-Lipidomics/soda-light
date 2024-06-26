@@ -122,8 +122,6 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
     if (((length(unique_groups) > 25) | force_scale) & !force_list) {
       # If continuous, export a color scale (for plotly)
       out_colors = create_color_scale(color_palette)
-      print("Rico")
-      print(out_colors)
     } else {
       # If low number of groups, export simple dict
       out_colors = grDevices::colorRampPalette(color_palette)(length(unique_groups))
@@ -2126,7 +2124,8 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
 
     # Color score plot
     colors <- get_color_palette(groups = groups,
-                                color_palette = colors)
+                                color_palette = colors,
+                                reverse_color_palette = TRUE)
 
     plot = plotly::plot_ly(data = data_table,
                            width = width,

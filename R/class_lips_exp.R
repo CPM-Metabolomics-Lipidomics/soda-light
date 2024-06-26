@@ -899,6 +899,8 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$class_distribution_table = plot_table
 
+      print("Rico: distribution")
+      print(group_list)
       colors <- get_color_palette(groups = group_list,
                                   color_palette = color_palette)
 
@@ -1382,12 +1384,14 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
 
-      group_list = sort(unique(plot_table$group))
-      # colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      # colors = colorRampPalette(colors)(length(group_list))
-      # colors = setNames(colors, group_list)
-      colors <- get_color_palette(groups = group_list,
+      # group_list = sort(unique(plot_table$group))
+      colors <- get_color_palette(groups = plot_table$group,
                                   color_palette = color_palette)
+      print("Rico: fa colors")
+      # print(group_list)
+      print(colors)
+      colors <- rev(colors)
+      print(colors)
 
       # set the main title for FA overview per lipid class
       if(selected_view == "lipidclass") {
