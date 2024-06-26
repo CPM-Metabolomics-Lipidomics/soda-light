@@ -899,8 +899,6 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$class_distribution_table = plot_table
 
-      print("Rico: distribution")
-      print(group_list)
       colors <- get_color_palette(groups = group_list,
                                   color_palette = color_palette)
 

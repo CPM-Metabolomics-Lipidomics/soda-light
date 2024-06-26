@@ -673,6 +673,13 @@ z_score_normalisation = function(data_table) {
     scaled_row = centered_row / sd(centered_row, na.rm = T)
     return(scaled_row)
   })
+
+  # remove any column which contains only NA's
+  keep_cols <- apply(data_table, 2, function(x) {
+    !all(is.na(x))
+  })
+  data_table <- data_table[, keep_cols]
+
   return(data_table)
 }
 
@@ -2195,9 +2202,6 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
     )
 
     # Colors loadings plot
-    print("Rico: loadings")
-    print(length(unique(groups)))
-    print(unique(groups))
     colors <- get_color_palette(groups = groups,
                                 color_palette = colors)
 
