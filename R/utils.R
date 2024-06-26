@@ -119,7 +119,7 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
     groups = base::as.numeric(groups)
 
     # Is data continuous or discrete
-    if (((length(unique_groups) > 25) | force_scale) & !force_list) {
+    if (((length(unique_groups) > 40) | force_scale) & !force_list) {
       # If continuous, export a color scale (for plotly)
       out_colors = create_color_scale(color_palette)
     } else {
@@ -2195,6 +2195,9 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
     )
 
     # Colors loadings plot
+    print("Rico: loadings")
+    print(length(unique(groups)))
+    print(unique(groups))
     colors <- get_color_palette(groups = groups,
                                 color_palette = colors)
 
