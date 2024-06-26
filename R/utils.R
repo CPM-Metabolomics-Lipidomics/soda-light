@@ -115,8 +115,8 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
   }
 
   # Is data numeric or string
-  if (is_coercible_to_numeric(groups)) {
-    groups = base::as.numeric(groups)
+  if (is_coercible_to_numeric(unique_groups)) {
+    unique_groups = base::as.numeric(unique_groups)
 
     # Is data continuous or discrete
     if (((length(unique_groups) > 40) | force_scale) & !force_list) {
