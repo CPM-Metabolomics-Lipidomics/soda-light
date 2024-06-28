@@ -1841,7 +1841,7 @@ fa_comp_spawn = function(r6, format, output) {
 fa_comp_ui = function(dimensions_obj, session) {
   # add function to show bs4dash with plotting function
   get_plotly_box(id = "fa_comp",
-                 label = "Fatty acid composition analysis",
+                 label = "Composition analysis",
                  dimensions_obj = dimensions_obj,
                  session = session)
 }
@@ -1853,6 +1853,12 @@ fa_comp_server = function(r6, input, output, session) {
   # set some UI
   output$fa_comp_sidebar_ui = shiny::renderUI({
     shiny::tagList(
+      shiny::selectInput(
+        inputId = ns("fa_comp_composition"),
+        label = "Select composition",
+        choices = r6$hardcoded_settings$fa_composition$composition_options,
+        selected = r6$params$fa_comp_plot$composition
+      ),
       shiny::selectInput(
         inputId = ns("fa_comp_metacol"),
         label = "Select group column",
@@ -1869,7 +1875,7 @@ fa_comp_server = function(r6, input, output, session) {
       shiny::selectizeInput(
         inputId = ns("fa_comp_selected_lipidclass"),
         label = "Select lipid class",
-        choices = c("All", unique(r6$tables$feature_table$lipid_class)),
+        choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class)),
         selected = r6$params$fa_comp_plot$selected_lipidclass,
         multiple = FALSE
       ),
@@ -1899,11 +1905,17 @@ fa_comp_server = function(r6, input, output, session) {
 
 fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, session) {
   iv_fa_comp <- shinyvalidate::InputValidator$new()
+  iv_fa_comp$add_rule("fa_comp_composition", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_metacol", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_metagroup", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_selected_lipidclass", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_color_palette", shinyvalidate::sv_required())
   iv_fa_comp$add_rule("fa_comp_img_format", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_composition",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$fa_composition$composition_options,
+                      name_plot = r6$name,
+                      message = "FA composition analysis: Incorrect composition selected!")
   iv_fa_comp$add_rule("fa_comp_metacol",
                       iv_check_select_input,
                       choices = r6$hardcoded_settings$meta_column,
@@ -1930,6 +1942,34 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       name_plot = r6$name,
                       message = "FA composition analysis: Incorrect image format selected!")
 
+  # auto-update the lipid classes
+  shiny::observeEvent(input$fa_comp_composition, {
+    if(r6$name == "Error") {
+      output$fa_comp_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      if(input$fa_comp_composition == "fa_tail") {
+        lipidclass_choices <- c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class))
+      } else {
+        lipidclass_choices <- unique(r6$tables$feature_table$lipid_class)
+      }
+
+      if(r6$params$fa_comp_plot$selected_lipidclass == "All") {
+        selected_lipidclass = "CE"
+      } else {
+        selected_lipidclass <- r6$params$fa_comp_plot$selected_lipidclass
+      }
+
+      shiny::updateSelectizeInput(
+        inputId = "fa_comp_selected_lipidclass",
+        session = session,
+        choices = lipidclass_choices,
+        selected = selected_lipidclass,
+      )
+    }
+  })
+
   # auto-update selected groups
   shiny::observeEvent(input$fa_comp_metacol, {
     if(r6$name == "Error") {
@@ -1949,6 +1989,7 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
   # Generate the plot
   shiny::observeEvent(
     c(shiny::req(length(input$fa_comp_metagroup) == 2),
+      input$fa_comp_composition,
       input$fa_comp_selected_lipidclass,
       input$fa_comp_color_palette,
       input$fa_comp_img_format),
@@ -1960,30 +2001,34 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
           "Error! No data available!"
         })
       } else {
-        print_tm(r6$name, "Fatty acid composition analysis: Updating params...")
+        if(!(input$fa_comp_composition == "total_lipid" & input$fa_comp_selected_lipidclass == "All")) {
+          print_tm(r6$name, "Fatty acid composition analysis: Updating params...")
 
-        r6$param_fa_comp_plot(
-          data_table = r6$tables$total_norm_data,
-          sample_meta = r6$tables$raw_meta,
-          feature_meta = r6$tables$feature_table,
-          group_col = input$fa_comp_metacol,
-          group_1 = input$fa_comp_metagroup[1],
-          group_2 = input$fa_comp_metagroup[2],
-          selected_lipidclass = input$fa_comp_selected_lipidclass,
-          color_palette = input$fa_comp_color_palette,
-          img_format = input$fa_comp_img_format
-        )
+          r6$param_fa_comp_plot(
+            data_table = r6$tables$total_norm_data,
+            sample_meta = r6$tables$raw_meta,
+            composition = input$fa_comp_composition,
+            feature_meta = r6$tables$feature_table,
+            group_col = input$fa_comp_metacol,
+            group_1 = input$fa_comp_metagroup[1],
+            group_2 = input$fa_comp_metagroup[2],
+            selected_lipidclass = input$fa_comp_selected_lipidclass,
+            color_palette = input$fa_comp_color_palette,
+            img_format = input$fa_comp_img_format
+          )
 
-        base::tryCatch({
-          fa_comp_generate(r6, color_palette, dimensions_obj, input)
-          fa_comp_spawn(r6, input$fa_comp_img_format, output)
-        },
-        error = function(e) {
-          print_tm(r6$name, 'Fatty acid composition analysis error, missing data.')
-          print(e)
-        },
-        finally = {}
-        )
+          base::tryCatch({
+            fa_comp_generate(r6, color_palette, dimensions_obj, input)
+            fa_comp_spawn(r6, input$fa_comp_img_format, output)
+          },
+          error = function(e) {
+            print_tm(r6$name, 'Fatty acid composition analysis error, missing data.')
+            print(e)
+          },
+          finally = {}
+          )
+        }
+
       }
     })
 

@@ -2,9 +2,8 @@
 #----------------------------------------------------------------- About UI ----
 about_ui = function(id){
   ns = shiny::NS(id)
-  shiny::fluidRow(
-    shiny::includeMarkdown("./help/welcome.md")
-  )
+
+  shiny::includeMarkdown("./man/about.md")
 }
 
 #----------------------------------------------------------- About server ----
@@ -13,7 +12,7 @@ about_server = function(id, main_output) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      print("Rico: about started")
+      print_tm(NULL, "About server started")
     }
   )
 }
