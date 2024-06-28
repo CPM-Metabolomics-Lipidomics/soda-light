@@ -39,7 +39,7 @@ class_distribution_ui = function(dimensions_obj, session) {
 }
 
 
-class_distribution_server = function(r6, output, session) {
+class_distribution_server = function(r6, input, output, session) {
   ns = session$ns
   print_tm(r6$name, "Class distribution : START.")
 
@@ -111,23 +111,34 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
                                  message = "Class distribution: Incorrect image format selected!")
 
   # Generate the plot
-  shiny::observeEvent(c(input$class_distribution_dataset, input$class_distribution_metacol, input$class_distribution_color_palette, input$class_distribution_img_format), {
+  shiny::observeEvent(c(input$class_distribution_dataset,
+                        input$class_distribution_metacol,
+                        input$class_distribution_color_palette,
+                        input$class_distribution_img_format), {
     shiny::req(iv_class_distribution$is_valid())
 
-    print_tm(r6$name, "Class distribution: Updating params...")
+    if(r6$name == "Error") {
+      output$class_distribution_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
 
-    r6$param_class_distribution(dataset = input$class_distribution_dataset,
-                                group_col = input$class_distribution_metacol,
-                                color_palette = input$class_distribution_color_palette,
-                                img_format = input$class_distribution_img_format)
+      print_tm(r6$name, "Class distribution: Updating params...")
 
-    base::tryCatch({
-      class_distribution_generate(r6, color_palette, dimensions_obj, input)
-      class_distribution_spawn(r6, input$class_distribution_img_format, output)
-    },error=function(e){
-      print_tm(r6$name, 'Class distribution: ERROR.')
-    },finally={}
-    )
+      r6$param_class_distribution(dataset = input$class_distribution_dataset,
+                                  group_col = input$class_distribution_metacol,
+                                  color_palette = input$class_distribution_color_palette,
+                                  img_format = input$class_distribution_img_format)
+
+      base::tryCatch({
+        class_distribution_generate(r6, color_palette, dimensions_obj, input)
+        class_distribution_spawn(r6, input$class_distribution_img_format, output)
+      },error=function(e){
+        print_tm(r6$name, 'Class distribution: ERROR.')
+      },finally={}
+      )
+    }
+
   })
 
   # Download associated table
@@ -196,7 +207,7 @@ class_comparison_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-class_comparison_server = function(r6, output, session) {
+class_comparison_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "Class comparison: START.")
@@ -270,22 +281,26 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
   shiny::observeEvent(c(input$class_comparison_dataset, input$class_comparison_metacol, input$class_comparison_color_palette, input$class_comparison_img_format), {
     shiny::req(iv_class_comparison$is_valid())
 
-    print_tm(r6$name, "Class comparison: Updating params...")
+    if(r6$name == "Error") {
+      output$class_comparison_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      print_tm(r6$name, "Class comparison: Updating params...")
 
-    r6$param_class_comparison(dataset = input$class_comparison_dataset,
-                              group_col = input$class_comparison_metacol,
-                              color_palette = input$class_comparison_color_palette,
-                              img_format = input$class_comparison_img_format)
+      r6$param_class_comparison(dataset = input$class_comparison_dataset,
+                                group_col = input$class_comparison_metacol,
+                                color_palette = input$class_comparison_color_palette,
+                                img_format = input$class_comparison_img_format)
 
-    base::tryCatch({
-      class_comparison_generate(r6, color_palette, dimensions_obj, input)
-      class_comparison_spawn(r6, input$class_comparison_img_format, output)
-    },error=function(e){
-      print_tm(r6$name, 'Class comparison: error, missing data.')
-    },finally={}
-    )
-
-
+      base::tryCatch({
+        class_comparison_generate(r6, color_palette, dimensions_obj, input)
+        class_comparison_spawn(r6, input$class_comparison_img_format, output)
+      },error=function(e){
+        print_tm(r6$name, 'Class comparison: error, missing data.')
+      },finally={}
+      )
+    }
   })
 
 
@@ -365,7 +380,7 @@ volcano_plot_ui = function(dimensions_obj, session) {
 }
 
 
-volcano_plot_server = function(r6, output, session) {
+volcano_plot_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "Volcano plot: START.")
@@ -399,13 +414,17 @@ volcano_plot_server = function(r6, output, session) {
         selected = c(r6$params$volcano_plot$group_1, r6$params$volcano_plot$group_2),
         multiple = TRUE
       ),
-
-      shiny::selectizeInput(
-        inputId = ns('volcano_plot_feature_metadata'),
-        label = "Feature metadata",
-        choices = c('None', colnames(r6$tables$feature_table)),
-        selected = r6$params$volcano_plot$feature_metadata,
-        multiple = FALSE
+      shiny::span(
+        shiny::selectizeInput(
+          inputId = ns('volcano_plot_feature_metadata'),
+          label = "Feature metadata",
+          choices = r6$hardcoded_settings$volcano_plot$feature_metadata,
+          selected = r6$params$volcano_plot$feature_metadata,
+          multiple = FALSE
+        ),
+        `data-toggle` = "tooltip",
+        `data-placement` = "right",
+        title = "Note:\nTail 1:\n\t* TG total number of carbons.\n\t* PA total number of carbons.\nTail 2:\n\t* TG Number of carbons of one of the tails.\n\t* CE, PA, LPC, LPE 0 number of carbons."
       ),
       # shiny::selectizeInput(
       #   inputId = ns('volcano_plot_annotation_terms'),
@@ -414,13 +433,6 @@ volcano_plot_server = function(r6, output, session) {
       #   selected = NULL,
       #   multiple = TRUE
       # ),
-      shinyWidgets::materialSwitch(
-        inputId = ns('volcano_plot_keep_significant'),
-        label = 'Keep only significant data',
-        value = r6$params$volcano_plot$keep_significant,
-        right = TRUE,
-        status = "success"
-      ),
       shiny::selectizeInput(
         inputId = ns('volcano_plot_color_palette'),
         label = "Feature metadata colors",
@@ -525,7 +537,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   iv_volcano_plot$add_rule("volcano_plot_color_palette", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_metagroup", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_feature_metadata", shinyvalidate::sv_required())
-  iv_volcano_plot$add_rule("volcano_plot_keep_significant", shinyvalidate::sv_optional())
   iv_volcano_plot$add_rule("volcano_plot_function", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_test", shinyvalidate::sv_required())
   iv_volcano_plot$add_rule("volcano_plot_adjustment", shinyvalidate::sv_required())
@@ -560,21 +571,16 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                            choices = r6$hardcoded_settings$image_format,
                            name_plot = r6$name,
                            message = "Volcano plot: Incorrect image palette selected!")
-  iv_volcano_plot$add_rule("volcano_plot_metagroup",
-                           iv_check_select_input,
-                           choices = unique(r6$tables$raw_meta[, r6$params$volcano_plot$group_col]),
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect group selected!")
+  # iv_volcano_plot$add_rule("volcano_plot_metagroup",
+  #                          iv_check_select_input,
+  #                          choices = unique(r6$tables$raw_meta[, r6$params$volcano_plot$group_col]),
+  #                          name_plot = r6$name,
+  #                          message = "Volcano plot: Incorrect groups selected!")
   iv_volcano_plot$add_rule("volcano_plot_feature_metadata",
                            iv_check_select_input,
                            choices = c("None", unique(colnames(r6$tables$feature_table))),
                            name_plot = r6$name,
                            message = "Volcano plot: Incorrect feature metadata selected!")
-  iv_volcano_plot$add_rule("volcano_plot_keep_significant",
-                           iv_check_select_input,
-                           choices = c(FALSE, TRUE),
-                           name_plot = r6$name,
-                           message = "Volcano plot: Incorrect keep significant selected!")
   iv_volcano_plot$add_rule("volcano_plot_function",
                            iv_check_select_input,
                            choices = r6$hardcoded_settings$volcano_plot$calc_func,
@@ -618,33 +624,21 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
-    shiny::updateSelectizeInput(
-      inputId = "volcano_plot_metagroup",
-      session = session,
-      choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
-      selected = unique(r6$tables$raw_meta[, input$volcano_plot_metacol])[c(1, 2)]
-    )
+    if(r6$name == "Error") {
+      output$volcano_plot_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      shiny::updateSelectizeInput(
+        inputId = "volcano_plot_metagroup",
+        session = session,
+        choices = unique(r6$tables$raw_meta[, input$volcano_plot_metacol]),
+        selected = unique(r6$tables$raw_meta[, input$volcano_plot_metacol])[c(1, 2)]
+      )
+    }
   })
 
-  # shiny::observeEvent(input$volcano_plot_feature_metadata, {
-  #   if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
-  #     shiny::updateSelectizeInput(
-  #       inputId = "volcano_plot_annotation_terms",
-  #       session = session,
-  #       choices = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$feature_list,
-  #       selected = character(0)
-  #     )
-  #   } else {
-  #     shiny::updateSelectizeInput(
-  #       inputId = "volcano_plot_annotation_terms",
-  #       session = session,
-  #       choices = NULL,
-  #       selected = character(0)
-  #     )
-  #   }
-  # })
-
-
+  # make the plot
   shiny::observeEvent(
     c(shiny::req(length(input$volcano_plot_metagroup) == 2),
       input$volcano_plot_auto_refresh,
@@ -654,8 +648,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_test,
       input$volcano_plot_displayed_plot,
       input$volcano_plot_feature_metadata,
-      # input$volcano_plot_annotation_terms,
-      input$volcano_plot_keep_significant,
       input$volcano_plot_color_palette,
       input$volcano_plot_p_val_threshold,
       input$volcano_plot_fc_threshold,
@@ -663,53 +655,71 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_opacity,
       input$volcano_plot_img_format
     ), {
-       shiny::req(iv_volcano_plot$is_valid(),
-                 length(input$volcano_plot_metagroup) == 2)
+      if(r6$name == "Error") {
+        output$volcano_plot_message <- shiny::renderText({
+          "Error! No data available!"
+        })
+      } else {
+        shiny::req(iv_volcano_plot$is_valid(),
+                   length(input$volcano_plot_metagroup) == 2)
 
-      if (!input$volcano_plot_auto_refresh) {
-        r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
-        return()
-      }
-      print_tm(r6$name, "Volcano plot: Updating params...")
+        shinyjs::hide(id = "volcano_plot_message")
+        output$volcano_plot_message <- shiny::renderText({return(NULL)})
 
-      # Is the column multivalue?
-      if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
-        if (length(input$volcano_plot_annotation_terms) > 0) {
-          feature_metadata = match_go_terms(terms_list = input$volcano_plot_annotation_terms,
-                                            sparse_table = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$sparse_matrix)
-        } else {
+        if (!input$volcano_plot_auto_refresh) {
+          r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
           return()
         }
-      } else {
-        feature_metadata = input$volcano_plot_feature_metadata
+        print_tm(r6$name, "Volcano plot: Updating params...")
+
+        # Is the column multivalue?
+        if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
+          if (length(input$volcano_plot_annotation_terms) > 0) {
+            feature_metadata = match_go_terms(terms_list = input$volcano_plot_annotation_terms,
+                                              sparse_table = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$sparse_matrix)
+          } else {
+            return()
+          }
+        } else {
+          feature_metadata = input$volcano_plot_feature_metadata
+        }
+
+        r6$param_volcano_plot(auto_refresh = input$volcano_plot_auto_refresh,
+                              data_table = input$volcano_plot_tables,
+                              adjustment = input$volcano_plot_adjustment,
+                              group_col = input$volcano_plot_metacol,
+                              group_1 = input$volcano_plot_metagroup[1],
+                              group_2 = input$volcano_plot_metagroup[2],
+                              feature_metadata = input$volcano_plot_feature_metadata,
+                              color_palette = input$volcano_plot_color_palette,
+                              displayed_plot = input$volcano_plot_displayed_plot,
+                              p_val_threshold = input$volcano_plot_p_val_threshold,
+                              fc_threshold = input$volcano_plot_fc_threshold,
+                              marker_size = input$volcano_plot_marker_size,
+                              opacity = input$volcano_plot_opacity,
+                              selected_function = input$volcano_plot_function,
+                              selected_test = input$volcano_plot_test,
+                              img_format = input$volcano_plot_img_format)
+
+        base::tryCatch({
+          volcano_plot_generate(r6, color_palette, dimensions_obj, input)
+          volcano_plot_spawn(r6, input$volcano_plot_img_format, output)
+        },
+        error = function(e) {
+          if(grepl(x = e,
+                   pattern = "not enough observations")) {
+            output$volcano_plot_plot <- plotly::renderPlotly({return(NULL)})
+            shinyjs::show(id = "volcano_plot_message")
+            output$volcano_plot_message <- shiny::renderText({
+              "Error: Not enough samples in one or both groups!"
+            })
+          }
+          print_tm(r6$name, 'Volcano plot: ERROR.')
+          print(e)
+        },
+        finally = {}
+        )
       }
-
-      r6$param_volcano_plot(auto_refresh = input$volcano_plot_auto_refresh,
-                            data_table = input$volcano_plot_tables,
-                            adjustment = input$volcano_plot_adjustment,
-                            group_col = input$volcano_plot_metacol,
-                            group_1 = input$volcano_plot_metagroup[1],
-                            group_2 = input$volcano_plot_metagroup[2],
-                            feature_metadata = input$volcano_plot_feature_metadata,
-                            keep_significant = input$volcano_plot_keep_significant,
-                            color_palette = input$volcano_plot_color_palette,
-                            displayed_plot = input$volcano_plot_displayed_plot,
-                            p_val_threshold = input$volcano_plot_p_val_threshold,
-                            fc_threshold = input$volcano_plot_fc_threshold,
-                            marker_size = input$volcano_plot_marker_size,
-                            opacity = input$volcano_plot_opacity,
-                            selected_function = input$volcano_plot_function,
-                            selected_test = input$volcano_plot_test,
-                            img_format = input$volcano_plot_img_format)
-
-      base::tryCatch({
-        volcano_plot_generate(r6, color_palette, dimensions_obj, input)
-        volcano_plot_spawn(r6, input$volcano_plot_img_format, output)
-      },error=function(e){
-        print_tm(r6$name, 'Volcano plot: ERROR.')
-      },finally={}
-      )
-
 
     })
 
@@ -769,231 +779,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
 }
 
-#----------------------------------------------------------------- SI index ----
-satindex_generate = function(r6, colour_list, dimensions_obj, input) {
-  print_tm(r6$name, "Saturation index plot: generating plot.")
-
-  if (input$satindex_plotbox$maximized){
-    width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
-    height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
-  } else {
-    width = dimensions_obj$xpx * dimensions_obj$x_plot
-    height = dimensions_obj$ypx * dimensions_obj$y_plot
-  }
-
-  r6$plot_satindex(width = width,
-                   height = height)
-}
-
-satindex_spawn = function(r6, format, output) {
-  print_tm(r6$name, "Saturation index: spawning plot.")
-
-  output$satindex_plot = plotly::renderPlotly({
-    r6$plots$satindex_plot
-    plotly::config(r6$plots$satindex_plot, toImageButtonOptions = list(format = format,
-                                                                       filename = timestamped_name('si_index'),
-                                                                       height = NULL,
-                                                                       width = NULL,
-                                                                       scale = 1))
-  })
-}
-
-satindex_ui = function(dimensions_obj, session) {
-  # add function to show bs4dash with plotting function
-  get_plotly_box(id = "satindex",
-                 label = "Saturation index",
-                 dimensions_obj = dimensions_obj,
-                 session = session)
-}
-
-satindex_server = function(r6, output, session) {
-  ns = session$ns
-  print_tm(r6$name, "Saturation index: START.")
-
-  # set some UI
-  output$satindex_sidebar_ui = shiny::renderUI({
-    shiny::tagList(
-      shiny::selectInput(
-        inputId = ns("satindex_select_method"),
-        label = "Select a method",
-        choices = r6$hardcoded_settings$satindex$method,
-        selected = r6$params$satindex_plot$method
-      ),
-      shiny::textOutput(outputId = ns("satindex_note")),
-      shiny::selectInput(
-        inputId = ns("satindex_metacol"),
-        label = "Select group column",
-        choices = r6$hardcoded_settings$meta_column,
-        selected = r6$params$satindex_plot$group_col
-      ),
-      shinyjs::hidden(shiny::selectizeInput(
-        inputId = ns("satindex_metagroup"),
-        label = "Select two groups to compare",
-        choices = unique(r6$tables$raw_meta[,r6$params$satindex_plot$group_col]),
-        selected = c(r6$params$satindex_plot$group_1, r6$params$satindex_plot$group_2),
-        multiple = TRUE
-      )),
-      shinyjs::hidden(shiny::selectizeInput(
-        inputId = ns("satindex_lipidclass"),
-        label = "Select lipid class",
-        choices = unique(r6$tables$feature_table$lipid_class),
-        selected = r6$params$satindex_plot$selected_lipid_class,
-        multiple = FALSE
-      )),
-      shiny::selectizeInput(
-        inputId = ns('satindex_color_palette'),
-        label = "Color palette",
-        choices = r6$hardcoded_settings$color_palette,
-        selected = r6$params$satindex_plot$color_palette,
-        multiple = FALSE
-      ),
-      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-      shiny::selectInput(
-        inputId = ns("satindex_img_format"),
-        label = "Image format",
-        choices = r6$hardcoded_settings$image_format,
-        selected = r6$params$satindex_plot$img_format,
-        width = "100%"),
-      shiny::downloadButton(
-        outputId = ns("download_satindex_table"),
-        label = "Download associated table",
-        style = "width:100%;"
-      )
-    )
-  })
-}
-
-satindex_events = function(r6, dimensions_obj, color_palette, input, output, session) {
-  # input validation
-  iv_satindex <- shinyvalidate::InputValidator$new()
-  iv_satindex$add_rule("satindex_select_method", shinyvalidate::sv_required())
-  iv_satindex$add_rule("satindex_metacol", shinyvalidate::sv_required())
-  iv_satindex$add_rule("satindex_metagroup", shinyvalidate::sv_required())
-  iv_satindex$add_rule("satindex_lipidclass", shinyvalidate::sv_required())
-  iv_satindex$add_rule("satindex_color_palette", shinyvalidate::sv_optional())
-  iv_satindex$add_rule("satindex_img_format", shinyvalidate::sv_optional())
-  iv_satindex$add_rule("satindex_select_method",
-                       iv_check_select_input,
-                       choices = r6$hardcoded_settings$satindex$method,
-                       name_plot = r6$name,
-                       message = "SI index: Incorrect method selected!")
-  iv_satindex$add_rule("satindex_metacol",
-                       iv_check_select_input,
-                       choices = r6$hardcoded_settings$meta_column,
-                       name_plot = r6$name,
-                       message = "SI index: Incorrect group column selected!")
-  iv_satindex$add_rule("satindex_metagroup",
-                       iv_check_select_input,
-                       choices = unique(r6$tables$raw_meta[, r6$params$satindex_plot$group_col]),
-                       name_plot = r6$name,
-                       message = "SI index: Incorrect group(s) selected!")
-  iv_satindex$add_rule("satindex_lipidclass",
-                       iv_check_select_input,
-                       choices = unique(r6$tables$feature_table$lipid_class),
-                       name_plot = r6$name,
-                       message = "SI index: Incorrect group(s) selected!")
-  iv_satindex$add_rule("satindex_color_palette",
-                       iv_check_select_input,
-                       choices = r6$hardcoded_settings$color_palette,
-                       name_plot = r6$name,
-                       message = "SI index: Incorrect color palette selected!")
-  iv_satindex$add_rule("satindex_img_format",
-                       iv_check_select_input,
-                       choices = r6$hardcoded_settings$image_format,
-                       name_plot = r6$name,
-                       message = "SI index: Incorrect image format selected!")
-
-  # Generate the plot
-  shiny::observeEvent(c(shiny::req(length(input$satindex_metagroup) == 2),
-                        input$satindex_metacol,
-                        input$satindex_img_format,
-                        input$satindex_select_method,
-                        input$satindex_metagroup,
-                        input$satindex_color_palette,
-                        input$satindex_lipidclass), {
-                          shiny::req(iv_satindex$is_valid())
-
-                          print_tm(r6$name, "Saturation index: Updating params...")
-
-                          if(input$satindex_select_method == "ratio") {
-                            output$satindex_note <- shiny::renderText({
-                              "Ref:  Cell Rep. 2018 Sep 4;24(10):2596-2605"
-                            })
-                          } else {
-                            output$satindex_note <- shiny::renderText({
-                              ""
-                            })
-                          }
-
-                          # show / hide the group selection
-                          if(input$satindex_select_method == "double bond") {
-                            shinyjs::show(id = "satindex_metagroup")
-                            shinyjs::show(id = "satindex_lipidclass")
-                            shinyjs::hide(id = "satindex_color_palette")
-                          } else {
-                            shinyjs::hide(id = "satindex_metagroup")
-                            shinyjs::hide(id = "satindex_lipidclass")
-                            shinyjs::show(id = "satindex_color_palette")
-                          }
-
-                          r6$param_satindex_plot(data_table = r6$tables$raw_data,
-                                                 feature_meta = r6$tables$feature_table,
-                                                 sample_meta = r6$tables$raw_meta,
-                                                 group_col = input$satindex_metacol,
-                                                 group_1 = input$satindex_metagroup[1],
-                                                 group_2 = input$satindex_metagroup[2],
-                                                 selected_lipid_class = input$satindex_lipidclass,
-                                                 color_palette = input$satindex_color_palette,
-                                                 method = input$satindex_select_method,
-                                                 img_format = input$satindex_img_format)
-
-                          base::tryCatch({
-                            satindex_generate(r6, color_palette, dimensions_obj, input)
-                            satindex_spawn(r6, input$satindex_img_format, output)
-                          },
-                          error = function(e) {
-                            print_tm(r6$name, 'Saturation index error, missing data.')
-                            print(e)
-                          },
-                          finally = {}
-                          )
-                        })
-
-  # Download associated table
-  output$download_satindex_table = shiny::downloadHandler(
-    filename = function() {
-      if(input$satindex_select_method == "db") {
-        timestamped_name(paste(input$satindex_select_method, input$satindex_lipidclass, "si_table.csv", sep = "_"))
-      } else {
-        timestamped_name(paste(input$satindex_select_method, "si_table.csv", sep = "_"))
-      }
-    },
-    content = function(file_name){
-      write.csv(r6$tables$satindex_table, file_name)
-    }
-  )
-
-  # Expanded boxes
-  satindex_proxy = plotly::plotlyProxy(outputId = "satindex_plot",
-                                       session = session)
-
-  shiny::observeEvent(input$satindex_plotbox,{
-    if (input$satindex_plotbox$maximized) {
-      plotly::plotlyProxyInvoke(p = satindex_proxy,
-                                method = "relayout",
-                                list(width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full,
-                                     height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
-                                ))
-    } else {
-      plotly::plotlyProxyInvoke(p = satindex_proxy,
-                                method = "relayout",
-                                list(width = dimensions_obj$xpx * dimensions_obj$x_plot,
-                                     height = dimensions_obj$ypx * dimensions_obj$y_plot
-                                ))
-    }
-  })
-}
-
 #-----------------------------------------------------------FA analysis index ----
 fa_analysis_generate = function(r6, colour_list, dimensions_obj, input) {
   print_tm(r6$name, "Fatty acid analysis index plot: generating plot.")
@@ -1031,7 +816,7 @@ fa_analysis_ui = function(dimensions_obj, session) {
                  session = session)
 }
 
-fa_analysis_server = function(r6, output, session) {
+fa_analysis_server = function(r6, input, output, session) {
   ns = session$ns
   print_tm(r6$name, "Fatty acid analysis index: START.")
 
@@ -1044,19 +829,26 @@ fa_analysis_server = function(r6, output, session) {
         choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$fa_analysis_plot$group_col
       ),
-      shiny::selectInput(
-        inputId = ns("fa_analysis_pathway"),
-        label = "Select pathway",
-        choices = r6$hardcoded_settings$fa_analysis$pathway,
-        selected = r6$params$fa_analysis_plot$pathway,
-        multiple = TRUE,
-        width = "100%"),
       shiny::selectizeInput(
-        inputId = ns("fa_analysis_selected_lipidclass"),
-        label = "Select lipid class",
-        choices = c("All", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA", "TG"))]),
-        selected = r6$params$fa_analysis$selected_lipidclass,
+        inputId = ns("fa_analysis_selected_view"),
+        label = "Select view",
+        choices = c("FA overview per lipid class" = "lipidclass",
+                    "Lipid class overview per FA" = "fa"),
+        selected = r6$params$fa_analysis$selected_view,
         multiple = FALSE
+      ),
+      shiny::uiOutput(outputId = ns("fa_analysis_selected_view_ui")),
+      shiny::span(
+        shinyWidgets::materialSwitch(
+          inputId = ns("fa_analysis_fa_norm"),
+          label = "Fatty acid normalisation",
+          status = "success",
+          right = TRUE,
+          value = r6$params$fa_analysis_plot$fa_norm
+        ),
+        `data-toggle` = "tooltip",
+        `data-placement` = "right",
+        title = "Normalize the data by the total of the fatty acids."
       ),
       shiny::selectizeInput(
         inputId = ns('fa_analysis_color_palette'),
@@ -1079,13 +871,61 @@ fa_analysis_server = function(r6, output, session) {
       )
     )
   })
+
+  output$fa_analysis_selected_view_ui <- shiny::renderUI({
+    req(input$fa_analysis_selected_view)
+
+    selected_view <- input$fa_analysis_selected_view
+
+    # get unique FA's, ignore PA
+    feature_table <- r6$tables$feature_table[r6$tables$feature_table$lipid_class != "PA", ]
+    fa_tails <- c(
+      paste0(feature_table$carbons_1[feature_table$lipid_class != "TG"], ":", feature_table$unsat_1[feature_table$lipid_class != "TG"]),
+      paste0(feature_table$carbons_2, ":", feature_table$unsat_2)
+    )
+
+    fa_tails <- unique(fa_tails)
+    fa_tails <- sort(fa_tails[fa_tails != "0:0"])
+
+    if(selected_view == "lipidclass") {
+      shiny::selectizeInput(
+        inputId = ns("fa_analysis_selected_lipidclass"),
+        label = "Select lipid class",
+        choices = c("All (incl. TG)" = "All",
+                    "All (excl. TG)" = "All_noTG",
+                    unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA"))]),
+        selected = r6$params$fa_analysis$selected_lipidclass,
+        multiple = FALSE
+      )
+    } else if(selected_view == "fa") {
+      shiny::selectizeInput(
+        inputId = ns("fa_analysis_selected_fa"),
+        label = "Select fatty acid",
+        choices = fa_tails,
+        selected = r6$params$fa_analysis$selected_fa,
+        multiple = TRUE
+      )
+    }
+  })
 }
 
+
 fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  # get unique FA's, ignore PA
+  feature_table <- r6$tables$feature_table[r6$tables$feature_table$lipid_class != "PA", ]
+  fa_tails <- c(
+    paste0(feature_table$carbons_1[feature_table$lipid_class != "TG"], ":", feature_table$unsat_1[feature_table$lipid_class != "TG"]),
+    paste0(feature_table$carbons_2, ":", feature_table$unsat_2)
+  )
+
+  fa_tails <- unique(fa_tails)
+  fa_tails <- sort(fa_tails[fa_tails != "0:0"])
+
   iv_fa_analysis <- shinyvalidate::InputValidator$new()
   iv_fa_analysis$add_rule("fa_analysis_metacol", shinyvalidate::sv_required())
-  iv_fa_analysis$add_rule("fa_analysis_pathway", shinyvalidate::sv_optional())
-  iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_selected_view", shinyvalidate::sv_required())
+  iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass", shinyvalidate::sv_optional())
+  iv_fa_analysis$add_rule("fa_analysis_selected_fa", shinyvalidate::sv_optional())
   iv_fa_analysis$add_rule("fa_analysis_color_palette", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_img_format", shinyvalidate::sv_required())
   iv_fa_analysis$add_rule("fa_analysis_metacol",
@@ -1093,16 +933,21 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                           choices = r6$hardcoded_settings$meta_column,
                           name_plot = r6$name,
                           message = "FA analysis: Incorrect group column selected!")
-  iv_fa_analysis$add_rule("fa_analysis_pathway",
+  iv_fa_analysis$add_rule("fa_analysis_selected_view",
                           iv_check_select_input,
-                          choices = r6$hardcoded_settings$fa_analysis$pathway,
+                          choices = c("lipidclass", "fa"),
                           name_plot = r6$name,
-                          message = "FA analysis: Incorrect pathway(s) selected!")
+                          message = "FA analysis: Incorrect view selected!")
   iv_fa_analysis$add_rule("fa_analysis_selected_lipidclass",
                           iv_check_select_input,
-                          choices = c("All", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA", "TG"))]),
+                          choices = c("All", "All_noTG", unique(r6$tables$feature_table$lipid_class)[!(unique(r6$tables$feature_table$lipid_class) %in% c("PA"))]),
                           name_plot = r6$name,
-                          message = "FA analysis: Incorrect pathway(s) selected!")
+                          message = "FA analysis: Incorrect lipid class selected!")
+  iv_fa_analysis$add_rule("fa_analysis_selected_fa",
+                          iv_check_select_input,
+                          choices = fa_tails,
+                          name_plot = r6$name,
+                          message = "FA analysis: Incorrect fatty acid tail selected!")
   iv_fa_analysis$add_rule("fa_analysis_color_palette",
                           iv_check_select_input,
                           choices = r6$hardcoded_settings$color_palette,
@@ -1116,33 +961,49 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
 
   # Generate the plot
   shiny::observeEvent(c(input$fa_analysis_metacol,
-                        input$fa_analysis_pathway,
+                        input$fa_analysis_selected_view,
                         input$fa_analysis_selected_lipidclass,
+                        input$fa_analysis_selected_fa,
+                        input$fa_analysis_fa_norm,
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
     shiny::req(iv_fa_analysis$is_valid())
 
-    print_tm(r6$name, "Fatty acid analysis: Updating params...")
+                          if(r6$name == "Error") {
+                            output$fa_analysis_message <- shiny::renderText({
+                              "Error! No data available!"
+                            })
+                          } else {
+                            if(input$fa_analysis_selected_view == "lipidclass") {
+                              shiny::req(input$fa_analysis_selected_lipidclass)
+                            } else if(input$fa_analysis_selected_view == "fa") {
+                              shiny::req(input$fa_analysis_selected_fa)
+                            }
 
-    r6$param_fa_analysis_plot(data_table = r6$tables$raw_data,
-                              feature_meta = r6$tables$feature_table,
-                              sample_meta = r6$tables$raw_meta,
-                              group_col = input$fa_analysis_metacol,
-                              pathway = input$fa_analysis_pathway,
-                              selected_lipidclass = input$fa_analysis_selected_lipidclass,
-                              color_palette = input$fa_analysis_color_palette,
-                              img_format = input$fa_analysis_img_format)
+                            print_tm(r6$name, "Fatty acid analysis: Updating params...")
 
-    base::tryCatch({
-      fa_analysis_generate(r6, color_palette, dimensions_obj, input)
-      fa_analysis_spawn(r6, input$fa_analysis_img_format, output)
-    },
-    error = function(e) {
-      print_tm(r6$name, 'Fatty acid analysis error, missing data.')
-      print(e)
-    },
-    finally = {}
-    )
+                            r6$param_fa_analysis_plot(data_table = r6$tables$total_norm_data,
+                                                      feature_meta = r6$tables$feature_table,
+                                                      sample_meta = r6$tables$raw_meta,
+                                                      group_col = input$fa_analysis_metacol,
+                                                      selected_view = input$fa_analysis_selected_view,
+                                                      selected_lipidclass = input$fa_analysis_selected_lipidclass,
+                                                      selected_fa = input$fa_analysis_selected_fa,
+                                                      fa_norm = input$fa_analysis_fa_norm,
+                                                      color_palette = input$fa_analysis_color_palette,
+                                                      img_format = input$fa_analysis_img_format)
+
+                            base::tryCatch({
+                              fa_analysis_generate(r6, color_palette, dimensions_obj, input)
+                              fa_analysis_spawn(r6, input$fa_analysis_img_format, output)
+                            },
+                            error = function(e) {
+                              print_tm(r6$name, 'Fatty acid analysis error, missing data.')
+                              print(e)
+                            },
+                            finally = {}
+                            )
+                          }
   })
 
   # Download associated table
@@ -1205,7 +1066,6 @@ heatmap_spawn = function(r6, format, output) {
 
 
 heatmap_ui = function(dimensions_obj, session) {
-
   get_plotly_box(id = "heatmap",
                  label = "Heatmap",
                  dimensions_obj = dimensions_obj,
@@ -1214,7 +1074,7 @@ heatmap_ui = function(dimensions_obj, session) {
 }
 
 
-heatmap_server = function(r6, output, session) {
+heatmap_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "Heatmap: START.")
@@ -1231,12 +1091,17 @@ heatmap_server = function(r6, output, session) {
       shiny::fluidRow(
         shiny::column(
           width = 4,
-          shinyWidgets::switchInput(inputId = ns("heatmap_impute"),
-                                    label = "Impute missing",
-                                    value = r6$params$heatmap$imputation,
-                                    onLabel = 'YES',
-                                    offLabel = 'NO',
-                                    labelWidth = '150px'
+          shiny::span(
+            shinyWidgets::switchInput(inputId = ns("heatmap_impute"),
+                                      label = "Impute missing",
+                                      value = r6$params$heatmap$impute,
+                                      onLabel = "YES",
+                                      offLabel = "NO",
+                                      labelWidth = "125px"
+            ),
+            `data-toggle` = "tooltip",
+            `data-placement` = "right",
+            title = "Missing values will be imputed with the minimum value of that sample."
           )
         ),
         shiny::column(
@@ -1265,7 +1130,7 @@ heatmap_server = function(r6, output, session) {
           width = 6,
           shiny::selectizeInput(
             inputId = ns("heatmap_map_rows"),
-            label = "Map sample data",
+            label = "Annotate samples",
             multiple = TRUE,
             choices = r6$hardcoded_settings$meta_column,
             selected = r6$params$heatmap$map_sample_data
@@ -1275,7 +1140,7 @@ heatmap_server = function(r6, output, session) {
           width = 6,
           shiny::selectizeInput(
             inputId = ns("heatmap_map_cols"),
-            label = "Map feature data",
+            label = "Annotate features",
             multiple = TRUE,
             choices = r6$hardcoded_settings$heatmap$map_cols,
             selected = r6$params$heatmap$map_feature_data
@@ -1300,7 +1165,7 @@ heatmap_server = function(r6, output, session) {
         shiny::column(
           width = 6,
           shiny::selectizeInput(inputId = ns("heatmap_group_col_da"),
-                                label = "Group column",
+                                label = "Group",
                                 choices = r6$hardcoded_settings$meta_column,
                                 selected = r6$params$heatmap$group_column_da,
                                 multiple = FALSE,
@@ -1308,28 +1173,53 @@ heatmap_server = function(r6, output, session) {
         ),
         shiny::column(
           width = 6,
-          shiny::sliderInput(inputId = ns("heatmap_alpha_da"),
-                             label = "Alpha",
-                             min = 0,
-                             max = 0.99,
-                             value = r6$params$heatmap$alpha_da,
-                             step = 0.01,
-                             width = "100%")
-        ),
-        shiny::selectInput(
-          inputId = ns('heatmap_colors_palette'),
-          label = 'Color palette',
-          choices = r6$hardcoded_settings$color_palette,
-          selected = r6$params$heatmap$color_palette,
-          width = '100%'
-        ),
-        shinyWidgets::materialSwitch(
-          inputId = ns('heatmap_reverse_palette'),
-          label = 'Reverse palette',
-          value = r6$params$heatmap$reverse_palette,
-          right = TRUE,
-          status = "primary"
-        ),
+          shiny::span(
+            shiny::sliderInput(inputId = ns("heatmap_alpha_da"),
+                               label = "Alpha",
+                               min = 0,
+                               max = 0.99,
+                               value = r6$params$heatmap$alpha_da,
+                               step = 0.01,
+                               width = "100%")
+          ),
+          `data-toggle` = "tooltip",
+          `data-placement` = "right",
+          title = "A higher value for alpha will result in a smaller amount of lipid species."
+        )
+      ),
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::fluidRow(
+        shiny::column(
+          width = 12,
+          shiny::span(
+            shiny::numericInput(
+              inputId = ns("heatmap_factor_height"),
+              label = "Height heatmap multiplication",
+              value = 2,
+              min = 1,
+              max = 5,
+              step = 0.1,
+              width = "100%"
+            ),
+            `data-toggle` = "tooltip",
+            `data-placement` = "right",
+            title = "Multiply the height of the heatmap by this factor to increase the height. 1 means the height of the box."
+          ),
+          shiny::selectInput(
+            inputId = ns('heatmap_colors_palette'),
+            label = 'Color palette',
+            choices = r6$hardcoded_settings$color_palette,
+            selected = r6$params$heatmap$color_palette,
+            width = '100%'
+          ),
+          shinyWidgets::materialSwitch(
+            inputId = ns('heatmap_reverse_palette'),
+            label = 'Reverse palette',
+            value = r6$params$heatmap$reverse_palette,
+            right = TRUE,
+            status = "primary"
+          )
+        )
       ),
 
       shiny::actionButton(
@@ -1368,6 +1258,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   iv_heatmap$add_rule("heatmap_colors_palette", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_reverse_palette", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_img_format", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_factor_height", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_dataset",
                       iv_check_select_input,
                       choices = r6$hardcoded_settings$heatmap$datasets,
@@ -1393,11 +1284,11 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = r6$hardcoded_settings$meta_column,
                       name_plot = r6$name,
                       message = "Heatmap: Incorrect map sample data selected!")
-  iv_heatmap$add_rule("heatmap_map_cols",
-                      iv_check_select_input,
-                      choices = r6$hardcoded_settings$heatmap$map_cols,
-                      name_plot = r6$name,
-                      message = "Heatmap: Incorrect map feature data selected!")
+  # iv_heatmap$add_rule("heatmap_map_cols",
+  #                     iv_check_select_input,
+  #                     choices = r6$hardcoded_settings$heatmap$map_cols,
+  #                     name_plot = r6$name,
+  #                     message = "Heatmap: Incorrect map feature data selected!")
   iv_heatmap$add_rule("heatmap_apply_da",
                       iv_check_select_input,
                       choices = c(FALSE, TRUE),
@@ -1428,11 +1319,60 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = r6$hardcoded_settings$image_format,
                       name_plot = r6$name,
                       message = "Heatmap: Incorrect image format selected!")
+  iv_heatmap$add_rule("heatmap_factor_height",
+                      iv_check_numeric_input,
+                      check_range = c(1, 5),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect multiplication factor for the height!")
 
-  shiny::observeEvent(c(input$heatmap_run,
-                        input$heatmap_img_format), {
-    req(input$heatmap_run)
-    shinyjs::disable("heatmap_run")
+  shiny::observeEvent(input$heatmap_dataset, {
+    # disable feature annotation when a lipid class table is selected
+    if(input$heatmap_dataset == "Class table z-scored" |
+       input$heatmap_dataset == "Class table z-scored total normalized") {
+      shinyjs::disable(id = "heatmap_map_cols")
+
+      # update numeric input for factor height
+      shiny::updateNumericInput(
+        inputId = "heatmap_factor_height",
+        label = "Height heatmap multiplication",
+        value = 1,
+        min = 1,
+        max = 5,
+        step = 0.1
+      )
+    } else {
+      shinyjs::enable(id = "heatmap_map_cols")
+
+      # update numeric input for factor height
+      shiny::updateNumericInput(
+        inputId = "heatmap_factor_height",
+        label = "Height heatmap multiplication",
+        value = 2,
+        min = 1,
+        max = 5,
+        step = 0.1
+      )
+    }
+  })
+
+  shiny::observeEvent(c(input$heatmap_run), {
+    req(input$heatmap_run,
+        input$heatmap_img_format)
+
+    # make sure no feature annotations will be supplied to heatmap when
+    # a lipid class table is selected
+    if(input$heatmap_dataset == "Class table z-scored" |
+       input$heatmap_dataset == "Class table z-scored total normalized") {
+      map_feature_data <- NULL
+    } else {
+      map_feature_data <- input$heatmap_map_cols
+    }
+
+    shinyjs::hide(id = "heatmap_message")
+    output$heatmap_message <- shiny::renderText({return(NULL)})
+
+    # disable run button
+    shinyjs::disable(id = "heatmap_run")
     print_tm(r6$name, "Heatmap: Updating params...")
 
     r6$param_heatmap(dataset = input$heatmap_dataset,
@@ -1440,18 +1380,31 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                      cluster_samples = input$heatmap_cluster_samples,
                      cluster_features = input$heatmap_cluster_features,
                      map_sample_data = input$heatmap_map_rows,
-                     map_feature_data = input$heatmap_map_cols,
+                     map_feature_data = map_feature_data,
                      group_column_da = input$heatmap_group_col_da,
                      apply_da = input$heatmap_apply_da,
                      alpha_da = input$heatmap_alpha_da,
                      color_palette = input$heatmap_colors_palette,
                      reverse_palette = input$heatmap_reverse_palette,
+                     factor_height = input$heatmap_factor_height,
                      img_format = input$heatmap_img_format)
 
     base::tryCatch({
       heatmap_generate(r6, color_palette, dimensions_obj, input)
       heatmap_spawn(r6, input$heatmap_img_format, output)
     },error=function(e){
+      shinyjs::show(id = "heatmap_message")
+      output$heatmap_message <- shiny::renderText({
+        if(grepl(x = e,
+                 pattern = "hclustfun\\(dist\\): NA\\/NaN\\/Inf")) {
+          return("There are missing values in the data! Use imputation!")
+        } else if(grepl(x = e,
+                        pattern = "Heatmap: not enough groups")) {
+          return("Error: not enough groups with a least 3 samples!")
+        } else {
+          return("An error occurred! Can not generate heatmap!")
+        }
+      })
       print_tm(r6$name, 'Heatmap: ERROR.')
       print(e)
       shinyjs::enable("heatmap_run")
@@ -1461,6 +1414,13 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     shinyjs::enable("heatmap_run")
   })
 
+  output$heatmap_message <- shiny::renderText({
+    if(r6$name == "Error") {
+      "Error! No data available!"
+    } else {
+      "To generate a heatmap, go to the settings menu and click the generate heatmap button."
+    }
+  })
 
   # Download associated table
   output$download_heatmap_table = shiny::downloadHandler(
@@ -1533,7 +1493,7 @@ pca_ui = function(dimensions_obj, session) {
 }
 
 
-pca_server = function(r6, output, session) {
+pca_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "PCA: START.")
@@ -1555,14 +1515,20 @@ pca_server = function(r6, output, session) {
       ),
       shiny::selectInput(
         inputId = ns("pca_sample_groups_col"),
-        label = "Sample group column",
+        label = "Sample group column (color)",
         choices = r6$hardcoded_settings$meta_column,
         selected = r6$params$pca$sample_groups_col
       ),
       shiny::selectInput(
+        inputId = ns("pca_sample_groups_col_shape"),
+        label = "Sample group column (shape)",
+        choices = c("", r6$hardcoded_settings$meta_column),
+        selected = r6$params$pca$sample_groups_col_shape
+      ),
+      shiny::selectInput(
         inputId = ns("pca_feature_group"),
         label = "Feature group column",
-        choices = colnames(r6$tables$feature_table),
+        choices = r6$hardcoded_settings$pca$feature_metadata,
         selected = r6$params$pca$feature_groups_col
       ),
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
@@ -1611,10 +1577,17 @@ pca_server = function(r6, output, session) {
         value = r6$params$pca$displayed_pc_2,
         width = '100%'
       ),
-      shinyWidgets::prettySwitch(
-        inputId = ns('pca_completeObs'),
-        label = 'Complete observations',
-        value = r6$params$pca$completeObs
+      shiny::span(
+        shinyWidgets::materialSwitch(
+          inputId = ns('pca_completeObs'),
+          label = 'Complete observations',
+          status = "success",
+          right = TRUE,
+          value = r6$params$pca$completeObs
+        ),
+        `data-toggle` = "tooltip",
+        `data-placement` = "right",
+        title = "Missing values will be replaced by estimated values."
       ),
       shiny::selectInput(
         inputId = ns('pca_displayed_plots'),
@@ -1659,6 +1632,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
   iv_pca$add_rule("pca_auto_refresh", shinyvalidate::sv_required())
   iv_pca$add_rule("pca_data_table", shinyvalidate::sv_required())
   iv_pca$add_rule("pca_sample_groups_col", shinyvalidate::sv_required())
+  iv_pca$add_rule("pca_sample_groups_col_shape", shinyvalidate::sv_optional())
   iv_pca$add_rule("pca_feature_group", shinyvalidate::sv_required())
   iv_pca$add_rule("pca_apply_da", shinyvalidate::sv_required())
   iv_pca$add_rule("pca_alpha_da", shinyvalidate::sv_required())
@@ -1685,6 +1659,11 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                   choices = r6$hardcoded_settings$meta_column,
                   name_plot = r6$name,
                   message = "PCA plot: Incorrect group column selected!")
+  iv_pca$add_rule("pca_sample_groups_col_shape",
+                  iv_check_select_input,
+                  choices = c("", r6$hardcoded_settings$meta_column),
+                  name_plot = r6$name,
+                  message = "PCA plot: Incorrect group column selected for shape!")
   iv_pca$add_rule("pca_feature_group",
                   iv_check_select_input,
                   choices =  unique(colnames(r6$tables$feature_table)),
@@ -1739,6 +1718,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
   shiny::observeEvent(c(input$pca_auto_refresh,
                         input$pca_data_table,
                         input$pca_sample_groups_col,
+                        input$pca_sample_groups_col_shape,
                         input$pca_feature_group,
                         input$pca_apply_da,
                         input$pca_alpha_da,
@@ -1749,42 +1729,46 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                         input$pca_displayed_plots,
                         input$pca_colors_palette,
                         input$pca_img_format), {
-    shiny::req(iv_pca$is_valid())
 
-    print("Rico: check DA")
-    print(input$pca_apply_da)
+                          if(r6$name == "Error") {
+                            output$pca_message <- shiny::renderText({
+                              "Error! No data available!"
+                            })
+                          } else {
+                            shiny::req(iv_pca$is_valid())
 
-    if (!input$pca_auto_refresh) {
-      r6$params$pca$auto_refresh = input$pca_auto_refresh
-      return()
-    }
+                            if (!input$pca_auto_refresh) {
+                              r6$params$pca$auto_refresh = input$pca_auto_refresh
+                              return()
+                            }
 
-    print_tm(r6$name, "PCA: Updating params...")
+                            print_tm(r6$name, "PCA: Updating params...")
 
-    print(input$pca_data_table)
-    r6$param_pca(auto_refresh = input$pca_auto_refresh,
-                 data_table = input$pca_data_table,
-                 sample_groups_col = input$pca_sample_groups_col,
-                 feature_groups_col = input$pca_feature_group,
-                 apply_da = input$pca_apply_da,
-                 alpha_da = input$pca_alpha_da,
-                 pca_method = input$pca_method,
-                 nPcs = input$pca_npcs,
-                 displayed_pc_1 = input$pca_displayed_pc_1,
-                 displayed_pc_2 = input$pca_displayed_pc_2,
-                 completeObs = input$pca_completeObs,
-                 displayed_plots = input$pca_displayed_plots,
-                 colors_palette = input$pca_colors_palette,
-                 img_format = input$pca_img_format)
+                            r6$param_pca(auto_refresh = input$pca_auto_refresh,
+                                         data_table = input$pca_data_table,
+                                         sample_groups_col = input$pca_sample_groups_col,
+                                         sample_groups_col_shape = input$pca_sample_groups_col_shape,
+                                         feature_groups_col = input$pca_feature_group,
+                                         apply_da = input$pca_apply_da,
+                                         alpha_da = input$pca_alpha_da,
+                                         pca_method = input$pca_method,
+                                         nPcs = input$pca_npcs,
+                                         displayed_pc_1 = input$pca_displayed_pc_1,
+                                         displayed_pc_2 = input$pca_displayed_pc_2,
+                                         completeObs = input$pca_completeObs,
+                                         displayed_plots = input$pca_displayed_plots,
+                                         colors_palette = input$pca_colors_palette,
+                                         img_format = input$pca_img_format)
 
-    base::tryCatch({
-      pca_generate(r6, color_palette, dimensions_obj, input)
-      pca_spawn(r6, input$pca_img_format, output)
-    },error=function(e){
-      print_tm(r6$name, 'PCA: ERROR.')
-    },finally={}
-    )
-
+                            base::tryCatch({
+                              pca_generate(r6, color_palette, dimensions_obj, input)
+                              pca_spawn(r6, input$pca_img_format, output)
+                            },error=function(e){
+                              print_tm(r6$name, 'PCA: ERROR.')
+                              print(e)
+                            },finally={}
+                            )
+                          }
   })
 
 
@@ -1825,11 +1809,11 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
 }
 
 
-#-------------------------------------------------------- Double bonds plot ----
-double_bonds_generate_single = function(r6, colour_list, dimensions_obj, input) {
-  print_tm(r6$name, "Double bonds plot: generating plot.")
+#-----------------------------------------------------------FA composition  ----
+fa_comp_generate = function(r6, colour_list, dimensions_obj, input) {
+  print_tm(r6$name, "Fatty acid composition analysis: generating plot.")
 
-  if (input$double_bonds_plotbox$maximized) {
+  if (input$fa_comp_plotbox$maximized){
     width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
     height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
   } else {
@@ -1837,221 +1821,80 @@ double_bonds_generate_single = function(r6, colour_list, dimensions_obj, input) 
     height = dimensions_obj$ypx * dimensions_obj$y_plot
   }
 
-  r6$get_dbplot_table_single(data_table = table_switch(input$double_bonds_dataset, r6),
-                             dbplot_table = r6$tables$feature_table,
-                             col_group = input$double_bonds_metacol,
-                             used_function = input$double_bonds_function,
-                             group_1 = input$double_bonds_metagroup[1])
-
-  r6$plot_doublebonds_single(lipid_class = input$double_bonds_class,
-                             carbon_selection = input$double_bonds_carbon_select,
-                             unsat_selection = input$double_bonds_unsat_select,
-                             group_1 = input$double_bonds_metagroup[1],
-                             width = width,
-                             height = height)
+  r6$plot_fa_comp(width = width,
+                      height = height)
 }
 
-double_bonds_generate_double = function(r6, colour_list, dimensions_obj, input, session) {
-  print_tm(r6$name, "Double bonds plot: generating plot.")
-  if (input$double_bonds_plotbox$maximized) {
-    width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
-    height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
-  } else {
-    width = dimensions_obj$xpx * dimensions_obj$x_plot
-    height = dimensions_obj$ypx * dimensions_obj$y_plot
-  }
+fa_comp_spawn = function(r6, format, output) {
+  print_tm(r6$name, "Fatty acid composition analysis: spawning plot.")
 
-  r6$get_dbplot_table_double(data_table = table_switch(input$double_bonds_dataset, r6),
-                             dbplot_table = r6$tables$feature_table,
-                             col_group = input$double_bonds_metacol,
-                             used_function =  input$double_bonds_function,
-                             test = input$double_bonds_test,
-                             group_1 = input$double_bonds_metagroup[1],
-                             group_2 = input$double_bonds_metagroup[2])
-
-  selected_rows = rownames(r6$tables$dbplot_table)[r6$tables$dbplot_table["lipid_class"] == input$double_bonds_class]
-
-  fc_limits = round(max(abs(r6$tables$dbplot_table[selected_rows, "log2_fold_change"])), 1) + 1
-  r6$params$db_plot$fc_range = c(-fc_limits, fc_limits)
-  if (fc_limits > 1) {
-    r6$params$db_plot$fc_values = c(-1, 1)
-  } else {
-    r6$params$db_plot$fc_values = c(0, 0)
-  }
-
-  r6$params$db_plot$pval_range = c(0, round(max(r6$tables$dbplot_table[selected_rows, adjustment_switch(input$double_bonds_plot_adjustment)]), 1) + 1)
-  r6$params$db_plot$pval_values = c(0, round(max(r6$tables$dbplot_table[selected_rows, adjustment_switch(input$double_bonds_plot_adjustment)]), 1) + 1)
-
-  shiny::updateSliderInput(
-    session = session,
-    inputId = "log2_fc_slider",
-    min = r6$params$db_plot$fc_range[1],
-    max = r6$params$db_plot$fc_range[2],
-    value = r6$params$db_plot$fc_values,
-  )
-
-  shiny::updateSliderInput(
-    session = session,
-    inputId = "min_log10_bh_pval_slider",
-    max = r6$params$db_plot$pval_range[2],
-    value = r6$params$db_plot$pval_values
-  )
-
-  r6$plot_doublebonds_double(lipid_class = input$double_bonds_class,
-                             carbon_selection = input$double_bonds_carbon_select,
-                             unsat_selection = input$double_bonds_unsat_select,
-                             adjustment = adjustment_switch(input$double_bonds_plot_adjustment),
-                             fc_limits = input$log2_fc_slider,
-                             pval_limits = input$min_log10_bh_pval_slider,
-                             group_1 = input$double_bonds_metagroup[1],
-                             group_2 = input$double_bonds_metagroup[2],
-                             width = width,
-                             height = height)
-}
-
-
-double_bonds_generate_double_sliders = function(r6, colour_list, dimensions_obj, input) {
-  print_tm(r6$name, "Double bonds plot: generating plot.")
-  if (input$double_bonds_plotbox$maximized) {
-    width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
-    height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
-  } else {
-    width = dimensions_obj$xpx * dimensions_obj$x_plot
-    height = dimensions_obj$ypx * dimensions_obj$y_plot
-  }
-
-  r6$plot_doublebonds_double(lipid_class = input$double_bonds_class,
-                             carbon_selection = input$double_bonds_carbon_select,
-                             unsat_selection = input$double_bonds_unsat_select,
-                             adjustment = adjustment_switch(input$double_bonds_plot_adjustment),
-                             fc_limits = input$log2_fc_slider,
-                             pval_limits = input$min_log10_bh_pval_slider,
-                             group_1 = input$double_bonds_metagroup[1],
-                             group_2 = input$double_bonds_metagroup[2],
-                             width = width,
-                             height = height)
-}
-
-
-
-double_bonds_spawn = function(r6, format, output) {
-  print_tm(r6$name, "Double bonds plot: spawning plot.")
-  output$double_bonds_plot = plotly::renderPlotly({
-    r6$plots$double_bond_plot
-    plotly::config(r6$plots$double_bond_plot, toImageButtonOptions = list(format= format,
-                                                                          filename= timestamped_name('double_bond_plot'),
-                                                                          height= NULL,
-                                                                          width= NULL,
-                                                                          scale= 1))
+  output$fa_comp_plot = plotly::renderPlotly({
+    r6$plots$fa_comp_plot
+    plotly::config(r6$plots$fa_comp_plot, toImageButtonOptions = list(format = format,
+                                                                          filename = timestamped_name('fa_comp'),
+                                                                          height = NULL,
+                                                                          width = NULL,
+                                                                          scale = 1))
   })
 }
 
-
-
-double_bonds_ui = function(dimensions_obj, session) {
-
-  get_plotly_box(id = "double_bonds",
-                 label = "Double bonds plot",
+fa_comp_ui = function(dimensions_obj, session) {
+  # add function to show bs4dash with plotting function
+  get_plotly_box(id = "fa_comp",
+                 label = "Composition analysis",
                  dimensions_obj = dimensions_obj,
                  session = session)
-
 }
 
-
-double_bonds_server = function(r6, output, session) {
-
+fa_comp_server = function(r6, input, output, session) {
   ns = session$ns
-  print_tm(r6$name, "Double bonds plot: START.")
+  print_tm(r6$name, "Fatty acid composition analysis index: START.")
 
-  output$double_bonds_sidebar_ui = shiny::renderUI({
+  # set some UI
+  output$fa_comp_sidebar_ui = shiny::renderUI({
     shiny::tagList(
       shiny::selectInput(
-        inputId = ns("double_bonds_dataset"),
-        label = "Select data table",
-        choices = r6$hardcoded_settings$db_plot$datasets,
-        selected = r6$params$db_plot$dataset
+        inputId = ns("fa_comp_composition"),
+        label = "Select composition",
+        choices = r6$hardcoded_settings$fa_composition$composition_options,
+        selected = r6$params$fa_comp_plot$composition
       ),
       shiny::selectInput(
-        inputId = ns("double_bonds_metacol"),
+        inputId = ns("fa_comp_metacol"),
         label = "Select group column",
         choices = r6$hardcoded_settings$meta_column,
-        selected = r6$params$db_plot$group_column
+        selected = r6$params$fa_comp_plot$group_col
       ),
       shiny::selectizeInput(
-        inputId = ns("double_bonds_metagroup"),
-        label = "Select group(s)",
-        choices = unique(r6$tables$raw_meta[,r6$params$db_plot$group_column]),
-        selected = r6$params$db_plot$selected_groups,
+        inputId = ns("fa_comp_metagroup"),
+        label = "Select two groups to compare",
+        choices = unique(r6$tables$raw_meta[, r6$params$fa_comp_plot$group_col]),
+        selected = c(r6$params$fa_comp_plot$group_1, r6$params$fa_comp_plot$group_2),
         multiple = TRUE
       ),
       shiny::selectizeInput(
-        inputId = ns("double_bonds_class"),
+        inputId = ns("fa_comp_selected_lipidclass"),
         label = "Select lipid class",
-        choices = unique(r6$tables$feature_table$lipid_class),
-        selected = r6$params$db_plot$selected_lipid_class,
+        choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class)),
+        selected = r6$params$fa_comp_plot$selected_lipidclass,
         multiple = FALSE
       ),
       shiny::selectizeInput(
-        inputId = ns("double_bonds_carbon_select"),
-        label = "Carbon count",
-        choices = r6$hardcoded_settings$db_plot$carbon_select,
-        selected = r6$params$db_plot$selected_carbon_chain,
+        inputId = ns('fa_comp_color_palette'),
+        label = "Color palette",
+        choices = r6$hardcoded_settings$color_palette,
+        selected = r6$params$fa_comp_plot$color_palette,
         multiple = FALSE
       ),
-      shiny::selectizeInput(
-        inputId = ns("double_bonds_unsat_select"),
-        label = "Unsaturation count",
-        choices = r6$hardcoded_settings$db_plot$unsat_select,
-        selected = r6$params$db_plot$selected_unsat,
-        multiple = FALSE
-      ),
-      shiny::selectizeInput(
-        inputId = ns("double_bonds_function"),
-        label = "FC function",
-        choices = r6$hardcoded_settings$db_plot$calc_func,
-        selected = r6$params$db_plot$selected_function,
-        multiple = FALSE
-      ),
-      shiny::selectizeInput(
-        inputId = ns("double_bonds_test"),
-        label = "Select test",
-        choices = r6$hardcoded_settings$db_plot$test_func,
-        selected = r6$params$db_plot$selected_test,
-        multiple = FALSE
-      ),
-      shiny::selectizeInput(
-        inputId = ns("double_bonds_plot_adjustment"),
-        label = "Select adjustment",
-        choices = r6$hardcoded_settings$db_plot$adjustment_func,
-        selected = r6$params$db_plot$adjustment,
-        multiple = FALSE
-      ),
-      shiny::sliderInput(
-        inputId = ns("log2_fc_slider"),
-        label = "Coloring : Log2(Fold change) (exlude)",
-        min = r6$params$db_plot$fc_range[1],
-        max = r6$params$db_plot$fc_range[2],
-        value = r6$params$db_plot$fc_values,
-        step = 0.1
-      ),
-      shiny::sliderInput(
-        inputId = ns("min_log10_bh_pval_slider"),
-        label = "Size : -Log10(p-value)",
-        min = r6$params$db_plot$pval_range[1],
-        max = r6$params$db_plot$pval_range[2],
-        value = r6$params$db_plot$pval_values,
-        step = 0.1
-      ),
-
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
-        inputId = ns("double_bonds_plot_img_format"),
+        inputId = ns("fa_comp_img_format"),
         label = "Image format",
         choices = r6$hardcoded_settings$image_format,
-        selected = r6$params$db_plot$img_format,
+        selected = r6$params$fa_comp_plot$img_format,
         width = "100%"),
       shiny::downloadButton(
-        outputId = ns("download_double_bond_table"),
+        outputId = ns("download_fa_comp_table"),
         label = "Download associated table",
         style = "width:100%;"
       )
@@ -2059,174 +1902,157 @@ double_bonds_server = function(r6, output, session) {
   })
 }
 
-db_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
-  iv_db_plot <- shinyvalidate::InputValidator$new()
-  iv_db_plot$add_rule("double_bonds_dataset", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_metacol", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_metagroup", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_class", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_carbon_select", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_unsat_select", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_function", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_test", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_plot_adjustment", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("log2_fc_slider", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("min_log10_bh_pval_slider", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_plot_img_format", shinyvalidate::sv_required())
-  iv_db_plot$add_rule("double_bonds_dataset",
+
+fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+  iv_fa_comp <- shinyvalidate::InputValidator$new()
+  iv_fa_comp$add_rule("fa_comp_composition", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_metacol", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_metagroup", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_selected_lipidclass", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_color_palette", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_img_format", shinyvalidate::sv_required())
+  iv_fa_comp$add_rule("fa_comp_composition",
                       iv_check_select_input,
-                      choices = r6$hardcoded_settings$db_plot$datasets,
+                      choices = r6$hardcoded_settings$fa_composition$composition_options,
                       name_plot = r6$name,
-                      message = "Double bond plot: Incorrect data set selected!")
-  iv_db_plot$add_rule("double_bonds_metacol",
+                      message = "FA composition analysis: Incorrect composition selected!")
+  iv_fa_comp$add_rule("fa_comp_metacol",
                       iv_check_select_input,
                       choices = r6$hardcoded_settings$meta_column,
                       name_plot = r6$name,
-                      message = "Double bond plot: Incorrect group column selected!")
-  iv_db_plot$add_rule("double_bonds_metagroup",
+                      message = "FA composition analysis: Incorrect group column selected!")
+  # iv_fa_comp$add_rule("fa_comp_metagroup",
+  #                     iv_check_select_input,
+  #                     choices = unique(r6$tables$raw_meta[, r6$params$fa_comp_plot$group_col]),
+  #                     name_plot = r6$name,
+  #                     message = "FA composition analysis: Incorrect groups selected!")
+  iv_fa_comp$add_rule("fa_comp_selected_lipidclass",
                       iv_check_select_input,
-                      choices = unique(r6$tables$raw_meta[, r6$params$db_plot$group_col]),
+                      choices = c("All", unique(r6$tables$feature_table$lipid_class)),
                       name_plot = r6$name,
-                      message = "Double bond plot: Incorrect group(s) selected!")
-  iv_db_plot$add_rule("double_bonds_class",
+                      message = "FA composition analysis: Incorrect lipid class selected!")
+  iv_fa_comp$add_rule("fa_comp_color_palette",
                       iv_check_select_input,
-                      choices = unique(r6$tables$feature_table$lipid_class),
+                      choices = r6$hardcoded_settings$color_palette,
                       name_plot = r6$name,
-                      message = "Double bond plot: Incorrect lipid class selected!")
-  iv_db_plot$add_rule("double_bonds_carbon_select",
-                      iv_check_select_input,
-                      choices = r6$hardcoded_settings$db_plot$carbon_select,
-                      name_plot = r6$name,
-                      message = "Double bond plot: Incorrect carbon count selected!")
-  iv_db_plot$add_rule("double_bonds_unsat_select",
-                      iv_check_select_input,
-                      choices = r6$hardcoded_settings$db_plot$unsat_select,
-                      name_plot = r6$name,
-                      message = "Double bond plot: Incorrect unsaturation count selected!")
-  iv_db_plot$add_rule("double_bonds_function",
-                      iv_check_select_input,
-                      choices = r6$hardcoded_settings$db_plot$calc_func,
-                      name_plot = r6$name,
-                      message = "Double bond plot: Incorrect FC function selected!")
-  iv_db_plot$add_rule("double_bonds_test",
-                      iv_check_select_input,
-                      choices = r6$hardcoded_settings$db_plot$test_func,
-                      name_plot = r6$name,
-                      message = "Double bond plot: Incorrect test function selected!")
-  iv_db_plot$add_rule("double_bonds_plot_adjustment",
-                      iv_check_select_input,
-                      choices = r6$hardcoded_settings$db_plot$adjustment_func,
-                      name_plot = r6$name,
-                      message = "Double bond plot: Incorrect adjustment function selected!")
-  iv_db_plot$add_rule("double_bonds_plot_img_format",
+                      message = "FA composition analysis: Incorrect color palette selected!")
+  iv_fa_comp$add_rule("fa_comp_img_format",
                       iv_check_select_input,
                       choices = r6$hardcoded_settings$image_format,
                       name_plot = r6$name,
-                      message = "Double bond plot: Incorrect image format selected!")
-  iv_db_plot$add_rule("log2_fc_slider",
-                      iv_check_numeric_range,
-                      check_range = c(r6$params$db_plot$fc_range[1], r6$params$db_plot$fc_range[2]),
-                      name_plot = r6$name,
-                      message = "Double bond plot: Incorrect FC range set!")
-  iv_db_plot$add_rule("min_log10_bh_pval_slider",
-                      iv_check_numeric_range,
-                      check_range = c(r6$params$db_plot$pval_range[1], r6$params$db_plot$pval_range[2]),
-                      name_plot = r6$name,
-                      message = "Double bond plot: Incorrect p-value range set!")
+                      message = "FA composition analysis: Incorrect image format selected!")
 
-  # Group col selection
-  shiny::observeEvent(input$double_bonds_metacol,{
-    shiny::updateSelectizeInput(
-      inputId = "double_bonds_metagroup",
-      session = session,
-      choices = unique(r6$tables$raw_meta[,input$double_bonds_metacol]),
-      selected = unique(r6$tables$raw_meta[,input$double_bonds_metacol])[c(1,2)]
-    )
+  # auto-update the lipid classes
+  shiny::observeEvent(input$fa_comp_composition, {
+    if(r6$name == "Error") {
+      output$fa_comp_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      if(input$fa_comp_composition == "fa_tail") {
+        lipidclass_choices <- c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class))
+      } else {
+        lipidclass_choices <- unique(r6$tables$feature_table$lipid_class)
+      }
+
+      if(r6$params$fa_comp_plot$selected_lipidclass == "All") {
+        selected_lipidclass = "CE"
+      } else {
+        selected_lipidclass <- r6$params$fa_comp_plot$selected_lipidclass
+      }
+
+      shiny::updateSelectizeInput(
+        inputId = "fa_comp_selected_lipidclass",
+        session = session,
+        choices = lipidclass_choices,
+        selected = selected_lipidclass,
+      )
+    }
   })
 
-  # Double bonds plot SINGLE
-  shiny::observeEvent(c(shiny::req(length(input$double_bonds_metagroup) == 1), input$double_bonds_class, input$double_bonds_dataset, input$double_bonds_function, input$double_bonds_plot_img_format, input$double_bonds_carbon_select, input$double_bonds_unsat_select), {
-    shiny::req(iv_db_plot$is_valid())
-
-    print_tm(r6$name, "Double bonds plot single: Updating params...")
-
-    r6$params$db_plot$dataset = input$double_bonds_dataset
-    r6$params$db_plot$group_column = input$double_bonds_metacol
-    r6$params$db_plot$selected_groups = input$double_bonds_metagroup
-    r6$params$db_plot$selected_lipid_class = input$double_bonds_class
-    r6$params$db_plot$selected_carbon_chain = input$double_bonds_carbon_select
-    r6$params$db_plot$selected_unsat = input$double_bonds_unsat_select
-    r6$params$db_plot$selected_function = input$double_bonds_function
-    r6$params$db_plot$img_format = input$double_bonds_plot_img_format
-
-    base::tryCatch({
-      double_bonds_generate_single(r6, color_palette, dimensions_obj, input)
-      double_bonds_spawn(r6, input$double_bonds_plot_img_format, output)
-    },error=function(e){
-      print_tm(r6$name, 'Double bonds plot: error, missing data.')
-    },finally={}
-    )
-
+  # auto-update selected groups
+  shiny::observeEvent(input$fa_comp_metacol, {
+    if(r6$name == "Error") {
+      output$fa_comp_message <- shiny::renderText({
+        "Error! No data available!"
+      })
+    } else {
+      shiny::updateSelectizeInput(
+        inputId = "fa_comp_metagroup",
+        session = session,
+        choices = unique(r6$tables$raw_meta[, input$fa_comp_metacol]),
+        selected = unique(r6$tables$raw_meta[, input$fa_comp_metacol])[c(1, 2)]
+      )
+    }
   })
 
-  # Double bonds plot DOUBLE : Non-slider events
-  shiny::observeEvent(c(input$double_bonds_dataset, input$double_bonds_metagroup, input$double_bonds_class, input$double_bonds_function, input$double_bonds_plot_adjustment, input$double_bonds_test, input$double_bonds_plot_img_format, input$double_bonds_carbon_select, input$double_bonds_unsat_select),{
-    shiny::req(length(input$double_bonds_metagroup) == 2,
-               iv_db_plot$is_valid())
+  # Generate the plot
+  shiny::observeEvent(
+    c(shiny::req(length(input$fa_comp_metagroup) == 2),
+      input$fa_comp_composition,
+      input$fa_comp_selected_lipidclass,
+      input$fa_comp_color_palette,
+      input$fa_comp_img_format),
+    {
+      shiny::req(iv_fa_comp$is_valid())
 
-    print_tm(r6$name, "Double bonds plot non-sliders: Updating params...")
+      if(r6$name == "Error") {
+        output$fa_comp_message <- shiny::renderText({
+          "Error! No data available!"
+        })
+      } else {
+        if(!(input$fa_comp_composition == "total_lipid" & input$fa_comp_selected_lipidclass == "All")) {
+          print_tm(r6$name, "Fatty acid composition analysis: Updating params...")
 
-    r6$params$db_plot$dataset = input$double_bonds_dataset
-    r6$params$db_plot$group_column = input$double_bonds_metacol
-    r6$params$db_plot$selected_groups = input$double_bonds_metagroup
-    r6$params$db_plot$selected_lipid_class = input$double_bonds_class
-    r6$params$db_plot$selected_carbon_chain = input$double_bonds_carbon_select
-    r6$params$db_plot$selected_unsat = input$double_bonds_unsat_select
-    r6$params$db_plot$selected_function = input$double_bonds_function
-    r6$params$db_plot$adjustment = input$double_bonds_plot_adjustment
-    r6$params$db_plot$selected_test = input$double_bonds_test
-    r6$params$db_plot$img_format = input$double_bonds_plot_img_format
+          r6$param_fa_comp_plot(
+            data_table = r6$tables$total_norm_data,
+            sample_meta = r6$tables$raw_meta,
+            composition = input$fa_comp_composition,
+            feature_meta = r6$tables$feature_table,
+            group_col = input$fa_comp_metacol,
+            group_1 = input$fa_comp_metagroup[1],
+            group_2 = input$fa_comp_metagroup[2],
+            selected_lipidclass = input$fa_comp_selected_lipidclass,
+            color_palette = input$fa_comp_color_palette,
+            img_format = input$fa_comp_img_format
+          )
 
-    double_bonds_generate_double(r6, colour_list, dimensions_obj, input, session)
-    double_bonds_spawn(r6, input$double_bonds_plot_img_format, output)
+          base::tryCatch({
+            fa_comp_generate(r6, color_palette, dimensions_obj, input)
+            fa_comp_spawn(r6, input$fa_comp_img_format, output)
+          },
+          error = function(e) {
+            print_tm(r6$name, 'Fatty acid composition analysis error, missing data.')
+            print(e)
+          },
+          finally = {}
+          )
+        }
 
-  })
+      }
+    })
 
-  # Double bonds plot DOUBLE : Slider events
-  shiny::observeEvent(c(input$log2_fc_slider, input$min_log10_bh_pval_slider),{
-    shiny::req(length(input$double_bonds_metagroup) == 2,
-               iv_db_plot$is_valid())
-
-    print_tm(r6$name, "Double bonds plot sliders: Updating params...")
-
-    r6$params$db_plot$fc_values = input$log2_fc_slider
-    r6$params$db_plot$pval_values = input$min_log10_bh_pval_slider
-
-    double_bonds_generate_double_sliders(r6, colour_list, dimensions_obj, input)
-    double_bonds_spawn(r6, input$double_bonds_plot_img_format, output)
-  })
-
-  # Download associated tables
-  output$download_double_bond_table = shiny::downloadHandler(
-    filename = function(){timestamped_name("double_bond_table.csv")},
+  # Download associated table
+  output$download_fa_comp_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("fa_composition_table.csv")},
     content = function(file_name){
-      write.csv(r6$tables$dbplot_table, file_name)
+      write.csv(r6$tables$fa_comp_table, file_name)
     }
   )
 
   # Expanded boxes
-  double_bonds_proxy = plotly::plotlyProxy(outputId = "double_bonds_plot",
-                                           session = session)
+  fa_comp_proxy = plotly::plotlyProxy(outputId = "fa_comp_plot",
+                                          session = session)
 
-  shiny::observeEvent(input$double_bonds_plotbox,{
-    if (input$double_bonds_plotbox$maximized) {
-      plotly::plotlyProxyInvoke(p = double_bonds_proxy,
+  shiny::observeEvent(input$fa_comp_plotbox,{
+    if (input$fa_comp_plotbox$maximized) {
+      plotly::plotlyProxyInvoke(p = fa_comp_proxy,
                                 method = "relayout",
                                 list(width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full,
                                      height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
                                 ))
     } else {
-      plotly::plotlyProxyInvoke(p = double_bonds_proxy,
+      plotly::plotlyProxyInvoke(p = fa_comp_proxy,
                                 method = "relayout",
                                 list(width = dimensions_obj$xpx * dimensions_obj$x_plot,
                                      height = dimensions_obj$ypx * dimensions_obj$y_plot

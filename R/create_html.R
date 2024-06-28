@@ -17,6 +17,7 @@ if(dev) {
   line_exp <- '<table>
 <tr>
 <th>Experiment</th>
+<th>Links</th>
 <th>Genotype</th>
 <th>Cell type</th>
 <th>Parental cell line</th>
@@ -33,7 +34,7 @@ if(dev) {
     cellType <- cellType[cellType != "NA"]
     cellType <- paste(cellType, collapse = " | ")
 
-    parentCellLine <- unique(meta_data$parentalCellLine[meta_data$experimentId == experiment])
+    parentCellLine <- unique(meta_data$parentalCellLineBrainregion[meta_data$experimentId == experiment])
     parentCellLine <- parentCellLine[!is.na(parentCellLine)]
     parentCellLine <- parentCellLine[parentCellLine != "NA"]
     parentCellLine <- paste(parentCellLine, collapse = " | ")
@@ -42,11 +43,11 @@ if(dev) {
     cellLine <- cellLine[!is.na(cellLine)]
     cellLine <- cellLine[cellLine != "NA"]
     cellLine <- paste(cellLine, collapse = " | ")
-    tmp <- paste("<tr><td><a href=\"https://ricoderks.shinyapps.io/soda-light/?experimentId=",
-                 experiment,
-                 "\" target=\"_blank\">",
-                 experiment,
-                 "</a></td><td>",
+    tmp <- paste("<tr><td>", experiment, "</td>",
+                 "<td><a href=\"https://ricoderks.shinyapps.io/soda-light/?experimentId=", experiment, "\" target=\"_blank\">Online</a><br>",
+                 "<a href=\"http://2019-9014:3839/soda-light/?experimentId=", experiment, "\" target=\"_blank\">Old</a><br>",
+                 "<a href=\"http://2019-9014:3839/soda-light_dev/?experimentId=", experiment, "\" target=\"_blank\">New</a>",
+                 "</td><td>",
                  genoType,
                  "</td><td>",
                  cellType,

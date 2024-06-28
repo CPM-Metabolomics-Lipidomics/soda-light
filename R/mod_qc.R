@@ -6,7 +6,8 @@ qc_ui = function(id){
     # shiny::fluidRow(
     #   shiny::p("QC page imported data wil be shown here!"),
     # ),
-    waiter::autoWaiter(),
+    waiter::autoWaiter(html = waiter::spin_fading_circles(),
+                       color = rgb(0, 0, 1, 0.5)),
     shiny::fluidRow(
       shiny::column(width = 4,
                     shiny::textOutput(outputId = ns("qc_c_imp_rsd_text")),
@@ -37,10 +38,11 @@ qc_server = function(id, module_controler) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      print("Rico: qc started")
-
       # Get lipidomics r6 object
       r6 <- module_controler$r6_exp
+      m <- r6$name
+
+      print_tm(m, "QC server started")
 
       # rownames(r6$tables$imp_data) contains the names om the samples (sampleId)
       # QC_C is the QC cells
@@ -67,7 +69,7 @@ qc_server = function(id, module_controler) {
             r6$tables$imp_meta)
 
         # get the sample id's of the quality control cells
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control cells", "analystId"]
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$sampleType) == "quality control cells", "analystId"]
 
         # if nothing found
         if(nrow(r6$tables$qc_cells_table) == 0) {
@@ -210,7 +212,7 @@ qc_server = function(id, module_controler) {
             r6$tables$imp_meta)
 
         # get the sample id's of the quality control plasma
-        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+        qc_ids <- r6$tables$imp_meta[tolower(r6$tables$imp_meta$sampleType) == "quality control plasma", "analystId"]
 
         # if nothing found
         if(nrow(r6$tables$qc_plasma_table) == 0) {

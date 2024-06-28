@@ -39,6 +39,54 @@ library(reshape2)
 library(dplyr)
 library(tidyr)
 
+# metrics
+library(googledrive)
+library(googlesheets4)
+
+#------------------------------------------------------- needed for metrics ---
+# options(
+#   # whenever there is one account token found, use the cached token
+#   gargle_oauth_email = TRUE,
+#   # specify auth tokens should be stored in a hidden directory ".secrets"
+#   gargle_oauth_cache = ".secrets"
+# )
+
+# get the id of the file to edit
+# sheet_id <- googledrive::drive_get(path = "neurolipidatlas")$id
+
+#-------------------------------------------------------- Tool tip settings ----
+# Set up for showing tooltips.
+# Use as: shiny::span(your shiny element,
+#                     `data-toggle` = "tooltip",
+#                     `data-placement` = "right",
+#                     title = "Text of tooltip.")
+css <- "
+.tooltip {
+  pointer-events: none;
+}
+.tooltip > .tooltip-inner {
+  pointer-events: none;
+  background-color: #73AD21;
+  color: #FFFFFF;
+  border: 1px solid green;
+  padding: 10px;
+  font-size: 25px;
+  font-style: italic;
+  text-align: justify;
+  margin-left: 0;
+  max-width: 1000px;
+}
+.tooltip > .arrow::before {
+  border-right-color: #73AD21;
+}
+"
+
+js <- "
+$(function () {
+  $('[data-toggle=tooltip]').tooltip()
+})
+"
+
 #------------------------------------------------------------- Setup header ----
 header_ui = function() {
 
@@ -54,6 +102,12 @@ header_ui = function() {
   header = paste(name, "|", version, sep = " ")
   # bs4Dash::dashboardHeader(title = header)
   bs4Dash::dashboardHeader(
+    # add title to main grey bar
+    tags$li(shiny::htmlOutput(outputId = "main_title"),
+            class = "dropdown",
+            style = "list-style-type: none; width: 100%; text-align: center; color: #0255e9;"),
+
+    # add logo in upper left corner
     title = bs4Dash::dashboardBrand(
       title = img(src = "./images/logo-neurolipid-atlas.png",
                   title = "Neurolipid Atlas",
@@ -84,7 +138,6 @@ sidebar_ui = function() {
   bs4Dash::dashboardSidebar(
     skin = "light",
     bs4Dash::sidebarMenu(
-
       bs4Dash::menuItem(
         text = "Data",
         tabName = "data",
@@ -96,9 +149,19 @@ sidebar_ui = function() {
         icon = shiny::icon("q")
       ),
       bs4Dash::menuItem(
+        text = "Help",
+        icon = shiny::icon("question"),
+        tabName = 'help_single_omics'
+      ),
+      bs4Dash::menuItem(
         text = "About",
         tabName = "about",
         icon = shiny::icon("question")
+      ),
+      bs4Dash::menuItem(
+        text = "iSODA",
+        tabName = "iSODA",
+        icon = shiny::icon("i")
       )
     )
   )
@@ -108,6 +171,8 @@ sidebar_ui = function() {
 #--------------------------------------------------------------- Setup body ----
 body_ui = function() {
   bs4Dash::dashboardBody(
+    waiter::useWaiter(),
+    waiter::waiterPreloader(html = waiter::spin_fading_circles()),
 
     # Detect UI functions
     shinyjs::useShinyjs(),
@@ -125,8 +190,16 @@ body_ui = function() {
         qc_ui(id = 'mod_qc')
       ),
       bs4Dash::tabItem(
+        tabName = "help_single_omics",
+        help_single_omics_ui(id = 'mod_help_single_omics')
+      ),
+      bs4Dash::tabItem(
         tabName = "about",
         about_ui(id = 'mod_about')
+      ),
+      bs4Dash::tabItem(
+        tabName = "iSODA",
+        isoda_ui(id = "mod_isoda")
       )
     )
   )
@@ -144,22 +217,19 @@ ui = bs4Dash::dashboardPage(header = header,
                             freshTheme = "custom.css",
                             dark = NULL,
                             help = NULL)
-# ui = shinymanager::secure_app(bs4Dash::dashboardPage(header, sidebar, body))
-#------------------------------------------------------------------- Server ----
 
+#------------------------------------------------------------------- Server ----
 server = function(input, output, session) {
 
   options(shiny.maxRequestSize=300*1024^2)
 
   module_controler = shiny::reactiveValues(
-
-    r6_exp = NULL,
-
+    r6_exp = shiny::reactiveValues(),
     dims = list(
       x_box = 0.9,
-      y_box = 0.70,
+      y_box = 0.72,
       x_plot = 0.8,
-      y_plot = 0.67,
+      y_plot = 0.69,
       x_plot_full = 0.95,
       y_plot_full = 0.91,
       xpx_total = NULL,
@@ -167,19 +237,34 @@ server = function(input, output, session) {
     )
   )
 
-  # get client data, can not access url_search here, it is a reactive value
-  client_data <- session$clientData
+  output$main_title <- shiny::renderUI({
+    req(!is.null(module_controler$r6_exp$name))
 
-  # read the master database file
-  db_data <- as.data.frame(readxl::read_xlsx(path = "./data/Database/SampleMasterfile.xlsx",
-                                             sheet = 1))
+    # show nice title
+    HTML(
+      paste0(
+        "<b>",
+        unique(module_controler$r6_exp$tables$raw_meta$experimentTitle),
+        "</b>"
+      )
+    )
+  })
 
   # Single omics modules
   shiny::observe({
-    req(client_data,
-        db_data)
+    shiny::req(module_controler,
+               session)
+    print_tm(NULL, "App starting")
 
-    print("Rico: app starting")
+    # moved from serv_lipidomics.R to here, app is loaded only once now
+    module_controler$xpx_total = shinybrowser::get_width()
+    module_controler$ypx_total = shinybrowser::get_height()
+    module_controler$xbs = 12
+    module_controler$xpx = shinybrowser::get_width()
+    module_controler$ypx = shinybrowser::get_height()
+
+    # get the session client data
+    client_data <- session$clientData
 
     # get the url parameter
     # for easy development
@@ -188,36 +273,31 @@ server = function(input, output, session) {
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
       print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
-      if(!grepl(pattern = "^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
+      if(!grepl(pattern = "NLA_[0-9]{3}", #"^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
                 x = query[["experimentId"]])) {
-        query[["experimentId"]] <- NULL
+        query[["experimentId"]] <- "NLA_005"
       }
     } else {
       # for easy development
-      query[["experimentId"]] <- "VDK_220223_01"
+      print_tm(NULL, "Default experimentId: NLA_005")
+      query[["experimentId"]] <- "NLA_005" # "VDK_220223_01"
     }
     experiment_id = query[["experimentId"]]
 
-    print(paste("Rico: experimentId:", query[["experimentId"]]))
-
     if(!is.null(query[["experimentId"]])) {
-      # get the batches for the samples belonging to the experiment
-      data_files = unique(db_data$batchNumber[db_data$experimentId == query[["experimentId"]]])
-      data_files = data_files[!is.na(data_files)]
-
       # Create lipidomics r6 object
       module_controler$r6_exp = example_lipidomics(name = "Lips_1",
-                                                   id = id,
+                                                   id = NA,
                                                    slot = "exp_1",
                                                    experiment_id = experiment_id)
 
-      # server stuff is created here, should the data be passed here?
+      # lipidomics server
       lipidomics_server(id = "mod_exp_1",
-                        module_controler = module_controler)
-
+                        module_controler = shiny::isolate(module_controler))
+                        # sheet_id = sheet_id)
       # QC
       qc_server(id = "mod_qc",
-                module_controler = module_controler)
+                module_controler = shiny::isolate(module_controler))
     }
   })
 

@@ -25,7 +25,7 @@ Lips_exp = R6::R6Class(
       class_distribution = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
-        color_palette = 'Spectral',
+        color_palette = 'Set1',
         img_format = "png"
       ),
 
@@ -33,6 +33,7 @@ Lips_exp = R6::R6Class(
       class_comparison = list(
         dataset = 'Class table total normalized',
         group_col = NULL,
+        color_palette = 'Set1',
         img_format = "png"
       ),
 
@@ -43,14 +44,13 @@ Lips_exp = R6::R6Class(
         group_col = NULL,
         group_1 = NULL,
         group_2 = NULL,
-        feature_metadata = 'None',
-        keep_significant = F,
-        displayed_plot = 'main',
+        feature_metadata = "lipid_class",
+        displayed_plot = "all",
         p_val_threshold = 0.05,
         fc_threshold = 2,
-        marker_size = 6,
+        marker_size = 8,
         opacity = 1,
-        color_palette = 'Spectral',
+        color_palette = 'Set1',
         selected_function = "mean",
         selected_test = "t-Test",
         img_format = "png"
@@ -59,14 +59,15 @@ Lips_exp = R6::R6Class(
       # Heatmap parameters self$params$heatmap$
       heatmap = list(
         dataset = 'Z-scored total normalized table',
-        impute = F,
-        cluster_samples = F,
-        cluster_features = F,
+        impute = TRUE,
+        cluster_samples = TRUE,
+        cluster_features = TRUE,
         map_sample_data = NULL,
-        map_feature_data = NULL,
+        map_feature_data = "lipid_class",
         group_column_da = NULL,
         apply_da = FALSE,
         alpha_da = 0.8,
+        factor_height = 2,
         img_format = "png"
       ),
 
@@ -74,6 +75,7 @@ Lips_exp = R6::R6Class(
       pca = list(
         data_table = 'z_scored_total_norm_data',
         sample_groups_col = NULL,
+        sample_groups_col_shape = NULL,
         feature_groups_col = NULL,
         apply_da = FALSE,
         alpha_da = 0.8,
@@ -83,83 +85,76 @@ Lips_exp = R6::R6Class(
         displayed_pc_2 = 2,
         completeObs = F,
         displayed_plots = 'both',
-        colors_palette = 'Spectral',
+        colors_palette = 'Set1',
         img_format = "png"
       ),
 
-      # Double bonds parameters self$params$db_plot$
-      db_plot = list(
-        dataset = "Total normalized table",
-        adjustment = "Benjamini-Hochberg",
-        group_column = NULL,
-        selected_groups = NULL,
-        selected_lipid_class = NULL,
-        selected_carbon_chain = 'Carbon count (chain 1)',
-        selected_unsat = 'Double bonds (chain 1)',
-        selected_function = "mean",
-        selected_test = "T-test",
-        fc_range = c(-5, 5),
-        fc_values = c(-1, 1),
-        pval_range = c(0, 10),
-        pval_values = c(1, 5),
-        img_format = "png"
-      ),
-
-     # Saturation index parameters self$params$satindex_plot$
-     satindex_plot = list(
-        data_table = "Raw data table",
+      # Fatty acid analysis parameters self$params$fa_analysis_plot$
+      fa_analysis_plot = list(
+        data_table = "Total normalized table",
         feature_meta = NULL,
         sample_meta = "Raw meta table",
         group_col = NULL,
-        group_1 = NULL,
-        group_2 = NULL,
-        selected_lipid_class = "CE",
-        method = "ratio",
-        color_palette = 'Spectral',
+        selected_view = "lipidclass",
+        selected_lipidclass = "All",
+        fa_norm = FALSE,
+        color_palette = "Set1",
         img_format = "png"
       ),
 
-     # Fatty acid analysis parameters self$params$fa_analysis_plot$
-     fa_analysis_plot = list(
-       data_table = "Raw data table",
-       feature_meta = NULL,
-       sample_meta = "Raw meta table",
-       group_col = NULL,
-       pathway = NULL,
-       selected_lipidclass = "All",
-       color_palette = 'Spectral',
-       img_format = "png"
-     )
+      # Fatty acid analysis heatmap self$params$fa_comp_plot$
+      fa_comp_plot = list(
+        data_table = "Total normalized table",
+        sample_meta = "Raw meta table",
+        composition = "fa_tail",
+        feature_meta = NULL,
+        group_col = NULL,
+        group_1 = NULL,
+        group_2 = NULL,
+        selected_lipidclass = "CE",
+        color_palette = "Blues",
+        img_format = "png"
+      )
     ),
-
+    #----------------------------------------------------Hard coded settings----
     hardcoded_settings = list(
       # general
-      meta_column = c("cellCount", "cellLineName", "cultureConditions", "genoType",
-                      "harvestDate", "parentalCellLine", "sex"),
+      meta_column = c(
+        "Culture conditions" = "cultureConditions",
+        "Genotype" = "genoType",
+        "Parental cell line / Brain region" = "parentCellLineBrainregion",
+        "Sample type" = "sampleType",
+        "Sex" = "sex",
+        "Treatment/Diagnosis" = "treatmentDiagnosis"
+      ),
       color_palette = c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges",
                         "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds",
                         "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
                         "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
-                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3"),
+                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3",
+                        "Magma", "Inferno", "Plasma", "Viridis", "Cividis", "Rocket",
+                        "Mako", "Turbo", "plotly_1", "plotly_2", "ggplot2"),
       image_format = c("png", "svg", "jpeg", "webp"),
+
       # plot specific
       class_distribution = list(
         datasets = list(
-          "Class table",
-          "Class table total normalized"
+          # "Lipid classes (absolute conc.)" = "Class table",
+          "Lipid classes (normalized, % of total lipid classes)" = "Class table total normalized"
         )
       ),
+
       class_comparison = list(
         datasets = list(
-          "Class table",
-          "Class table total normalized"
+          # "Lipid classes (absolute conc.)" = "Class table",
+          "Lipid classes (normalized, % of total lipid classes)" = "Class table total normalized"
         )
       ),
+
       volcano_plot = list(
         datasets = list(
-          "Raw data table",
-          "Class normalized table",
-          "Total normalized table"
+          "Lipid species (normalized, % of total lipids within class)" = "Class normalized table",
+          "Lipid species (normalized, % of total lipids)" = "Total normalized table"
         ),
         calc_func = list(
           "median",
@@ -170,8 +165,8 @@ Lips_exp = R6::R6Class(
           "Wilcoxon"
         ),
         adjustment_func = list(
-          "None",
-          "BH"
+          "None" = "None",
+          "Benjamini & Hochberg" = "BH"
         ),
         display_plot = list(
           "main",
@@ -179,44 +174,67 @@ Lips_exp = R6::R6Class(
           "left",
           "right",
           "top"
+        ),
+        feature_metadata = list(
+          "None" = "None",
+          "Lipid classes" = "lipid_class",
+          "Tail 1 number of carbons" = "carbons_1",
+          "Tail 2 number of carbons" = "carbons_2",
+          "Total number of carbons" = "carbons_sum",
+          "Tail 1 number of double bonds" = "unsat_1",
+          "Tail 2 number of double bonds" = "unsat_2",
+          "Total number of double bonds" = "unsat_sum"
         )
       ),
+
       heatmap = list(
         datasets = list(
-          'Z-scored table',
-          'Z-scored total normalized table',
-          'Class table z-scored'
+          # "Lipid species (z-scores)" = "Z-scored table",
+          "Lipid species (z-scores, normalized, % of total lipids)" = "Z-scored total normalized table",
+          "Lipid species (z-scores, normalized, % of total lipids within class)" = "Z-scored class normalized table",
+          # "Lipid classes (z-scores)" = "Class table z-scored",
+          "Lipid classes (z-scores, normalized, % of total lipids)" = "Class table z-scored total normalized"
         ),
         map_cols = list(
-          "Lipid class",
-          "Double bonds (chain 1)",
-          "Carbon count (chain 1)",
-          "Double bonds (chain 2)",
-          "Carbon count (chain 2)",
-          "Double bonds (sum)",
-          "Carbon count (sum)"
+          "Lipid classes" = "lipid_class",
+          "Tail 1 number of carbons" = "carbons_1",
+          "Tail 2 number of carbons" = "carbons_2",
+          "Total number of carbons" = "carbons_sum",
+          "Tail 1 number of double bonds" = "unsat_1",
+          "Tail 2 number of double bonds" = "unsat_2",
+          "Total number of double bonds" = "unsat_sum"
         )
       ),
-      samples_correlation = list(
-        datasets = list(
-          "Raw data table",
-          "Total normalized table",
-          'Z-scored table',
-          'Z-scored total normalized table'
-        )
-      ),
-      feature_correlation = list(
-        datasets = list(
-          "Raw data table",
-          "Total normalized table",
-          'Z-scored table',
-          'Z-scored total normalized table'
-        )
-      ),
+      # samples_correlation = list(
+      #   datasets = list(
+      #     "Raw data table",
+      #     "Total normalized table",
+      #     'Z-scored table',
+      #     'Z-scored total normalized table'
+      #   )
+      # ),
+      # feature_correlation = list(
+      #   datasets = list(
+      #     "Raw data table",
+      #     "Total normalized table",
+      #     'Z-scored table',
+      #     'Z-scored total normalized table'
+      #   )
+      # ),
       pca = list(
         datasets = list(
-          'Z-scored table',
-          'Z-scored total normalized table'
+          # "Lipid species (z-scores)" = "Z-scored table",
+          "Lipid species (z-scores), (normalized, % of total lipids)" = "Z-scored total normalized table"
+        ),
+        feature_metadata = list(
+          "None" = "None",
+          "Lipid classes" = "lipid_class",
+          "Tail 1 number of carbons" = "carbons_1",
+          "Tail 2 number of carbons" = "carbons_2",
+          "Total number of carbons" = "carbons_sum",
+          "Tail 1 number of double bonds" = "unsat_1",
+          "Tail 2 number of double bonds" = "unsat_2",
+          "Total number of double bonds" = "unsat_sum"
         ),
         method = list(
           "svd",
@@ -234,48 +252,12 @@ Lips_exp = R6::R6Class(
           "variance"
         )
       ),
-      db_plot = list(
-        datasets = list(
-          "Raw data table",
-          "Class normalized table",
-          "Total normalized table"
-        ),
-        carbon_select = list(
-          "Carbon count (chain 1)",
-          "Carbon count (chain 2)",
-          "Carbon count (sum)"
-        ),
-        unsat_select = list(
-          "Double bonds (chain 1)",
-          "Double bonds (chain 2)",
-          "Double bonds (sum)"
-        ),
-        calc_func = list(
-          "median",
-          "mean"
-        ),
-        test_func = list(
-          "Wilcoxon",
-          "t-Test"
-        ),
-        adjustment_func = list(
-          "None",
-          "Benjamini-Hochberg"
-        )
-      ),
-      satindex = list(
-        method = list(
-          "(palmitate+stearate) / oleate ratio" ,
-          "use all FA tails",
-          "overall",
-          "double bond")
-      ),
       fa_analysis = list(
-        pathway = list(
-          "SFA",
-          "MUFA",
-          "PUFA(n-6)",
-          "PUFA(n-3)"
+      ),
+      fa_composition = list(
+        composition_options = list(
+          "Fatty acid tail" = "fa_tail",
+          "Total lipid" = "total_lipid"
         )
       )
     ),
@@ -299,7 +281,10 @@ Lips_exp = R6::R6Class(
       rownames_pools = NULL,
       rownames_samples = NULL,
 
-      excluded_cols = NULL
+      excluded_cols = NULL,
+
+      # the group column used for blank filtering
+      group_col_blank = NULL
     ),
 
     #--------------------------------------------------------------- Tables ----
@@ -347,8 +332,6 @@ Lips_exp = R6::R6Class(
       dbplot_table = NULL,
       satindex_table = NULL,
       fa_analysis_table = NULL
-
-
     ),
 
     #-------------------------------------------------------------- Local table
@@ -395,7 +378,8 @@ Lips_exp = R6::R6Class(
       pca_plot = NULL,
       double_bond_plot = NULL,
       satindex_plot = NULL,
-      fa_analysis_plot = NULL
+      fa_analysis_plot = NULL,
+      fa_comp_plot = NULL
     ),
 
     #---------------------------------------------------- Parameter methods ----
@@ -414,7 +398,7 @@ Lips_exp = R6::R6Class(
       self$params$class_comparison$img_format = img_format
     },
 
-    param_volcano_plot = function(auto_refresh, data_table, adjustment, group_col, group_1, group_2, feature_metadata, keep_significant, displayed_plot,
+    param_volcano_plot = function(auto_refresh, data_table, adjustment, group_col, group_1, group_2, feature_metadata, displayed_plot,
                                   p_val_threshold, fc_threshold, marker_size, opacity, color_palette, selected_function, selected_test, img_format) {
 
       self$params$volcano_plot$auto_refresh = auto_refresh
@@ -424,7 +408,6 @@ Lips_exp = R6::R6Class(
       self$params$volcano_plot$group_1 = group_1
       self$params$volcano_plot$group_2 = group_2
       self$params$volcano_plot$feature_metadata = feature_metadata
-      self$params$volcano_plot$keep_significant = keep_significant
       self$params$volcano_plot$displayed_plot = displayed_plot
       self$params$volcano_plot$p_val_threshold = p_val_threshold
       self$params$volcano_plot$fc_threshold = fc_threshold
@@ -437,7 +420,7 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, img_format) {
+    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, factor_height, img_format) {
       self$params$heatmap$dataset = dataset
       self$params$heatmap$impute = impute
       self$params$heatmap$cluster_samples = cluster_samples
@@ -449,13 +432,15 @@ Lips_exp = R6::R6Class(
       self$params$heatmap$alpha_da = alpha_da
       self$params$heatmap$color_palette = color_palette
       self$params$heatmap$reverse_palette = reverse_palette
+      self$params$heatmap$factor_height = factor_height
       self$params$heatmap$img_format = img_format
     },
 
-    param_pca = function(auto_refresh, data_table, sample_groups_col, feature_groups_col, apply_da, alpha_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, img_format) {
+    param_pca = function(auto_refresh, data_table, sample_groups_col, sample_groups_col_shape, feature_groups_col, apply_da, alpha_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, img_format) {
       self$params$pca$auto_refresh = auto_refresh
       self$params$pca$data_table = data_table
       self$params$pca$sample_groups_col = sample_groups_col
+      self$params$pca$sample_groups_col_shape = sample_groups_col_shape
       self$params$pca$feature_groups_col = feature_groups_col
       self$params$pca$apply_da = apply_da
       self$params$pca$alpha_da = alpha_da
@@ -470,50 +455,31 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_db_plot = function(dataset, adjustment, group_column, selected_groups, selected_lipid_class,
-                             selected_carbon_chain, selected_unsat, selected_function,
-                             selected_test, fc_range, fc_values, pval_range,
-                             pval_values, img_format) {
-
-      self$params$db_plot$dataset = dataset
-      self$params$db_plot$adjustment = adjustment
-      self$params$db_plot$group_column = group_column
-      self$params$db_plot$selected_groups = selected_groups
-      self$params$db_plot$selected_lipid_class = selected_lipid_class
-      self$params$db_plot$selected_carbon_chain = selected_carbon_chain
-      self$params$db_plot$selected_unsat = selected_unsat
-      self$params$db_plot$selected_function = selected_function
-      self$params$db_plot$selected_test = selected_test
-      self$params$db_plot$fc_range = fc_range
-      self$params$db_plot$fc_values = fc_values
-      self$params$db_plot$pval_range = pval_range
-      self$params$db_plot$pval_values = pval_values
-      self$params$db_plot$img_format = img_format
-
-    },
-
-    param_satindex_plot = function(data_table, feature_meta, sample_meta, group_col, group_1, group_2, selected_lipid_class, color_palette, method, img_format) {
-      self$params$satindex_plot$data_table = data_table
-      self$params$satindex_plot$feature_meta = feature_meta
-      self$params$satindex_plot$sample_meta = sample_meta
-      self$params$satindex_plot$group_col = group_col
-      self$params$satindex_plot$group_1 = group_1
-      self$params$satindex_plot$group_2 = group_2
-      self$params$satindex_plot$selected_lipid_class = selected_lipid_class
-      self$params$satindex_plot$color_palette = color_palette
-      self$params$satindex_plot$method = method
-      self$params$satindex_plot$img_format = img_format
-    },
-
-    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, pathway, selected_lipidclass, color_palette, img_format) {
+    param_fa_analysis_plot = function(data_table, feature_meta, sample_meta, group_col, selected_view, selected_lipidclass, selected_fa, fa_norm, color_palette, img_format) {
       self$params$fa_analysis_plot$data_table = data_table
       self$params$fa_analysis_plot$feature_meta = feature_meta
       self$params$fa_analysis_plot$sample_meta = sample_meta
       self$params$fa_analysis_plot$group_col = group_col
-      self$params$fa_analysis_plot$pathway = pathway
+      self$params$fa_analysis_plot$selected_view = selected_view
       self$params$fa_analysis_plot$selected_lipidclass = selected_lipidclass
+      self$params$fa_analysis_plot$selected_fa = selected_fa
+      self$params$fa_analysis_plot$fa_norm = fa_norm
       self$params$fa_analysis_plot$color_palette = color_palette
       self$params$fa_analysis_plot$img_format = img_format
+    },
+
+    param_fa_comp_plot = function(data_table, sample_meta, composition, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
+      self$params$fa_comp_plot$data_table = data_table
+      self$params$fa_comp_plot$sample_meta = sample_meta
+      self$params$fa_comp_plot$composition = composition
+      self$params$fa_comp_plot$feature_meta = feature_meta
+      self$params$fa_comp_plot$group_col = group_col
+      self$params$fa_comp_plot$group_1 = group_1
+      self$params$fa_comp_plot$group_2 = group_2
+      self$params$fa_comp_plot$group_2 = group_2
+      self$params$fa_comp_plot$selected_lipidclass = selected_lipidclass
+      self$params$fa_comp_plot$color_palette = color_palette
+      self$params$fa_comp_plot$img_format = img_format
     },
 
     #-------------------------------------------------------- Table methods ----
@@ -523,6 +489,7 @@ Lips_exp = R6::R6Class(
         data_table = self$tables$imp_meta
         rownames(data_table) = paste(data_table[, "batchNumber"], data_table[, self$indices$id_col_meta], sep = "_")
         data_table[, self$indices$id_col_meta] = NULL
+
         self$tables$raw_meta = data_table
       }
     },
@@ -534,7 +501,7 @@ Lips_exp = R6::R6Class(
                             val_threshold = 0.6,
                             blank_multiplier = 0.8,
                             sample_threshold = 0.8,
-                            group_threshold = 0.8,
+                            group_threshold = 0.6,
                             norm_col = "") {
       if (!is.na(self$indices$id_col_data) & !is.null(self$tables$imp_data) & !is.null(self$tables$raw_meta)){
         # Copy imported table
@@ -611,6 +578,7 @@ Lips_exp = R6::R6Class(
                                  sample_rownames = self$indices$rownames_samples,
                                  val_threshold = val_threshold)
         } else if (!apply_imputation & apply_filtering) {
+          # this one is used by soda-light
           # Filtering alone
           del_cols = lips_get_del_cols(data_table = data_table,
                                        blank_table = self$tables$blank_table,
@@ -619,7 +587,8 @@ Lips_exp = R6::R6Class(
                                        idx_blanks = self$indices$idx_blanks,
                                        idx_samples = self$indices$idx_samples,
                                        id_col_meta = self$indices$id_col_meta,
-                                       group_col = self$indices$group_col,
+                                       # provide the column name for the group filtering
+                                       group_col = "group_col_blank", #self$indices$group_col,
                                        batch_col = self$indices$batch_col,
                                        blank_multiplier = blank_multiplier,
                                        sample_threshold = sample_threshold,
@@ -651,11 +620,30 @@ Lips_exp = R6::R6Class(
     },
 
     get_qc_table = function() {
-      id_cells <- self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control cells", "analystId"]
-      id_plasma <- self$tables$imp_meta[tolower(self$tables$imp_meta$cellType) == "quality control plasma", "analystId"]
+      batches <- unique(self$tables$imp_meta$batchNumber)
 
-      qc_cells <- self$tables$imp_data[self$tables$imp_data$ID %in% id_cells, ]
-      qc_plasma <- self$tables$imp_data[self$tables$imp_data$ID %in% id_plasma, ]
+      qc_cells <- c()
+      qc_plasma <- c()
+      for(batch in batches) {
+        id_cells <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$sampleType) == "quality control cells" &
+                                                        self$tables$imp_meta$batchNumber == batch, "analystId"], sep = "_")
+        id_plasma <- paste(batch, self$tables$imp_meta[tolower(self$tables$imp_meta$sampleType) == "quality control plasma" &
+                                                         self$tables$imp_meta$batchNumber == batch, "analystId"], sep = "_")
+        # get the data
+        tmp_cells <- self$tables$imp_data[rownames(self$tables$imp_data) %in% id_cells, ]
+        tmp_plasma <- self$tables$imp_data[rownames(self$tables$imp_data) %in% id_plasma, ]
+
+        # fix QC naming
+        if(nrow(tmp_cells) > 0) {
+          tmp_cells$ID <- id_cells
+        }
+        if(nrow(tmp_plasma) > 0) {
+          tmp_plasma$ID <- id_plasma
+        }
+
+        qc_cells <- rbind(qc_cells, tmp_cells)
+        qc_plasma <- rbind(qc_plasma, tmp_plasma)
+      }
 
       # qc_table[, self$indices$id_col_data] <- NULL
       self$tables$qc_cells_table <- qc_cells
@@ -664,12 +652,12 @@ Lips_exp = R6::R6Class(
 
     # Class normalisation
     normalise_class = function(){
-      self$tables$class_norm_data = normalise_lipid_class(self$tables$raw_data)
+      self$tables$class_norm_data = normalise_lipid_class(self$tables$raw_data) * 100
     },
 
     # Total or Row normalisation
     normalise_total = function(){
-      self$tables$total_norm_data = self$tables$raw_data/rowSums(self$tables$raw_data, na.rm = T)
+      self$tables$total_norm_data = self$tables$raw_data/rowSums(self$tables$raw_data, na.rm = T) * 100
     },
 
     # Z-score normalisation
@@ -736,15 +724,15 @@ Lips_exp = R6::R6Class(
       self$get_group_summary_classes()
 
       # Set plotting parameters
-      self$param_class_distribution(dataset = 'Class table total normalized',
+      self$param_class_distribution(dataset = self$params$class_distribution$dataset,
                                     group_col = self$indices$group_col,
-                                    color_palette = 'Spectral',
-                                    img_format = "png")
+                                    color_palette = self$params$class_distribution$color_palette,
+                                    img_format = self$params$class_distribution$img_format)
 
-      self$param_class_comparison(dataset = 'Class table total normalized',
+      self$param_class_comparison(dataset = self$params$class_comparison$dataset,
                                   group_col = self$indices$group_col,
-                                  color_palette = 'Spectral',
-                                  img_format = "png")
+                                  color_palette = self$params$class_comparison$color_palette,
+                                  img_format = self$params$class_comparison$img_format)
 
       self$param_volcano_plot(auto_refresh = TRUE,
                               data_table = 'Total normalized table',
@@ -752,36 +740,37 @@ Lips_exp = R6::R6Class(
                               group_col = self$indices$group_col,
                               group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
                               group_2 = unique(self$tables$raw_meta[,self$indices$group_col])[2],
-                              feature_metadata = 'None',
-                              keep_significant = F,
-                              displayed_plot = 'main',
+                              feature_metadata = "lipid_class",
+                              displayed_plot = "all",
                               p_val_threshold = 0.05,
                               fc_threshold = 2,
-                              marker_size = 6,
+                              marker_size = 8,
                               opacity = 1,
-                              color_palette = 'Spectral',
+                              color_palette = 'Set1',
                               selected_function = "mean",
                               selected_test = "t-Test",
                               img_format = "png")
 
       self$param_heatmap(dataset = 'Z-scored total normalized table',
-                         impute = F,
-                         cluster_samples = F,
-                         cluster_features = F,
-                         map_sample_data = NULL,
-                         map_feature_data = NULL,
+                         impute = TRUE,
+                         cluster_samples = TRUE,
+                         cluster_features = TRUE,
+                         map_sample_data = self$indices$group_col,
+                         map_feature_data = "lipid_class",
                          group_column_da = self$indices$group_col,
                          apply_da = FALSE,
                          alpha_da = 0.8,
                          color_palette = 'RdYlBu',
                          reverse_palette = FALSE,
+                         factor_height = 2,
                          img_format = "png")
 
       self$param_pca(auto_refresh = TRUE,
                      data_table = 'z_scored_total_norm_data',
                      sample_groups_col = self$indices$group_col,
-                     feature_groups_col = NULL,
-                     apply_da = FALSE,
+                     sample_groups_col_shape = "",
+                     feature_groups_col = "lipid_class",
+                     apply_da = self$params$pca$apply_da,
                      alpha_da = 0.8,
                      pca_method = 'svd',
                      nPcs = 10,
@@ -789,43 +778,32 @@ Lips_exp = R6::R6Class(
                      displayed_pc_2 = 2,
                      completeObs = F,
                      displayed_plots = 'both',
-                     colors_palette = 'Spectral',
+                     colors_palette = 'Set1',
                      img_format = "png")
 
-      self$param_db_plot(dataset = "Total normalized table",
-                         adjustment = "Benjamini-Hochberg",
-                         group_column = self$indices$group_col,
-                         selected_groups = unique(self$tables$raw_meta[,self$indices$group_col])[c(1,2)],
-                         selected_lipid_class = NULL,
-                         selected_carbon_chain = 'Carbon count (chain 1)',
-                         selected_unsat = 'Double bonds (chain 1)',
-                         selected_function = "median",
-                         selected_test = "t-Test",
-                         fc_range = c(-5, 5),
-                         fc_values = c(-1, 1),
-                         pval_range = c(0, 10),
-                         pval_values = c(1, 5),
-                         img_format = "png")
-
-      self$param_satindex_plot(data_table = self$tables$raw_data,
-                               feature_meta = self$tables$feature_table,
-                               sample_meta = self$tables$raw_meta,
-                               group_col = self$indices$group_col,
-                               group_1 = unique(self$tables$raw_meta[,self$indices$group_col])[1],
-                               group_2 = unique(self$tables$raw_meta[,self$indices$group_col])[2],
-                               selected_lipid_class = NULL,
-                               color_palette = 'Spectral',
-                               method = "ratio",
-                               img_format = "png")
-
-      self$param_fa_analysis_plot(data_table = self$tables$raw_data,
+      self$param_fa_analysis_plot(data_table = self$tables$total_norm_data,
                                   feature_meta = self$tables$feature_table,
                                   sample_meta = self$tables$raw_meta,
                                   group_col = self$indices$group_col,
-                                  selected_lipidclass = self$indices$selected_lipidclass,
-                                  pathway = NULL,
-                                  color_palette = 'Spectral',
+                                  selected_view = self$params$fa_analysis_plot$selected_view,
+                                  selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
+                                  selected_fa = self$params$fa_analysis_plot$selected_fa,
+                                  fa_norm = self$params$fa_analysis_plot$fa_norm,
+                                  color_palette = 'Set1',
                                   img_format = "png")
+
+      self$param_fa_comp_plot(
+        data_table = self$tables$total_norm_data,
+        sample_meta = self$tables$raw_meta,
+        composition = self$params$fa_comp_plot$composition,
+        feature_meta = self$tables$feature_table,
+        group_col = self$indices$group_col,
+        group_1 = unique(self$tables$raw_meta[, self$indices$group_col])[1],
+        group_2 = unique(self$tables$raw_meta[, self$indices$group_col])[2],
+        selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+        color_palette = "Blues",
+        img_format = "png"
+      )
 
     },
 
@@ -839,7 +817,6 @@ Lips_exp = R6::R6Class(
                                  test = self$params$volcano_plot$selected_test,
                                  group_1 = self$params$volcano_plot$group_1,
                                  group_2 = self$params$volcano_plot$group_2) {
-
       rownames_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_1]
       rownames_group_2 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, group_col] == group_2]
       all_rownames = sort(unique(c(rownames_group_1, rownames_group_2)))
@@ -851,6 +828,9 @@ Lips_exp = R6::R6Class(
       idx_group_1 = which(rownames(data_table) %in% rownames_group_1)
       idx_group_2 = which(rownames(data_table) %in% rownames_group_2)
 
+      if(length(idx_group_1) <= 1 | length(idx_group_2) <= 1) {
+        stop("not enough observations")
+      }
 
       # Remove empty columns
       dead_features = colnames(data_table)
@@ -868,14 +848,15 @@ Lips_exp = R6::R6Class(
                                                    idx_group_1 = idx_group_1,
                                                    idx_group_2 = idx_group_2,
                                                    used_function = used_function,
-                                                   impute_inf = F)
+                                                   impute_inf = FALSE)
 
 
       volcano_table$p_val = get_p_val(data_table = data_table,
                                       idx_group_1 = idx_group_1,
                                       idx_group_2 = idx_group_2,
                                       used_function = test,
-                                      impute_na = F)
+                                      impute_na = FALSE)
+
       volcano_table$q_val_bh = stats::p.adjust(volcano_table$p_val, method = "BH")
 
       volcano_table$minus_log10_p_value = -log10(volcano_table$p_val)
@@ -885,95 +866,6 @@ Lips_exp = R6::R6Class(
       self$tables$volcano_table = volcano_table
     },
 
-    # Double bond plot table
-    get_dbplot_table_single = function(data_table = self$tables[[self$params$db_plot$dataset]],
-                                       dbplot_table = self$tables$feature_table,
-                                       col_group = self$params$db_plot$group_column,
-                                       used_function = self$params$db_plot$selected_function,
-                                       group_1 = self$params$db_plot$selected_groups[1]){
-
-      # Set the averaging function
-      if (used_function == "median") {
-        av_function = function(x) {return(median(x, na.rm = T))}
-      } else {
-        av_function = function(x) {return(mean(x, na.rm = T))}
-      }
-
-      # Get the rownames for each group
-      idx_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, col_group] == group_1]
-
-      # Remove empty columns
-      dead_features = colnames(data_table)
-      data_table = remove_empty_cols(table = data_table)
-      dead_features = setdiff(dead_features, colnames(data_table))
-
-      if (length(dead_features) > 0) {
-        dead_features = which(rownames(dbplot_table) %in% dead_features)
-        dbplot_table = dbplot_table[-dead_features,]
-      }
-
-
-      averages = apply(data_table,2,av_function)
-      dbplot_table[, "averages"] = averages
-
-      lips = rownames(dbplot_table)
-      txt_medians = as.character(round(dbplot_table[,"averages"],5))
-      dbplot_table$text = paste0(lips, " | ", used_function, ": ", txt_medians)
-
-      self$tables$dbplot_table = dbplot_table
-    },
-
-    get_dbplot_table_double = function(data_table,
-                                       dbplot_table = self$tables$feature_table,
-                                       col_group = self$params$db_plot$group_column,
-                                       used_function = self$params$db_plot$selected_function,
-                                       test = self$params$db_plot$selected_test,
-                                       group_1 = self$params$db_plot$selected_groups[1],
-                                       group_2 = self$params$db_plot$selected_groups[2]) {
-
-      rownames_group_1 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, col_group] == group_1]
-      rownames_group_2 = rownames(self$tables$raw_meta)[self$tables$raw_meta[, col_group] == group_2]
-      all_rownames = sort(unique(c(rownames_group_1, rownames_group_2)))
-
-      # Filter data to keep only the two groups
-      data_table = data_table[all_rownames,]
-
-      # Get the indices for each group
-      idx_group_1 = which(rownames(data_table) %in% rownames_group_1)
-      idx_group_2 = which(rownames(data_table) %in% rownames_group_2)
-
-      # Get all row names from both groups
-      idx_all = c(idx_group_1, idx_group_2)
-      idx_all = sort(unique(idx_all))
-      # Filter data to keep only the two groups
-      data_table = data_table[idx_all,]
-      # Remove empty columns
-      dead_features = colnames(data_table)
-      data_table = remove_empty_cols(table = data_table)
-      dead_features = setdiff(dead_features, colnames(data_table))
-      if (length(dead_features) > 0) {
-        dead_features = which(rownames(dbplot_table) %in% dead_features)
-        dbplot_table = dbplot_table[-dead_features,]
-      }
-      # Collect fold change and p-values
-      dbplot_table$fold_change = get_fold_changes(data_table = data_table,
-                                                  idx_group_1 = idx_group_1,
-                                                  idx_group_2 = idx_group_2,
-                                                  used_function = used_function)
-      dbplot_table$p_val = get_p_val(data_table = data_table,
-                                     idx_group_1 = idx_group_1,
-                                     idx_group_2 = idx_group_2,
-                                     used_function = test)
-      dbplot_table$q_val_bh = stats::p.adjust(dbplot_table$p_val, method = "BH")
-      dbplot_table$minus_log10_p_value = -log10(dbplot_table$p_val)
-      dbplot_table$log2_fold_change = log2(dbplot_table$fold_change)
-      dbplot_table$minus_log10_p_value_bh_adj = -log10(dbplot_table$q_val_bh)
-      lips = rownames(dbplot_table)
-      fc = as.character(round(dbplot_table[,"log2_fold_change"],2))
-      pval = as.character(round(dbplot_table[,"minus_log10_p_value_bh_adj"],2))
-      dbplot_table$text = paste0(lips, " | log2(fc): ", fc, " | -log10(bh(pval)): ", pval)
-      self$tables$dbplot_table = dbplot_table
-    },
 
     #----------------------------------------------------- Plotting methods ----
     # Class distribution
@@ -999,26 +891,31 @@ Lips_exp = R6::R6Class(
       for (c in class_list) {
         for (g in group_list){
           s = rownames(meta_table)[meta_table[,group_col] == g]
-          m = mean(as.matrix(table[s, c]))
-          plot_table[c,g] = m
+          m = mean(as.matrix(table[s, c]), na.rm = TRUE)
+          plot_table[c, g] = m
         }
       }
 
       # Store the plot_table
       self$tables$class_distribution_table = plot_table
 
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(group_list))
-      colors = setNames(colors, group_list)
+      colors <- get_color_palette(groups = group_list,
+                                  color_palette = color_palette)
 
       # Produce the plot
       i = 1
-      fig = plotly::plot_ly(colors = unname(colors), width = width, height = height)
+      fig = plotly::plot_ly(colors = unname(colors),
+                            width = width,
+                            height = height,
+                            hovertemplate = paste("Lipid class: %{x}<br>",
+                                                  "Value: %{y:.3g}%<br>",
+                                                  paste0("Group: ", g),
+                                                  "<extra></extra>"))
       for (col in colnames(plot_table)) {
         fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
                                 name = col, color = colors[col], type  = "bar")
         fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                             yaxis = list(title = "Concentration"))
+                             yaxis = list(title = "%", tickformat = "digits"))
         i = i + 1
       }
 
@@ -1045,7 +942,7 @@ Lips_exp = R6::R6Class(
       x_step = 1/x_dim
       y_step = 1/y_dim
 
-      x = x_step/2
+      x = x_step / 2
       y = 0.97 - y_step
       i = 1
 
@@ -1067,14 +964,13 @@ Lips_exp = R6::R6Class(
           x = x_step/2
           y = y - y_step}
       }
-      annotations[[i]] = list(x = -0.08, y = 0.5, text = "Concentration",
-                              font = list(size = 10),
+      annotations[[i]] = list(x = -0.045, y = 0.5, text = "%",
+                              font = list(size = 12),
                               textangle = 270, showarrow = FALSE, xref='paper',
                               yref='paper')
 
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(groups))
-      colors = setNames(colors, groups)
+      colors <- get_color_palette(groups = groups,
+                                  color_palette = color_palette)
 
       # Plot list will be the list of subplots
       plot_list = c()
@@ -1084,11 +980,16 @@ Lips_exp = R6::R6Class(
       j = 1
       for (c in class_list) {
         i = 1
-        subplot = plot_ly(colors = unname(colors), width = width, height = height)
-        for (g in groups){
-          if (g %in% cleared_groups) {
+        subplot = plot_ly(colors = unname(colors),
+                          width = width,
+                          height = height,
+                          hovertemplate = paste("Group: %{x}<br>",
+                                                "Value: %{y:.3g}%",
+                                                "<extra></extra>"))
+        for(g in groups){
+          if(g %in% cleared_groups) {
             first_bool = FALSE
-          }else{
+          } else {
             first_bool = TRUE
             cleared_groups = c(cleared_groups, g)
           }
@@ -1096,32 +997,68 @@ Lips_exp = R6::R6Class(
           # For each class, each group
           s = rownames(meta_table)[meta_table[, group_col] == g] # Get the samples for the current group
           d = data_table[s, c] # Get the concentrations for all s samples in the current class c
-          m = mean(d) # Get the mean concentration for samples s for class c
+          m = mean(d, na.rm = TRUE) # Get the mean concentration for samples s for class c
 
           # Subplot for the bar chart displaying the mean concentration
-          subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
-                                          color = colors[g], alpha = 1,
-                                          legendgroup=i, showlegend = first_bool)
+          subplot = subplot |>
+            plotly::add_trace(x = g, y = m, type  = "bar", name = g,
+                              color = colors[g], alpha = 1,
+                              legendgroup=i, showlegend = first_bool)
 
           # Subplot for boxplots displaying the median and all datapoints
-          subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
-                                          pointpos = 0, name = g, color = colors[g],
-                                          line = list(color = 'rgb(100,100,100)'),
-                                          marker = list(color = 'rgb(100,100,100)'), alpha = 1,
-                                          legendgroup=i, showlegend = FALSE,
-                                          text = s,
-                                          hoverinfo = "text")
-          subplot = subplot %>% layout(xaxis= list(showticklabels = FALSE),
-                                       yaxis = list(tickfont = list(size = 8)))
+          subplot = subplot |>
+            plotly::add_trace(x = g, y = d, type  = "box", boxpoints = "all",
+                              pointpos = 0, name = g, color = colors[g],
+                              line = list(color = 'rgb(100,100,100)'),
+                              marker = list(color = 'rgb(100,100,100)'), alpha = 1,
+                              legendgroup=i, showlegend = FALSE,
+                              text = s,
+                              hoverinfo = "text")
+
+          # add the title to the plot
+          subplot = subplot |>
+            plotly::add_annotations(
+              text = paste0("<b>", c, "</b>"),
+              x = 0.5,
+              y = 1,
+              yref = "paper",
+              xref = "paper",
+              xanchor = "center",
+              yanchor = "bottom",
+              showarrow = FALSE,
+              font = list(size = 11)) |>
+            plotly::layout(
+              xaxis = list(showticklabels = FALSE),
+              yaxis = list(tickfont = list(size = 8),
+                           tickformat = "digits"),
+              shapes = list(
+                list(
+                  type = "rect",
+                  x0 = 0,
+                  x1 = 1,
+                  y0 = 1.,
+                  y1 = 1.2,
+                  yref = "paper",
+                  xref = "paper",
+                  fillcolor = "#0255e9",
+                  opacity = 0.4,
+                  line = list(color = "#0255e9",
+                              width = 1,
+                              opacity = 0.4)
+                )
+              ))
           i = i + 1
         }
-        plot_list[[j]] = plotly_build(subplot)
+        plot_list[[j]] = subplot
         j = j + 1
       }
 
-      fig = subplot(plot_list, nrows = y_dim, margin = 0.035, titleX = TRUE)
-      fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                           annotations = annotations)
+      fig = plotly::subplot(plot_list,
+                            nrows = y_dim,
+                            margin = 0.035) |>
+        plotly::layout(legend = list(orientation = 'h',
+                                     xanchor = "center",
+                                     x = 0.5))
 
       self$plots$class_comparison = fig
     },
@@ -1132,7 +1069,6 @@ Lips_exp = R6::R6Class(
                             group_1 = self$params$volcano_plot$group_1,
                             group_2 = self$params$volcano_plot$group_2,
                             feature_metadata = self$params$volcano_plot$feature_metadata,
-                            keep_significant = self$params$volcano_plot$keep_significant,
                             displayed_plot = self$params$volcano_plot$displayed_plot,
                             p_val_threshold = self$params$volcano_plot$p_val_threshold,
                             fc_threshold = self$params$volcano_plot$fc_threshold,
@@ -1149,17 +1085,9 @@ Lips_exp = R6::R6Class(
       opacity = as.numeric(opacity)
 
       if (adjustment == 'BH') {
-        if (keep_significant) {
-          data_table = data_table[data_table$q_val_bh <= p_val_threshold,]
-          data_table = data_table[(data_table$log2_fold_change >= log2(fc_threshold)) | (data_table$log2_fold_change <= -log2(fc_threshold)),]
-        }
         p_vals = data_table$q_val_bh
         y_label = '-Log10(BH(p-value))'
       } else {
-        if (keep_significant) {
-          data_table = data_table[data_table$p_val <= p_val_threshold,]
-          data_table = data_table[(data_table$log2_fold_change >= log2(fc_threshold)) | (data_table$log2_fold_change <= -log2(fc_threshold)),]
-        }
         p_vals = data_table$p_val
         y_label = '-Log10(p-value)'
       }
@@ -1208,6 +1136,7 @@ Lips_exp = R6::R6Class(
                             alpha_da = self$params$heatmap$alpha_da,
                             color_palette = self$params$heatmap$color_palette,
                             reverse_palette = self$params$heatmap$reverse_palette,
+                            factor_height = self$params$heatmap$factor_height,
                             width = NULL,
                             height = NULL) {
       data_table = self$table_check_convert(data_table)
@@ -1229,23 +1158,26 @@ Lips_exp = R6::R6Class(
       if (cluster_rows & cluster_cols) {
         dendrogram_list = "both"
       } else if (cluster_rows) {
+        # only samples
         dendrogram_list = "column" # Because of the transpose, rows => cols
       } else if (cluster_cols) {
+        # only features
         dendrogram_list = "row" # Because of the transpose, cols => rows
       } else {
         dendrogram_list = "none"
       }
 
-      val_list = as.vector(data_table)
-      val_list = na.omit(val_list)
-      val_list = sort(val_list)
+      # get the relative sizes for the subplots
+      subplot_sizes <- calc_subplot_size(dendrogram = dendrogram_list,
+                                         cluster_rows = row_annotations,
+                                         cluster_columns = col_annotations,
+                                         factor_height = factor_height)
 
-      zmax = min(c(abs(min(val_list)), max(val_list)))
-      zmin = -zmax
+      # make sure the color scale is symmetrical
+      zmax <- max(c(min(data_table, na.rm = TRUE),
+                    max(data_table, na.rm = TRUE)))
+      zmin <- -zmax
 
-      # Filter out the data
-      data_table[data_table > zmax] = zmax
-      data_table[data_table < zmin] = zmin
 
       # Annotations
       if (!is.null(row_annotations)) {
@@ -1265,50 +1197,58 @@ Lips_exp = R6::R6Class(
 
       if (!is.null(col_annotations)) {
         clean_names = col_annotations
-        if (length(col_annotations) == 1) {
-          col_annotations = feature_table_cols_switch(col_annotations)
-          col_annotations = as.data.frame(meta_table_features[, col_annotations],
-                                          row.names = rownames(meta_table_features))
-          colnames(col_annotations) = clean_names
-        } else {
-          new_cols = c()
-          for (i in 1:length(col_annotations)) {
-            new_cols = c(new_cols, feature_table_cols_switch(col_annotations[i]))
-          }
-          col_annotations = meta_table_features[, new_cols]
-          colnames(col_annotations) = clean_names
-        }
+        col_annotations = as.data.frame(meta_table_features[, col_annotations],
+                                        row.names = rownames(meta_table_features))
+        colnames(col_annotations) = clean_names
       }
 
       if (impute) {
         print('Imputing NAs')
-        data_table[is.na(data_table)] = zmin
+        # data_table[is.na(data_table)] <- min(data_table, na.rm = TRUE)
+        # use the minimum value per sample
+        data_table <- t(apply(data_table, 1, function(x) {
+          x[is.na(x)] <- min(x, na.rm = TRUE)
+          return(x)
+        }))
       }
 
       # Get the color palette
       color_count = colors_switch(color_palette)
-      color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      color_palette = c(color_palette[1], color_palette[round(color_count/2)] , color_palette[color_count])
-      if (reverse_palette) {
-        color_palette = base::rev(color_palette)
+      color_palette <- get_colors(color_count = color_count,
+                                  color_palette = color_palette)
+      if(reverse_palette) {
+        color_palette <- rev(color_palette)
       }
+
+      # customise the x-axis labels
+      # use group name and the last 3 number of the sample name
+      group_names <- meta_table[, c(self$indices$group_col)]
+      names(group_names) <- rownames(meta_table)
+      xlabels <- paste0(group_names,
+                        "_",
+                        gsub(x = names(group_names),
+                             pattern = ".*([0-9]{3})$",
+                             replacement = "\\1"))
+
 
       # Plot the data
       self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
-                                                scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
-                                                  low = color_palette[3],
-                                                  mid = color_palette[2],
-                                                  high = color_palette[1],
-                                                  midpoint = 0,
-                                                  limits = c(zmin, zmax)
-                                                ),
+                                                colors = base::rev(color_palette),
+                                                fontsize_row = 7,
+                                                plot_method = "plotly",
+                                                colorbar_len = 0.3 / factor_height,
+                                                colorbar_yanchor = "top",
+                                                colorbar_xpos = 1.15,
+                                                colorbar_ypos = 1,
                                                 width = width,
-                                                height = height,
+                                                height = factor_height * height,
                                                 limits = c(zmin, zmax),
+                                                subplot_widths = subplot_sizes$width,
+                                                subplot_heights = subplot_sizes$height,
                                                 col_side_colors = row_annotations,
                                                 row_side_colors = col_annotations,
                                                 dendrogram = dendrogram_list)
-
+      # labCol = xlabels)
     },
 
     ## PCA scores and loading plots
@@ -1316,6 +1256,7 @@ Lips_exp = R6::R6Class(
                         meta_table = self$tables$raw_meta,
                         feature_table = self$tables$feature_table,
                         sample_groups_col = self$params$pca$sample_groups_col,
+                        sample_groups_col_shape = self$params$pca$sample_groups_col_shape,
                         feature_groups_col = self$params$pca$feature_groups_col,
                         apply_da = self$params$pca$apply_da,
                         alpha_da = self$params$pca$alpha_da,
@@ -1340,7 +1281,9 @@ Lips_exp = R6::R6Class(
         data_table = self$tables[[data_table]]
       }
 
-      sample_groups = meta_table[rownames(data_table),sample_groups_col]
+      sample_groups = meta_table[rownames(data_table), sample_groups_col]
+      sample_groups_shape <- meta_table[rownames(data_table), sample_groups_col_shape]
+
       if (apply_da) {
         data_table = apply_discriminant_analysis(data_table = data_table,
                                                  group_list = sample_groups,
@@ -1368,6 +1311,7 @@ Lips_exp = R6::R6Class(
 
       pca_out = pca_main(data_table = data_table,
                          sample_groups = sample_groups,
+                         sample_groups_shape = sample_groups_shape,
                          feature_groups = feature_groups,
                          nPcs = nPcs,
                          displayed_pc_1 = displayed_pc_1,
@@ -1378,311 +1322,39 @@ Lips_exp = R6::R6Class(
                          colors_palette = colors_palette,
                          return_data = return_data)
 
-
-
-
-
       self$tables$pca_scores_table = pca_out$pca_data@scores
       self$tables$pca_loadings_table = pca_out$pca_data@loadings
       self$plots$pca_plot = pca_out$fig
-
     },
 
-    ## Double bond plot
-    plot_doublebonds_single = function(data_table = self$params$db_plot$dataset,
-                                       lipid_class = self$params$db_plot$selected_lipid_class,
-                                       carbon_selection = self$params$db_plot$selected_carbon_chain,
-                                       unsat_selection = self$params$db_plot$selected_unsat,
-                                       group_1 = self$params$db_plot$selected_groups[1],
-                                       width = NULL,
-                                       height = NULL){
-      data_table = self$table_check_convert(data_table)
-
-      x_label = carbon_selection
-      y_label = unsat_selection
-      carbon_selection = feature_table_cols_switch(carbon_selection)
-      unsat_selection = feature_table_cols_switch(unsat_selection)
-      selected_rows = rownames(data_table)[data_table["lipid_class"] == lipid_class]
-      data_table = data_table[selected_rows,]
-      x_lims = c(min(data_table[,carbon_selection]) -1, max(data_table[,carbon_selection]) +1)
-      y_lims = c(min(data_table[,unsat_selection]) -0.5, max(data_table[,unsat_selection]) +1)
-
-      fig = plotly::plot_ly(data_table,
-                            x = data_table[,carbon_selection],
-                            y = data_table[,unsat_selection],
-                            type = "scatter",
-                            mode = "markers",
-                            size = ~averages,
-                            sizes = ~c(5,40),
-                            marker = list(sizemode ='diameter',
-                                          opacity = 0.5,
-                                          sizeref=1
-                            ),
-                            text = data_table$text,
-                            hoverinfo = "text",
-                            width = width,
-                            height = height)
-
-
-      fig = fig %>% layout(
-        title = paste0("Lipids in class ", lipid_class, " - ", group_1),
-        xaxis = list(title = x_label,
-                     range = x_lims
-        ),
-        yaxis = list(title = y_label,
-                     range = y_lims
-        )
-      )
-      self$plots$double_bond_plot = fig
-    },
-
-    plot_doublebonds_double = function(data_table = self$tables$dbplot_table,
-                                       adjustment = self$params$db_plot$adjustment,
-                                       carbon_selection = self$params$db_plot$selected_carbon_chain,
-                                       unsat_selection = self$params$db_plot$selected_unsat,
-                                       lipid_class = self$params$db_plot$selected_lipid_class,
-                                       fc_limits = self$params$db_plot$fc_values,
-                                       pval_limits = self$params$db_plot$pval_values,
-                                       group_1 = self$params$db_plot$selected_groups[1],
-                                       group_2 = self$params$db_plot$selected_groups[2],
-                                       width = NULL,
-                                       height = NULL){
-      x_label = carbon_selection
-      y_label = unsat_selection
-      carbon_selection = feature_table_cols_switch(carbon_selection)
-      unsat_selection = feature_table_cols_switch(unsat_selection)
-      selected_rows = rownames(data_table)[data_table["lipid_class"] == lipid_class]
-      data_table = data_table[selected_rows,]
-      x_lims = c(min(data_table[,carbon_selection]) -1, max(data_table[,carbon_selection]) +1)
-      y_lims = c(min(data_table[,unsat_selection]) -0.5, max(data_table[,unsat_selection]) +1)
-      data_table = data_table[!dplyr::between(data_table[,"log2_fold_change"], fc_limits[1], fc_limits[2]),]
-      data_table = data_table[dplyr::between(data_table[,adjustment], pval_limits[1], pval_limits[2]),]
-      if (nrow(data_table) > 0) {
-        fig = plotly::plot_ly(data_table,
-                              x = data_table[,carbon_selection],
-                              y = data_table[,unsat_selection],
-                              type = "scatter",
-                              mode = "markers",
-                              size = data_table[,adjustment],
-                              sizes = ~c(5,40),
-                              marker = list(color = ~log2_fold_change,
-                                            sizemode ='diameter',
-                                            opacity = 0.5,
-                                            sizeref=1,
-                                            colorscale = 'RdBu',
-                                            cmax = max(abs(data_table[, "log2_fold_change"])),
-                                            cmin = -max(abs(data_table[, "log2_fold_change"])),
-                                            colorbar=list(
-                                              title='Log2(fold change)'
-                                            ),
-                                            line = list(width = 0)
-                              ),
-                              text = data_table$text,
-                              hoverinfo = "text",
-                              width = width,
-                              height = height)
-      } else {
-        fig = plotly::plot_ly(data_table,
-                              x = data_table[,carbon_selection],
-                              y = data_table[,unsat_selection],
-                              type = "scatter",
-                              mode = "markers",
-                              width = width,
-                              height = height)
-      }
-
-      fig = fig %>% layout(
-        legend= list(itemsizing='constant'),
-        title = paste0("Comparison in ", lipid_class, " - ", group_1, " (blue), ", group_2, " (red)"),
-        xaxis = list(title = x_label,
-                     range = x_lims
-        ),
-        yaxis = list(title = y_label,
-                     range = y_lims
-        )
-      )
-      self$plots$double_bond_plot = fig
-    },
-
-
-    plot_satindex = function(data_table = self$tables$raw_data,
-                             feature_table = self$tables$feature_table,
-                             sample_meta = self$tables$raw_meta,
-                             group_col = self$params$satindex_plot$group_col,
-                             group_1 = self$params$satindex_plot$group_1,
-                             group_2 = self$params$satindex_plot$group_2,
-                             selected_lipid_class = self$params$satindex_plot$selected_lipid_class,
-                             method = self$params$satindex_plot$method,
-                             color_palette = self$params$satindex_plot$color_palette,
-                             width = NULL,
-                             height = NULL) {
-      ## At the moment this function is using the raw data table!
-
-      # calculations
-      res <- switch(
-        method,
-        "(palmitate+stearate) / oleate ratio" = satindex_calc_ratio(data_table = data_table,
-                                                                    feature_table = feature_table,
-                                                                    sample_meta = sample_meta),
-        "use all FA tails" = satindex_calc_all(data_table = data_table,
-                                               feature_table = feature_table,
-                                               sample_meta = sample_meta),
-        "overall" = satindex_calc_overall(data_table = data_table,
-                                          feature_table = feature_table,
-                                          sample_meta = sample_meta),
-        "double bond" = satindex_calc_db(data_table = data_table,
-                                         feature_table = feature_table,
-                                         sample_meta = sample_meta,
-                                         group_col = group_col,
-                                         group_1 = group_1,
-                                         group_2 = group_2,
-                                         selected_lipid_class = selected_lipid_class)
-      )
-
-      if(method != "double bond") {
-        # remove some Inf and replace by NaN
-        res <- apply(res, 2, function(x) {
-          x[is.infinite(x)] <- NaN
-          return(x)
-        })
-
-        # get rid of empty columns
-        res_clean <- res[, !apply(apply(res, 2, is.na), 2, all), drop = FALSE]
-
-        # Store the plot_table
-        self$tables$satindex_table <- res_clean
-
-        # plotting
-        # Get sample groups and the list of classes
-        groups = sort(unique(sample_meta[, group_col]))
-        class_list = colnames(res_clean)
-        group_list = sort(unique(sample_meta[,group_col]))
-
-        colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-        colors = colorRampPalette(colors)(length(group_list))
-        colors = setNames(colors, group_list)
-
-        x_dim = ceiling(sqrt(length(class_list)))
-        y_dim = floor(sqrt(length(class_list)))
-        # this is sometimes needed
-        if((x_dim * y_dim) < length(class_list)) {
-          x_dim <- x_dim + 1
-        }
-
-        x_step = 1/x_dim
-        y_step = 1/y_dim
-
-        x = x_step/2
-        y = 0.97 - y_step
-        i = 1
-
-        annotations = vector(mode = "list",
-                             length = length(class_list) + 1)
-        for (c in class_list) {
-          tmp_ann = list(
-            x = x,
-            y = y,
-            text = c,
-            xref = "paper",
-            yref = "paper",
-            xanchor = "center",
-            yanchor = "bottom",
-            showarrow = FALSE)
-          annotations[[i]] = tmp_ann
-          i = i + 1
-          x = x + x_step
-          if (x >= 1) {
-            x = x_step/2
-            y = y - y_step}
-        }
-        annotations[[i]] = list(x = -0.08, y = 0.5, text = "Saturation index",
-                                font = list(size = 12),
-                                textangle = 270, showarrow = FALSE, xref = 'paper',
-                                yref = 'paper')
-
-        # Plot list will be the list of subplots
-        plot_list = vector(mode = "list",
-                           length = length(class_list))
-
-        # Cleared groups is created for the legends
-        cleared_groups = c()
-        j = 1
-        for (c in class_list) {
-          i = 1
-          subplot = plot_ly(colors = unname(colors), width = width, height = height)
-          for (g in groups){
-            if (g %in% cleared_groups) {
-              first_bool = FALSE
-            } else {
-              first_bool = TRUE
-              cleared_groups = c(cleared_groups, g)
-            }
-
-            # For each class, each group
-            s = rownames(sample_meta)[sample_meta[, group_col] == g] # Get the samples for the current group
-            d = res_clean[s, c] # Get the concentrations for all s samples in the current class c
-            m = mean(d, na.rm = TRUE) # Get the mean concentration for samples s for class c
-
-            # Subplot for the bar chart displaying the mean concentration
-            subplot = subplot %>% add_trace(x = g, y = m, type  = "bar", name = g,
-                                            color = colors[i], alpha = 0.75,
-                                            legendgroup = i, showlegend = first_bool)
-
-            # Subplot for boxplots displaying the median and all datapoints
-            subplot = subplot %>% add_trace(x = g, y = d, type  = "box", boxpoints = "all",
-                                            pointpos = 0, name = g, color = colors[i],
-                                            line = list(color = 'rgb(100,100,100)'),
-                                            marker = list(color = 'rgb(100,100,100)'), alpha = 0.75,
-                                            legendgroup = i, showlegend = FALSE,
-                                            text = s,
-                                            hoverinfo = "text")
-            subplot = subplot %>% layout(xaxis= list(showticklabels = FALSE),
-                                         yaxis = list(tickfont = list(size = 8)))
-            i = i + 1
-          }
-          plot_list[[j]] = plotly_build(subplot)
-          j = j + 1
-        }
-
-        fig = subplot(plot_list, nrows = y_dim, margin = 0.035, titleX = TRUE)
-        fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                             annotations = annotations)
-
-        self$plots$satindex_plot = fig
-      } else {
-        # Store the plot_table
-        self$tables$satindex_table <- res
-
-        fig <- res |>
-          plot_ly(x = ~doubleBond,
-                  y = ~foldChange) |>
-          add_bars() |>
-          layout(title = selected_lipid_class,
-                 xaxis = list(title = "# double bonds"),
-                 yaxis = list(title = paste0("Fold change (", group_1, " / ", group_2, ")")))
-
-        self$plots$satindex_plot <- fig
-      }
-    },
-
-
-    plot_fa_analysis = function(data_table = self$tables$raw_data,
+    ## FA analysis
+    plot_fa_analysis = function(data_table = self$tables$total_norm_data,
                                 feature_table = self$tables$feature_table,
                                 sample_meta = self$tables$raw_meta,
                                 group_col = self$params$fa_analysis_plot$group_col,
-                                pathway = self$params$fa_analysis_plot$pathway,
+                                selected_view = self$params$fa_analysis_plot$selected_view,
                                 selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
+                                selected_fa = self$params$fa_analysis_plot$selected_fa,
+                                fa_norm = self$params$fa_analysis_plot$fa_norm,
                                 color_palette = self$params$fa_analysis_plot$color_palette,
                                 width = NULL,
                                 height = NULL) {
-
       ## At the moment this function is using the raw data table
       # do the calculations
-      res <- fa_analysis_calc(data_table = data_table,
-                              feature_table = feature_table,
-                              sample_meta = sample_meta,
-                              selected_lipidclass = selected_lipidclass)
-
+      if(selected_view == "lipidclass") {
+        res <- fa_analysis_calc(data_table = data_table,
+                                feature_table = feature_table,
+                                sample_meta = sample_meta,
+                                selected_lipidclass = selected_lipidclass,
+                                fa_norm = fa_norm)
+        # column names are fa tail names, rownames sample names
+      } else if(selected_view == "fa") {
+        res <- fa_analysis_rev_calc(data_table = data_table,
+                                    feature_table = feature_table,
+                                    sample_meta = sample_meta,
+                                    selected_fa = selected_fa,
+                                    fa_norm = fa_norm)
+      }
 
       # Produce the class x group table
       # add ID's, group's and make long
@@ -1690,69 +1362,85 @@ Lips_exp = R6::R6Class(
       res$group <- sample_meta[res$ID, group_col]
       res_long <- res |>
         tidyr::pivot_longer(cols = -c(ID, group),
-                            names_to = "fa_chain",
+                            names_to = "names",
                             values_to = "value")
 
       # calculate mean and stdev per group
-      plot_table <- tapply(as.data.frame(res_long), list(res_long$group, res_long$fa_chain), function(x) {
+      plot_table <- tapply(as.data.frame(res_long), list(res_long$group, res_long$names), function(x) {
         avg <- mean(x[, "value"], na.rm = TRUE)
         stdev <- sd(x[, "value"], na.rm = TRUE)
 
         return(list(avg = avg,
                     stdev = stdev,
-                    fa_chain = x[1, "fa_chain"],
+                    names = x[1, "names"],
                     group = x[1, "group"]))
         # print(x)
       })
 
       plot_table <- do.call(rbind.data.frame, plot_table)
 
-      # filter plot_table based on pathway selection
-      pathway_fa <- c(
-        paste(seq(16, 26, 2), 0, sep = ":"),
-        paste(seq(16, 24, 2), 1, sep = ":"),
-        c("18:2", "18:3", "20:2", "20:3", "20:4",
-          "22:4", "22:5","24:4", "24:5"),
-        c("18:3", "18:4", "20:3", "20:4", "20:5",
-           "22:5", "22:6", "24:5", "24:6")
-      )
-      names(pathway_fa) <- c(rep("SFA", 6),
-                             rep("MUFA", 5),
-                             rep("PUFA(n-6)", 9),
-                             rep("PUFA(n-3)", 9))
-
-      if(!is.null(pathway)) {
-        selected_pathway_fa <- unique(pathway_fa[names(pathway_fa) %in% pathway])
-        plot_table <- plot_table[plot_table$fa_chain %in% selected_pathway_fa, ]
-      }
-
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
 
-      group_list = sort(unique(plot_table$group))
-      colors = brewer.pal(as.numeric(colors_switch(color_palette)), color_palette)
-      colors = colorRampPalette(colors)(length(group_list))
-      colors = setNames(colors, group_list)
+      # group_list = sort(unique(plot_table$group))
+      colors <- get_color_palette(groups = plot_table$group,
+                                  color_palette = color_palette)
+      print("Rico: fa colors")
+      # print(group_list)
+      print(colors)
+      colors <- rev(colors)
+      print(colors)
+
+      # set the main title for FA overview per lipid class
+      if(selected_view == "lipidclass") {
+        if(selected_lipidclass == "All") {
+          main_title <- "All lipid classes (incl. TG)"
+        } else if(selected_lipidclass == "All_noTG") {
+          main_title <- "All lipid classes (excl. TG)"
+        } else {
+          main_title <- paste0("Lipid class: ", selected_lipidclass)
+        }
+        xlabel <- "Fatty acid chain"
+      }
+
+      if(fa_norm) {
+        ylabel <- "%"
+      } else {
+        ylabel <- "Normalized value"
+      }
+
+      # set the main title for lipid class overview per fatty acids
+      if(selected_view == "fa") {
+        main_title <- paste0("FA tails: ", paste(selected_fa, collapse = ", "))
+        xlabel <- "Lipid classes"
+      }
 
       # plotting
       i <- 1
-      fig <- plotly::plot_ly(colors = unname(colors), width = width, height = height)
+      fig <- plotly::plot_ly(colors = unname(colors),
+                             width = width,
+                             height = height)
       for (grp in unique(plot_table$group)) {
         fig <- fig |>
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
-                            x = ~fa_chain,
+                            x = ~names,
                             y = ~avg,
                             color = colors[i],
                             type = "bar",
                             name = grp,
+                            text = ~stdev,
                             error_y = ~ list(array = stdev,
-                                             color = "#000000"))
+                                             color = "#000000"),
+                            hovertemplate = paste("Fatty acid chain: %{x}<br>",
+                                                  "Value: %{y:.3g} +/- %{text:0.3g}<br>",
+                                                  paste0("Group: ", grp),
+                                                  "<extra></extra>"))
         fig <- fig |>
           plotly::layout(legend = list(orientation = 'h',
                                        xanchor = "center",
                                        x = 0.5),
-                         xaxis = list(title = "Fatty acid chain"),
-                         yaxis = list(title = "Concentration"))
+                         xaxis = list(title = xlabel),
+                         yaxis = list(title = ylabel))
         i <- i + 1
       }
       fig <- fig |>
@@ -1767,11 +1455,285 @@ Lips_exp = R6::R6Class(
                               yanchor = "auto",
                               xshift = 0,
                               yshift = 0,
-                              font = list(size = 10))
+                              font = list(size = 10)),
+                       title = list(text = main_title,
+                                    x = 0,
+                                    xanchor = "left")
         )
       fig
 
       self$plots$fa_analysis_plot <- fig
+    },
+
+    # plot Fatty acid composition heatmaps
+    plot_fa_comp = function(data_table = self$tables$total_norm_data,
+                            sample_meta = self$tables$raw_meta,
+                            composition = self$params$fa_comp_plot$composition,
+                            feature_table = self$tables$feature_table,
+                            group_col = self$params$fa_comp_plot$group_col,
+                            group_1 = self$params$fa_comp_plot$group_1,
+                            group_2 = self$params$fa_comp_plot$group_2,
+                            selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+                            color_palette = self$params$fa_comp_plot$color_palette,
+                            width = NULL,
+                            height = NULL) {
+      # Get the color palette
+      # color_count = colors_switch(color_palette)
+      # color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
+      color_palette <- get_color_palette(groups = c(group_1, group_2),
+                                         color_palette = color_palette)
+
+      ## left side
+      # heatmap
+      hm_left_data <- fa_comp_hm_calc(data_table = data_table,
+                                      sample_meta = sample_meta,
+                                      composition = composition,
+                                      feature_table = feature_table,
+                                      group_col = group_col,
+                                      selected_group = group_1,
+                                      selected_lipidclass = selected_lipidclass)
+      # bar left top
+      bar_top_left_data <- data.frame(x = factor(colnames(hm_left_data),
+                                                 levels = sort(as.numeric(colnames(hm_left_data))),
+                                                 labels = sort(as.numeric(colnames(hm_left_data)))),
+                                      y = colSums(hm_left_data))
+      avg_carbon_left <- weighted.mean(x = as.numeric(as.character(bar_top_left_data$x)),
+                                       w = bar_top_left_data$y)
+      # bar left
+      bar_left_data <- data.frame(x = factor(rownames(hm_left_data),
+                                             levels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE),
+                                             labels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE)),
+                                  y = rowSums(hm_left_data))
+      avg_unsat_left <- weighted.mean(x = as.numeric(as.character(bar_left_data$x)),
+                                      w = bar_left_data$y)
+
+
+      ## right side
+      # heatmap
+      hm_right_data <- fa_comp_hm_calc(data_table = data_table,
+                                       sample_meta = sample_meta,
+                                       composition = composition,
+                                       feature_table = feature_table,
+                                       group_col = group_col,
+                                       selected_group = group_2,
+                                       selected_lipidclass = selected_lipidclass)
+      # bar right top
+      bar_top_right_data <- data.frame(x = factor(colnames(hm_right_data),
+                                                  levels = sort(as.numeric(colnames(hm_right_data))),
+                                                  labels = sort(as.numeric(colnames(hm_right_data)))),
+                                       y = colSums(hm_right_data))
+      avg_carbon_right <- weighted.mean(x = as.numeric(as.character(bar_top_right_data$x)),
+                                        w = bar_top_right_data$y)
+      # bar right
+      bar_right_data <- data.frame(x = factor(rownames(hm_right_data),
+                                              levels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE),
+                                              labels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE)),
+                                   y = rowSums(hm_right_data))
+      avg_unsat_right <- weighted.mean(x = as.numeric(as.character(bar_right_data$x)),
+                                       w = bar_right_data$y)
+
+
+      # get the min and max value for the heatmap colorbar
+      min_value <- min(c(min(hm_left_data), min(hm_right_data)))
+      max_value <- max(c(max(hm_left_data), max(hm_right_data)))
+
+      ## plots
+      # left side
+      fig_hm_left <- fa_comp_heatmap(data = hm_left_data,
+                                     vline = avg_carbon_left,
+                                     hline = avg_unsat_left,
+                                     composition = composition,
+                                     color_limits = c(min_value, max_value),
+                                     color_palette = color_palette)
+
+      fig_bar_top_left <- plotly::plot_ly(
+        data = bar_top_left_data,
+        x = ~x,
+        y = ~y,
+        type = "bar",
+        showlegend = FALSE,
+        color = I("gray"),
+        hovertemplate = paste("Number of carbons: %{x}<br>",
+                              "Proportion: %{y:.3g}<br>",
+                              "<extra></extra>")
+      ) |>
+        plotly::layout(
+          xaxis = list(showticklabels = FALSE,
+                       fixedrange = TRUE),
+          yaxis = list(
+            fixedrange = TRUE,
+            title = list(
+              text = "Proportion",
+              standoff = 3,
+              font = list(
+                size = 10
+              )
+            )
+          )
+        )
+
+      fig_bar_left <- plotly::plot_ly(
+        data = bar_left_data,
+        x = ~y,
+        y = ~x,
+        type = "bar",
+        showlegend = FALSE,
+        orientation = "h",
+        color = I("gray"),
+        hovertemplate = paste("Number of double bonds: %{y}<br>",
+                              "Proportion: %{x:.3g}<br>",
+                              "<extra></extra>")
+      ) |>
+        plotly::layout(
+          xaxis = list(
+            autorange = "reversed",
+            fixedrange = TRUE,
+            title = list(
+              text = "Proportion",
+              standoff = 3,
+              font = list(
+                size = 10
+              )
+            )
+          ),
+          yaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE,
+            title = "")
+        )
+
+      # right side
+      fig_hm_right <- fa_comp_heatmap(data = hm_right_data,
+                                      vline = avg_carbon_right,
+                                      hline = avg_unsat_right,
+                                      composition = composition,
+                                      color_limits = c(min_value, max_value),
+                                      color_palette = color_palette,
+                                      y_pos_right = TRUE,
+                                      showlegend = TRUE)
+
+      fig_bar_top_right <- plotly::plot_ly(
+        data = bar_top_right_data,
+        x = ~x,
+        y = ~y,
+        type = "bar",
+        showlegend = FALSE,
+        color = I("gray"),
+        hovertemplate = paste("Number of carbons: %{x}<br>",
+                              "Proportion: %{y:.3g}<br>",
+                              "<extra></extra>")
+      )|>
+        plotly::layout(
+          xaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE),
+          yaxis = list(
+            fixedrange = TRUE,
+            side = "right",
+            title = list(
+              text = "Proportion",
+              standoff = 3,
+              font = list(
+                size = 10
+              )
+            )
+          )
+        )
+
+      fig_bar_right <- plotly::plot_ly(
+        data = bar_right_data,
+        x = ~y,
+        y = ~x,
+        type = "bar",
+        showlegend = FALSE,
+        orientation = "h",
+        color = I("gray"),
+        hovertemplate = paste("Number of double bonds: %{y}<br>",
+                              "Proportion: %{x:.3g}<br>",
+                              "<extra></extra>")
+      ) |>
+        plotly::layout(
+          yaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE,
+            title = ""),
+          xaxis = list(
+            fixedrange = TRUE,
+            title = list(
+              text = "Proportion",
+              standoff = 3,
+              font = list(
+                size = 10
+              )
+            )
+          )
+        )
+
+      # blank plot
+      blank <- plotly::plot_ly(type = "scatter", mode = "markers")
+      blank <- plotly::layout(blank,
+                              xaxis = list(zeroline = FALSE,
+                                           showticklabels = FALSE,
+                                           showgrid = FALSE,
+                                           fixedrange = TRUE),
+                              yaxis = list(zeroline = FALSE,
+                                           showticklabels = FALSE,
+                                           showgrid = FALSE,
+                                           fixedrange = TRUE))
+
+      # set annotation for combined plots
+      annotations <- list(
+        list(
+          x = 0.3,
+          y = 0.975,
+          text = paste0("<b>", group_1, "</b>"),
+          font = list(size = 12),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        ),
+        list(
+          x = 0.7,
+          y = 0.975,
+          text = paste0("<b>", group_2, "</b>"),
+          font = list(size = 12),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        )
+      )
+
+      # combine plots
+      fig_top <- plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),
+                                 nrows = 1,
+                                 widths = c(0.1, 0.4, 0.4, 0.1),
+                                 titleY = TRUE)
+
+      fig_bottom <- plotly::subplot(list(fig_bar_left, fig_hm_left, fig_hm_right, fig_bar_right),
+                                    nrows = 1,
+                                    widths = c(0.1, 0.4, 0.4, 0.1),
+                                    titleX = TRUE,
+                                    titleY = TRUE)
+
+      fig <- plotly::subplot(list(fig_top, fig_bottom),
+                             nrows = 2,
+                             heights = c(0.2, 0.75),
+                             titleX = TRUE,
+                             titleY = TRUE) |>
+        plotly::layout(title = list(
+          text = ifelse(selected_lipidclass == "All",
+                        paste0("<b>Lipid class: ", selected_lipidclass, " (excl. PA)</b>"),
+                        paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
+          size = 14
+        ),
+        annotations = annotations) |>
+        plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d", "select2d", "lasso2d"))
+
+      self$plots$fa_comp_plot <- fig
     }
   )
 )
