@@ -44,15 +44,15 @@ library(googledrive)
 library(googlesheets4)
 
 #------------------------------------------------------- needed for metrics ---
-options(
-  # whenever there is one account token found, use the cached token
-  gargle_oauth_email = TRUE,
-  # specify auth tokens should be stored in a hidden directory ".secrets"
-  gargle_oauth_cache = ".secrets"
-)
+# options(
+#   # whenever there is one account token found, use the cached token
+#   gargle_oauth_email = TRUE,
+#   # specify auth tokens should be stored in a hidden directory ".secrets"
+#   gargle_oauth_cache = ".secrets"
+# )
 
 # get the id of the file to edit
-sheet_id <- googledrive::drive_get(path = "neurolipidatlas")$id
+# sheet_id <- googledrive::drive_get(path = "neurolipidatlas")$id
 
 #-------------------------------------------------------- Tool tip settings ----
 # Set up for showing tooltips.
@@ -291,11 +291,10 @@ server = function(input, output, session) {
                                                    slot = "exp_1",
                                                    experiment_id = experiment_id)
 
-      # server stuff is created here, should the data be passed here?
-      # this causes everything to be executed twice during start up
+      # lipidomics server
       lipidomics_server(id = "mod_exp_1",
-                        module_controler = shiny::isolate(module_controler),
-                        sheet_id = sheet_id)
+                        module_controler = shiny::isolate(module_controler))
+                        # sheet_id = sheet_id)
       # QC
       qc_server(id = "mod_qc",
                 module_controler = shiny::isolate(module_controler))

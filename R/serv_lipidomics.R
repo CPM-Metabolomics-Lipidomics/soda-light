@@ -329,7 +329,7 @@ lipidomics_ui = function(id) {
 
 #-------------------------------------------------------- Lipidomics server ----
 
-lipidomics_server = function(id, module_controler, sheet_id) {
+lipidomics_server = function(id, module_controler) { #, sheet_id) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -340,12 +340,11 @@ lipidomics_server = function(id, module_controler, sheet_id) {
       m = "Lips_1"
 
       # store session information visitor
-      ip_df <- data.frame("date" = Sys.time(),
-                          "session" = session$token,
-                          "dataset" = r6$experiment_id)
-
-      googlesheets4::sheet_append(ss = sheet_id,
-                                  data = ip_df)
+      # ip_df <- data.frame("date" = Sys.time(),
+      #                     "session" = session$token,
+      #                     "dataset" = r6$experiment_id)
+      # googlesheets4::sheet_append(ss = sheet_id,
+      #                             data = ip_df)
 
       #-------------------------------------------------------- Info server ----
       # Download data and meta tables
