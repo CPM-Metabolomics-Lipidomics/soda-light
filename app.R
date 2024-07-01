@@ -40,8 +40,8 @@ library(dplyr)
 library(tidyr)
 
 # metrics
-library(googledrive)
-library(googlesheets4)
+# library(googledrive)
+# library(googlesheets4)
 
 #------------------------------------------------------- needed for metrics ---
 # options(
