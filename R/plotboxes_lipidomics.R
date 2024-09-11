@@ -1156,9 +1156,14 @@ heatmap_server = function(r6, input, output, session) {
         ),
         shiny::column(
           width = 6,
-          shinyWidgets::switchInput(inputId = ns("heatmap_apply_da"),
-                                    label = "Apply",
-                                    value = r6$params$heatmap$apply_da)
+          shiny::span(
+            shinyWidgets::switchInput(inputId = ns("heatmap_apply_da"),
+                                      label = "Apply",
+                                      value = r6$params$heatmap$apply_da)
+          ),
+          `data-toggle` = "tooltip",
+          `data-placement` = "right",
+          title = "Rendering the full heatmap by the browser can take some time. The browser may give a warning that the page takes a long time to load. Please be patient!"
         )
       ),
       shiny::fluidRow(
