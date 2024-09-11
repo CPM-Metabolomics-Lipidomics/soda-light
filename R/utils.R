@@ -2318,7 +2318,7 @@ fa_analysis_calc <- function(data_table = NULL,
 
   ## Data
   # select the correct data
-  sel_data_table <- data_table[, sel_feat_idx]
+  sel_data_table <- data_table[, sel_feat_idx, drop = FALSE]
 
   # get the unique chain lengths and unsaturation
   uniq_carbon <- sort(union(unique(sel_feature_table$carbons_1[sel_feature_table$lipid_class != "TG"]),
