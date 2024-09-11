@@ -163,6 +163,14 @@ sidebar_ui = function() {
         tabName = "iSODA",
         icon = shiny::icon("i")
       )
+    ),
+    shiny::column(
+      width = 12,
+      br(),
+      br(),
+      br(),
+      p(strong("Tip: "), "click", shiny::icon("gears"), " icon to change the visualization settings!",
+        style = "color:#0255e9;")
     )
   )
 }
