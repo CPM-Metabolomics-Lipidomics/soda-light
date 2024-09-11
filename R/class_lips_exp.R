@@ -1382,14 +1382,8 @@ Lips_exp = R6::R6Class(
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
 
-      # group_list = sort(unique(plot_table$group))
-      colors <- get_color_palette(groups = plot_table$group,
+      colors <- get_color_palette(groups = sort(unique(plot_table$group)),
                                   color_palette = color_palette)
-      print("Rico: fa colors")
-      # print(group_list)
-      print(colors)
-      colors <- rev(colors)
-      print(colors)
 
       # set the main title for FA overview per lipid class
       if(selected_view == "lipidclass") {
