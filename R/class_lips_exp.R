@@ -900,24 +900,38 @@ Lips_exp = R6::R6Class(
       self$tables$class_distribution_table = plot_table
 
       colors <- get_color_palette(groups = group_list,
-                                  color_palette = color_palette)
+                                  color_palette = color_palette,
+                                  reverse_color_palette = TRUE)
 
       # Produce the plot
-      i = 1
-      fig = plotly::plot_ly(colors = unname(colors),
-                            width = width,
-                            height = height,
-                            hovertemplate = paste("Lipid class: %{x}<br>",
-                                                  "Value: %{y:.3g}%<br>",
-                                                  paste0("Group: ", g),
-                                                  "<extra></extra>"))
-      for (col in colnames(plot_table)) {
-        fig = fig %>% add_trace(x = rownames(plot_table), y = plot_table[,col],
-                                name = col, color = colors[col], type  = "bar")
-        fig = fig %>% layout(legend = list(orientation = 'h', xanchor = "center", x = 0.5),
-                             yaxis = list(title = "%", tickformat = "digits"))
-        i = i + 1
-      }
+      plot_table$lipid_class <- rownames(plot_table)
+      plot_table_long <- tidyr::pivot_longer(
+        data = plot_table,
+        cols = tidyr::matches(group_list),
+        names_to = "groups",
+        values_to = "value"
+      )
+
+      fig <- plot_table_long %>%
+        plotly::plot_ly(
+          type = "bar",
+          x = ~lipid_class,
+          y = ~value,
+          color = ~groups,
+          colors = colors,
+          hovertext = ~groups,
+          hovertemplate = paste("Lipid class: %{x}<br>",
+                                "Value: %{y:.3g}%<br>",
+                                paste0("Group: %{hovertext}"),
+                                "<extra></extra>")
+        )
+
+      fig <-  fig %>%
+        plotly::layout(legend = list(orientation = 'h',
+                                     xanchor = "center", x = 0.5),
+                       yaxis = list(title = "%",
+                                    tickformat = "digits"),
+                       xaxis = list(title = list(text = "")))
 
       self$plots$class_distribution = fig
     },
@@ -969,8 +983,9 @@ Lips_exp = R6::R6Class(
                               textangle = 270, showarrow = FALSE, xref='paper',
                               yref='paper')
 
-      colors <- get_color_palette(groups = groups,
-                                  color_palette = color_palette)
+      colors <- get_color_palette(groups = sort(unique(groups)),
+                                  color_palette = color_palette,
+                                  reverse_color_palette = TRUE)
 
       # Plot list will be the list of subplots
       plot_list = c()
