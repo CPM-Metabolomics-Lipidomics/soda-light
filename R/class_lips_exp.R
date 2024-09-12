@@ -1400,7 +1400,8 @@ Lips_exp = R6::R6Class(
       self$tables$fa_analysis_table <- plot_table
 
       colors <- get_color_palette(groups = sort(unique(plot_table$group)),
-                                  color_palette = color_palette)
+                                  color_palette = color_palette,
+                                  reverse_color_palette = TRUE)
 
       # set the main title for FA overview per lipid class
       if(selected_view == "lipidclass") {
@@ -1427,23 +1428,23 @@ Lips_exp = R6::R6Class(
       }
 
       # plotting
-      i <- 1
       fig <- plotly::plot_ly(colors = unname(colors),
                              width = width,
                              height = height)
-      for (grp in unique(plot_table$group)) {
+
+      for (grp in sort(unique(plot_table$group))) {
         fig <- fig |>
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
                             x = ~names,
                             y = ~avg,
-                            color = colors[i],
+                            color = ~as.factor(group),
                             type = "bar",
                             name = grp,
-                            text = ~stdev,
+                            hovertext = ~stdev,
                             error_y = ~ list(array = stdev,
                                              color = "#000000"),
                             hovertemplate = paste("Fatty acid chain: %{x}<br>",
-                                                  "Value: %{y:.3g} +/- %{text:0.3g}<br>",
+                                                  "Value: %{y:.3g} +/- %{hovertext:0.3g}<br>",
                                                   paste0("Group: ", grp),
                                                   "<extra></extra>"))
         fig <- fig |>
@@ -1452,7 +1453,6 @@ Lips_exp = R6::R6Class(
                                        x = 0.5),
                          xaxis = list(title = xlabel),
                          yaxis = list(title = ylabel))
-        i <- i + 1
       }
       fig <- fig |>
         plotly::layout(annotations =
