@@ -118,8 +118,8 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
     shiny::req(iv_class_distribution$is_valid())
 
     if(r6$name == "Error") {
-      output$class_distribution_message <- shiny::renderText({
-        "Error! No data available!"
+      output$class_distribution_message <- shiny::renderUI({
+        shiny::p("Error! No data available!")
       })
     } else {
 
@@ -282,8 +282,8 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
     shiny::req(iv_class_comparison$is_valid())
 
     if(r6$name == "Error") {
-      output$class_comparison_message <- shiny::renderText({
-        "Error! No data available!"
+      output$class_comparison_message <- shiny::renderUI({
+        shiny::p("Error! No data available!")
       })
     } else {
       print_tm(r6$name, "Class comparison: Updating params...")
@@ -625,8 +625,8 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   # auto-update selected groups
   shiny::observeEvent(input$volcano_plot_metacol, {
     if(r6$name == "Error") {
-      output$volcano_plot_message <- shiny::renderText({
-        "Error! No data available!"
+      output$volcano_plot_message <- shiny::renderUI({
+        shiny::p("Error! No data available!")
       })
     } else {
       shiny::updateSelectizeInput(
@@ -656,15 +656,15 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_img_format
     ), {
       if(r6$name == "Error") {
-        output$volcano_plot_message <- shiny::renderText({
-          "Error! No data available!"
+        output$volcano_plot_message <- shiny::renderUI({
+          shiny::p("Error! No data available!")
         })
       } else {
         shiny::req(iv_volcano_plot$is_valid(),
                    length(input$volcano_plot_metagroup) == 2)
 
         shinyjs::hide(id = "volcano_plot_message")
-        output$volcano_plot_message <- shiny::renderText({return(NULL)})
+        output$volcano_plot_message <- shiny::renderUI({return(NULL)})
 
         if (!input$volcano_plot_auto_refresh) {
           r6$params$volcano_plot$auto_refresh = input$volcano_plot_auto_refresh
@@ -710,8 +710,8 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                    pattern = "not enough observations")) {
             output$volcano_plot_plot <- plotly::renderPlotly({return(NULL)})
             shinyjs::show(id = "volcano_plot_message")
-            output$volcano_plot_message <- shiny::renderText({
-              "Error: Not enough samples in one or both groups!"
+            output$volcano_plot_message <- shiny::renderUI({
+              shiny::p("Error: Not enough samples in one or both groups!")
             })
           }
           print_tm(r6$name, 'Volcano plot: ERROR.')
@@ -970,8 +970,8 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
     shiny::req(iv_fa_analysis$is_valid())
 
                           if(r6$name == "Error") {
-                            output$fa_analysis_message <- shiny::renderText({
-                              "Error! No data available!"
+                            output$fa_analysis_message <- shiny::renderUI({
+                              shiny::p("Error! No data available!")
                             })
                           } else {
                             if(input$fa_analysis_selected_view == "lipidclass") {
@@ -1374,7 +1374,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     }
 
     shinyjs::hide(id = "heatmap_message")
-    output$heatmap_message <- shiny::renderText({return(NULL)})
+    output$heatmap_message <- shiny::renderUI({return(NULL)})
 
     # disable run button
     shinyjs::disable(id = "heatmap_run")
@@ -1399,15 +1399,15 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
       heatmap_spawn(r6, input$heatmap_img_format, output)
     },error=function(e){
       shinyjs::show(id = "heatmap_message")
-      output$heatmap_message <- shiny::renderText({
+      output$heatmap_message <- shiny::renderUI({
         if(grepl(x = e,
                  pattern = "hclustfun\\(dist\\): NA\\/NaN\\/Inf")) {
-          return("There are missing values in the data! Use imputation!")
+          return(shiny::p("There are missing values in the data! Use imputation!"))
         } else if(grepl(x = e,
                         pattern = "Heatmap: not enough groups")) {
-          return("Error: not enough groups with a least 3 samples!")
+          return(shiny::p("Error: not enough groups with a least 3 samples!"))
         } else {
-          return("An error occurred! Can not generate heatmap!")
+          return(shiny::p("An error occurred! Can not generate heatmap!"))
         }
       })
       print_tm(r6$name, 'Heatmap: ERROR.')
@@ -1419,11 +1419,11 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     shinyjs::enable("heatmap_run")
   })
 
-  output$heatmap_message <- shiny::renderText({
+  output$heatmap_message <- shiny::renderUI({
     if(r6$name == "Error") {
-      "Error! No data available!"
+      shiny::p("Error! No data available!")
     } else {
-      "To generate a heatmap, go to the settings menu and click the generate heatmap button."
+      shiny::p("To generate a heatmap, go to the settings menu at the top right (", shiny::icon("gears"), ") and click the generate heatmap button.")
     }
   })
 
@@ -1736,8 +1736,8 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                         input$pca_img_format), {
 
                           if(r6$name == "Error") {
-                            output$pca_message <- shiny::renderText({
-                              "Error! No data available!"
+                            output$pca_message <- shiny::renderUI({
+                              shiny::p("Error! No data available!")
                             })
                           } else {
                             shiny::req(iv_pca$is_valid())
@@ -1950,8 +1950,8 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
   # auto-update the lipid classes
   shiny::observeEvent(input$fa_comp_composition, {
     if(r6$name == "Error") {
-      output$fa_comp_message <- shiny::renderText({
-        "Error! No data available!"
+      output$fa_comp_message <- shiny::renderUI({
+        shiny::p("Error! No data available!")
       })
     } else {
       if(input$fa_comp_composition == "fa_tail") {
@@ -1978,8 +1978,8 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
   # auto-update selected groups
   shiny::observeEvent(input$fa_comp_metacol, {
     if(r6$name == "Error") {
-      output$fa_comp_message <- shiny::renderText({
-        "Error! No data available!"
+      output$fa_comp_message <- shiny::renderUI({
+        shiny::p("Error! No data available!")
       })
     } else {
       shiny::updateSelectizeInput(
@@ -2002,8 +2002,8 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
       shiny::req(iv_fa_comp$is_valid())
 
       if(r6$name == "Error") {
-        output$fa_comp_message <- shiny::renderText({
-          "Error! No data available!"
+        output$fa_comp_message <- shiny::renderUI({
+          shiny::p("Error! No data available!")
         })
       } else {
         if(!(input$fa_comp_composition == "total_lipid" & input$fa_comp_selected_lipidclass == "All")) {
