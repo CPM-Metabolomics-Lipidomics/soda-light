@@ -1201,13 +1201,19 @@ Lips_exp = R6::R6Class(
 
 
       # Annotations
-      print("Rico")
-      print(row_annotations)
       if (!is.null(row_annotations)) {
         if (length(row_annotations) > 1) {
           # multiple annotations
           row_annotations_df = meta_table[, row_annotations]
           colnames(row_annotations_df) = stringr::str_replace_all(colnames(row_annotations_df), "_", " ")
+
+          sample_colors <- c()
+          for(a in 1:length(row_annotations)) {
+            tmp <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations[a]])),
+                                     color_palette = sample_color_palette,
+                                     reverse_color_palette = TRUE)
+            sample_colors <- c(sample_colors, tmp)
+          }
         } else {
           # 1 annotation
           row_names = row_annotations
@@ -1219,12 +1225,7 @@ Lips_exp = R6::R6Class(
                                              color_palette = sample_color_palette,
                                              reverse_color_palette = TRUE)
         }
-        print("Rico")
-        print(row_annotations_df)
-        print(sample_colors)
       }
-
-
 
       # Reorder the feature metadata according to the data_table order
       meta_table_features = meta_table_features[c(colnames(data_table)),]
