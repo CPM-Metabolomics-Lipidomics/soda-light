@@ -915,6 +915,11 @@ Lips_exp = R6::R6Class(
         values_to = "value"
       )
 
+      # make sure that the bars and legend colors are in the same order
+      plot_table_long$groups <- factor(x = plot_table_long$groups,
+                                       levels = sort(unique(plot_table_long$groups)),
+                                       labels = sort(unique(plot_table_long$groups)))
+
       fig <- plot_table_long %>%
         plotly::plot_ly(
           type = "bar",
@@ -1013,6 +1018,10 @@ Lips_exp = R6::R6Class(
           all.x = TRUE
         )
         colnames(d)[2:3] <- c("value", "groups")
+        # make sure that the bars and legend colors are in the same order
+        d$groups <- factor(x = d$groups,
+                           levels = sort(unique(d$groups)),
+                           labels = sort(unique(d$groups)))
 
         # bar data
         m <- as.data.frame(aggregate(d$value, by = list(d$groups), FUN = mean, na.rm = TRUE))
