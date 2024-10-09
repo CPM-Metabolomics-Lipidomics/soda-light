@@ -1112,7 +1112,7 @@ heatmap_server = function(r6, input, output, session) {
                                     onLabel = 'YES',
                                     offLabel = 'NO',
                                     labelWidth = '150px'
-          )
+          ),
         ),
         shiny::column(
           width = 4,
@@ -1134,6 +1134,13 @@ heatmap_server = function(r6, input, output, session) {
             multiple = TRUE,
             choices = r6$hardcoded_settings$meta_column,
             selected = r6$params$heatmap$map_sample_data
+          ),
+          shiny::selectizeInput(
+            inputId = ns("heatmap_sample_colors"),
+            label = "Color palette samples",
+            choices = r6$hardcoded_settings$color_palette,
+            selected = r6$params$heatmap$sample_color_palette,
+            multiple = FALSE
           )
         ),
         shiny::column(
@@ -1257,6 +1264,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   iv_heatmap$add_rule("heatmap_cluster_features", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_map_rows", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_map_cols", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_sample_colors", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_apply_da", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_group_col_da", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_alpha_da", shinyvalidate::sv_required())
@@ -1314,6 +1322,11 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = r6$hardcoded_settings$color_palette,
                       name_plot = r6$name,
                       message = "Heatmap: Incorrect color palette selected!")
+  iv_heatmap$add_rule("heatmap_sample_colors",
+                      iv_check_select_input,
+                      choices = r6$hardcoded_settings$color_palette,
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect color palette for samples selected!")
   iv_heatmap$add_rule("heatmap_reverse_palette",
                       iv_check_select_input,
                       choices = c(FALSE, TRUE),
@@ -1386,6 +1399,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                      cluster_features = input$heatmap_cluster_features,
                      map_sample_data = input$heatmap_map_rows,
                      map_feature_data = map_feature_data,
+                     sample_color_palette = input$heatmap_sample_colors,
                      group_column_da = input$heatmap_group_col_da,
                      apply_da = input$heatmap_apply_da,
                      alpha_da = input$heatmap_alpha_da,

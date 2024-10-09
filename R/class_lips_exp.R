@@ -61,6 +61,7 @@ Lips_exp = R6::R6Class(
         dataset = 'Z-scored total normalized table',
         impute = TRUE,
         cluster_samples = TRUE,
+        sample_color_palette = "Set1",
         cluster_features = TRUE,
         map_sample_data = NULL,
         map_feature_data = "lipid_class",
@@ -420,12 +421,13 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, factor_height, img_format) {
+    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, sample_color_palette, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, factor_height, img_format) {
       self$params$heatmap$dataset = dataset
       self$params$heatmap$impute = impute
       self$params$heatmap$cluster_samples = cluster_samples
       self$params$heatmap$cluster_features = cluster_features
       self$params$heatmap$map_sample_data = map_sample_data
+      self$params$heatmap$sample_color_palette = sample_color_palette
       self$params$heatmap$map_feature_data = map_feature_data
       self$params$heatmap$group_column_da = group_column_da
       self$params$heatmap$apply_da = apply_da
@@ -757,6 +759,7 @@ Lips_exp = R6::R6Class(
                          cluster_features = TRUE,
                          map_sample_data = self$indices$group_col,
                          map_feature_data = "lipid_class",
+                         sample_color_palette = "Set1",
                          group_column_da = self$indices$group_col,
                          apply_da = self$params$heatmap$apply_da,
                          alpha_da = 0.8,
@@ -1146,6 +1149,7 @@ Lips_exp = R6::R6Class(
                             meta_table_features = self$tables$feature_table,
                             cluster_rows = self$params$heatmap$cluster_samples,
                             cluster_cols = self$params$heatmap$cluster_features,
+                            sample_color_palette = self$params$heatmap$sample_color_palette,
                             row_annotations = self$params$heatmap$map_sample_data,
                             col_annotations = self$params$heatmap$map_feature_data,
                             apply_da = self$params$heatmap$apply_da,
@@ -1197,26 +1201,39 @@ Lips_exp = R6::R6Class(
 
 
       # Annotations
+      print("Rico")
+      print(row_annotations)
       if (!is.null(row_annotations)) {
         if (length(row_annotations) > 1) {
-          row_annotations = meta_table[, row_annotations]
-          colnames(row_annotations) = stringr::str_replace_all(colnames(row_annotations), "_", " ")
+          # multiple annotations
+          row_annotations_df = meta_table[, row_annotations]
+          colnames(row_annotations_df) = stringr::str_replace_all(colnames(row_annotations_df), "_", " ")
         } else {
+          # 1 annotation
           row_names = row_annotations
-          row_annotations = as.data.frame(meta_table[, row_annotations],
-                                          row.names = rownames(meta_table))
-          colnames(row_annotations) = stringr::str_replace_all(row_names, "_", " ")
+          row_annotations_df = as.data.frame(meta_table[, row_annotations],
+                                             row.names = rownames(meta_table))
+          colnames(row_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
+
+          sample_colors <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations])),
+                                             color_palette = sample_color_palette,
+                                             reverse_color_palette = TRUE)
         }
+        print("Rico")
+        print(row_annotations_df)
+        print(sample_colors)
       }
+
+
 
       # Reorder the feature metadata according to the data_table order
       meta_table_features = meta_table_features[c(colnames(data_table)),]
 
       if (!is.null(col_annotations)) {
         clean_names = col_annotations
-        col_annotations = as.data.frame(meta_table_features[, col_annotations],
-                                        row.names = rownames(meta_table_features))
-        colnames(col_annotations) = clean_names
+        col_annotations_df = as.data.frame(meta_table_features[, col_annotations],
+                                           row.names = rownames(meta_table_features))
+        colnames(col_annotations_df) = clean_names
       }
 
       if (impute) {
@@ -1262,8 +1279,9 @@ Lips_exp = R6::R6Class(
                                                 limits = c(zmin, zmax),
                                                 subplot_widths = subplot_sizes$width,
                                                 subplot_heights = subplot_sizes$height,
-                                                col_side_colors = row_annotations,
-                                                row_side_colors = col_annotations,
+                                                col_side_colors = row_annotations_df,
+                                                col_side_palette = sample_colors,
+                                                row_side_colors = col_annotations_df,
                                                 dendrogram = dendrogram_list)
       # labCol = xlabels)
     },
