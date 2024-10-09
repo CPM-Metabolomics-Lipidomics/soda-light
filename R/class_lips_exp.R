@@ -917,9 +917,6 @@ Lips_exp = R6::R6Class(
                                        levels = sort(unique(plot_table_long$groups)),
                                        labels = sort(unique(plot_table_long$groups)))
 
-      print("Rico")
-      print(unique(plot_table_long$groups))
-      print(class(plot_table_long$groups))
       fig <- plot_table_long %>%
         plotly::plot_ly(
           type = "bar",
