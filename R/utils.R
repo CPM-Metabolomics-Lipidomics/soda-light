@@ -870,7 +870,7 @@ lips_get_del_cols = function(data_table,
 
 #------------------------------------------------------- Plotting functions ----
 pca_plot_scores = function(x, y, meta_table, group_col, width, height, colour_list){
-  groups = unique(meta_table[,group_col])
+  groups = sort(unique(meta_table[,group_col]))
   fig = plotly::plot_ly(colors = colour_list, width = width, height = height)
   i = 1
   for (grp in groups) {
