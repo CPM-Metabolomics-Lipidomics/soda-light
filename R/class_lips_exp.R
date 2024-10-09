@@ -1010,6 +1010,10 @@ Lips_exp = R6::R6Class(
           all.x = TRUE
         )
         colnames(d)[2:3] <- c("value", "groups")
+        # make sure that the bars and legend colors are in the same order
+        d$groups <- factor(x = d$groups,
+                           levels = sort(unique(d$groups)),
+                           labels = sort(unique(d$groups)))
 
         # bar data
         m <- as.data.frame(aggregate(d$value, by = list(d$groups), FUN = mean, na.rm = TRUE))
