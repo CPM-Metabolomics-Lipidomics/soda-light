@@ -910,7 +910,7 @@ Lips_exp = R6::R6Class(
       plot_table$lipid_class <- rownames(plot_table)
       plot_table_long <- tidyr::pivot_longer(
         data = plot_table,
-        cols = tidyr::matches(group_list),
+        cols = tidyr::contains(group_list),
         names_to = "groups",
         values_to = "value"
       )
