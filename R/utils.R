@@ -622,13 +622,22 @@ get_group_median_table = function(data_table,
   return(out_table)
 }
 
-get_lipid_class_table = function(table){
+get_lipid_class_table = function(table, norm = FALSE){
 
   # Get unique lipid classes
   classes = get_lipid_classes(feature_list = colnames(table), uniques = TRUE)
 
   # Get a column vector to find easily which columns belong to each lipid group
   col_vector = get_lipid_classes(feature_list = colnames(table), uniques = FALSE)
+
+  # correct the TG is
+  table[, col_vector == "TG"] <-  table[, col_vector == "TG"] / 3
+
+  # normalise the data first
+  if(norm == TRUE) {
+    # correct TG
+    table <- table / rowSums(table, na.rm = TRUE) * 100
+  }
 
   # Fill the table
   out_table = sapply(X = classes,
@@ -637,9 +646,6 @@ get_lipid_class_table = function(table){
                        rowSums(table[, col_list, drop = FALSE], na.rm = TRUE)
                      }
   )
-
-  # Fix the TG, sum needs to be divided by 3, because they are measured 3 times.
-  out_table[, "TG"] <- out_table[, "TG"] / 3
 
   return(out_table)
 }
