@@ -1244,6 +1244,8 @@ Lips_exp = R6::R6Class(
         col_annotations_df = as.data.frame(meta_table_features[, col_annotations],
                                            row.names = rownames(meta_table_features))
         colnames(col_annotations_df) = clean_names
+      } else {
+        col_annotations_df <- NULL
       }
 
       if (impute) {
