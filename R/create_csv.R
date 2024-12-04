@@ -19,11 +19,11 @@ if(dev) {
   # experiments <- experiments[!grepl(pattern = "^NLA_.*",
   #                                   x = experiments)]
 
-  export <- data.frame(matrix(ncol = 10,
+  export <- data.frame(matrix(ncol = 11,
                               nrow = length(experiments)))
   colnames(export) <- c("experimentId", "experimentTitle", "genoType",
                         "cellType", "parentCellLine", "drugTreatment", "sex",
-                        "method", "contributingLab", "harvestDate")
+                        "method", "contributingLab", "harvestDate", "doi")
 
   for(a in 1:length(experiments)) {
     experimentTitle <- unique(meta_data$experimentTitle[meta_data$experimentId == experiments[a]])
@@ -73,6 +73,11 @@ if(dev) {
     harvestDate <- harvestDate[harvestDate != "NA"]
     harvestDate <- paste(harvestDate, collapse = ", ")
 
+    doi <- unique(meta_data$doi[meta_data$experimentId == experiments[a]])
+    doi <- doi[!is.na(doi)]
+    doi <- doi[doi != "NA"]
+    doi <- paste(doi, collapse = ", ")
+
     export$experimentId[a] <- experiments[a]
     export$experimentTitle[a] <- experimentTitle
     export$genoType[a] <- genoType
@@ -83,6 +88,7 @@ if(dev) {
     export$method[a] <- "SLA" # method
     export$contributingLab[a] <- contributingLab
     export$harvestDate[a] <- harvestDate
+    export$doi[a] <- doi
 
   }
 

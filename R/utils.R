@@ -332,7 +332,8 @@ soda_read_table = function(file_path, sep = NA) {
   }
 
   if (stringr::str_sub(file_path, -5, -1) == ".xlsx") {
-    data_table = as.data.frame(readxl::read_xlsx(file_path))
+    data_table = as.data.frame(readxl::read_xlsx(file_path,
+                                                 guess_max = 2000))
   } else {
     if (is.na(sep)) {
       sep = find_delim(path = file_path)
@@ -2895,7 +2896,7 @@ example_lipidomics = function(name,
                               experiment_id = NULL) {
   # get the meta data
   # set the interesting columns
-  meta_columns <- c("experimentTitle", "experimentId", "defaultColumn", "batchNumber",
+  meta_columns <- c("experimentTitle", "doi", "experimentId", "defaultColumn", "batchNumber",
                     "processDate", "experimentIdOrg", "analystId", "sampleId",
                     "referenceGroup", "sampleReferral", "harvestDate", "sampleType",
                     "genoType", "parentCellLineBrainregion", "cellLineName", "sex", "cultureConditions",

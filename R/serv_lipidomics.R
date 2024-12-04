@@ -402,6 +402,7 @@ lipidomics_server = function(id, module_controler) { #, sheet_id) {
         exp_info_table <- data.frame(
           title = c(
             "Experiment title",
+            "DOI",
             "Sample type",
             "Genotype",
             "Parental cell line / Brain region",
@@ -415,6 +416,7 @@ lipidomics_server = function(id, module_controler) { #, sheet_id) {
           ),
           value = c(
             unique(r6$tables$raw_meta$experimentTitle),
+            paste(unique(raw_meta$doi), collapse = ", "),
             paste(unique(raw_meta$sampleType), collapse = ", "),
             paste(unique(raw_meta$genoType), collapse = ", "),
             paste(unique(raw_meta$parentCellLineBrainregion), collapse = ", "),
