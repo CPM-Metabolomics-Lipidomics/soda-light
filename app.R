@@ -39,6 +39,9 @@ library(reshape2)
 library(dplyr)
 library(tidyr)
 
+# Authentication
+library(shinymanager)
+
 # metrics
 # library(googledrive)
 # library(googlesheets4)
@@ -86,6 +89,10 @@ $(function () {
   $('[data-toggle=tooltip]').tooltip()
 })
 "
+#-------------------------------------------------------------- credentials ----
+credentials <- read.csv(file = "./users.csv",
+                        colClasses = c("character", "character", "character"))
+print("* Credentials loaded.")
 
 #------------------------------------------------------------- Setup header ----
 header_ui = function() {
@@ -226,10 +233,19 @@ ui = bs4Dash::dashboardPage(header = header,
                             dark = NULL,
                             help = NULL)
 
+# Wrap your UI with secure_app
+ui <- shinymanager::secure_app(ui = ui)
+
 #------------------------------------------------------------------- Server ----
 server = function(input, output, session) {
 
   options(shiny.maxRequestSize=300*1024^2)
+
+  # call the server part
+  # check_credentials returns a function to authenticate users
+  res_auth <- shinymanager::secure_server(
+    check_credentials = shinymanager::check_credentials(db = credentials)
+  )
 
   module_controler = shiny::reactiveValues(
     r6_exp = shiny::reactiveValues(),
@@ -264,6 +280,9 @@ server = function(input, output, session) {
                session)
     print_tm(NULL, "App starting")
 
+    login_user <- reactiveValuesToList(res_auth)$user
+    print_tm(NULL, paste("User :", login_user, "logging in!"))
+
     # moved from serv_lipidomics.R to here, app is loaded only once now
     module_controler$xpx_total = shinybrowser::get_width()
     module_controler$ypx_total = shinybrowser::get_height()
@@ -275,24 +294,36 @@ server = function(input, output, session) {
     client_data <- session$clientData
 
     # get the url parameter
-    # for easy development
-    query <- list("experimentId" = NULL)
     query <- shiny::parseQueryString(client_data$url_search)
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
       print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
-      if(!grepl(pattern = "NLA_[0-9]{3}", #"^.{3}_2[1-9][0-9]{4}_[0-9]{2}$",
+      if(!grepl(pattern = "NLA_[0-9]{3}",
                 x = query[["experimentId"]])) {
-        query[["experimentId"]] <- "NLA_005"
+        # if the experimentId is in the wrong format
+        query[["experimentId"]] <- "NLA_000"
       }
     } else {
       # for easy development
-      print_tm(NULL, "Default experimentId: NLA_005")
-      query[["experimentId"]] <- "NLA_005" # "VDK_220223_01"
+      print_tm(NULL, "Default experimentId: NLA_000")
+      query[["experimentId"]] <- "NLA_000"
     }
-    experiment_id = query[["experimentId"]]
+
 
     if(!is.null(query[["experimentId"]])) {
+      if(!is.null(login_user)) {
+        experiments <- trimws(strsplit(x = credentials$experiments[credentials$user == login_user],
+                                       split = ";|; ")[[1]])
+        print(experiments)
+
+        if(query[["experimentId"]] %in% experiments) {
+          experiment_id <- query[["experimentId"]]
+        } else {
+          experiment_id <- "NLA_000"
+        }
+      }
+      print(experiment_id)
+
       # Create lipidomics r6 object
       module_controler$r6_exp = example_lipidomics(name = "Lips_1",
                                                    id = NA,
@@ -302,7 +333,7 @@ server = function(input, output, session) {
       # lipidomics server
       lipidomics_server(id = "mod_exp_1",
                         module_controler = shiny::isolate(module_controler))
-                        # sheet_id = sheet_id)
+
       # QC
       qc_server(id = "mod_qc",
                 module_controler = shiny::isolate(module_controler))
