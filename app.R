@@ -314,7 +314,6 @@ server = function(input, output, session) {
       if(!is.null(login_user)) {
         experiments <- trimws(strsplit(x = credentials$experiments[credentials$user == login_user],
                                        split = ";|; ")[[1]])
-        print(experiments)
 
         if(query[["experimentId"]] %in% experiments) {
           experiment_id <- query[["experimentId"]]
@@ -322,7 +321,6 @@ server = function(input, output, session) {
           experiment_id <- "NLA_000"
         }
       }
-      print(experiment_id)
 
       # Create lipidomics r6 object
       module_controler$r6_exp = example_lipidomics(name = "Lips_1",
