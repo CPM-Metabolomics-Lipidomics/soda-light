@@ -64,4 +64,4 @@
 "NLA_070","C9orf72 line 3 + FAT-1/2 3 inductions merged - Giblin et al.","C9orf72 repeat","Neuron","C9 line 3","BFP, FAT-1, FAT-2","Male","SLA","Isaacs","2023/12/04, 2023/12/07, 2023/12/10",""
 "NLA_071","APOE Halo/KO mice Brain (Stefan Berghoff)","WT, APOE-Halo, APOE KO","Mouse","Brain","","Male","SLA","Mikael Simons","Unknown","10.1016/j.immuni.2024.09.014"
 "NLA_072","APOE Halo/KO mice Plasma (Stefan Berghoff)","WT, APOE-Halo, APOE KO","Mouse","Plasma","","Male","SLA","Mikael Simons","Unknown","10.1016/j.immuni.2024.09.014"
-"NLA_073","NPC KO BMP measurements","WT, NPC KO","Cells","Unknown","Unknown","Unknown","SLA","Giera","Unknown",""
+"NLA_073","NPC KO BMP measurements","WT, NPC KO","Mouse","BMDM","Unknown","Unknown","SLA","Giera","Unknown",""
