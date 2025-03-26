@@ -76,6 +76,11 @@ class_distribution_server = function(r6, input, output, session) {
         outputId = ns("download_class_distribution_table"),
         label = "Download associated table",
         style = "width:100%;"
+      ),
+      shiny::downloadButton(
+        outputId = ns("download_class_distribution_all_table"),
+        label = "Download associated table (samples)",
+        style = "width:100%;"
       )
     )
   })
@@ -146,6 +151,13 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
     filename = function(){timestamped_name("class_distribution_table.csv")},
     content = function(file_name){
       write.csv(r6$tables$class_distribution_table, file_name)
+    }
+  )
+
+  output$download_class_distribution_all_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("class_distribution_table_all_samples.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$class_distribution_all_table, file_name)
     }
   )
 
@@ -245,6 +257,11 @@ class_comparison_server = function(r6, input, output, session) {
         outputId = ns("download_class_comparison_table"),
         label = "Download associated table",
         style = "width:100%;"
+      ),
+      shiny::downloadButton(
+        outputId = ns("download_class_comparison_all_table"),
+        label = "Download associated table (samples)",
+        style = "width:100%;"
       )
     )
   })
@@ -312,6 +329,12 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
     }
   )
 
+  output$download_class_comparison_all_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("class_comparison_table_all_samples.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$class_distribution_all_table, file_name)
+    }
+  )
 
   # Expanded boxes
   class_comparison_proxy = plotly::plotlyProxy(outputId = "class_comparison_plot",

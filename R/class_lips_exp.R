@@ -326,6 +326,7 @@ Lips_exp = R6::R6Class(
 
       # Plot tables
       class_distribution_table = NULL,
+      class_distribution_all_table = NULL,
       volcano_table = NULL,
       heatmap_table = NULL,
       pca_scores_table = NULL,
@@ -892,6 +893,14 @@ Lips_exp = R6::R6Class(
       rownames(plot_table) = class_list
       colnames(plot_table) = group_list
 
+      export_table <- merge(
+        x = meta_table[, group_col, drop = FALSE],
+        y = as.data.frame(table),
+        by = 0
+      )
+      colnames(export_table)[1:2] <- c("sampleName", "group")
+      self$tables$class_distribution_all_table <- export_table
+
       for (c in class_list) {
         for (g in group_list){
           s = rownames(meta_table)[meta_table[,group_col] == g]
@@ -953,6 +962,14 @@ Lips_exp = R6::R6Class(
                                      width = NULL,
                                      height = NULL){
       data_table = self$table_check_convert(data_table)
+
+      export_table <- merge(
+        x = meta_table[, group_col, drop = FALSE],
+        y = as.data.frame(data_table),
+        by = 0
+      )
+      colnames(export_table)[1:2] <- c("sampleName", "group")
+      self$tables$class_distribution_all_table <- export_table
 
       # Get sample groups and the list of classes
       groups = sort(unique(meta_table[, group_col]))
