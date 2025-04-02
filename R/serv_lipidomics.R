@@ -290,8 +290,6 @@ lipidomics_ui = function(id) {
     ),
     shiny::tabPanel(
       title = "Visualize data",
-      # shiny::uiOutput(
-      #   outputId = ns('visualize_data_ui')
       shiny::fluidRow(
         # First column with the table input and preview of the raw data
         shiny::column(
@@ -317,6 +315,7 @@ lipidomics_ui = function(id) {
       shiny::fluidRow(
         shiny::column(
           width = 12,
+          shiny::htmlOutput(outputId = ns("title_experiment")),
           shiny::uiOutput(
             outputId = ns("plotbox_field")
           )
@@ -335,19 +334,9 @@ lipidomics_server = function(id, module_controler) { #, sheet_id) {
     function(input, output, session) {
       ns = session$ns
 
-      idx <- as.integer(gsub(x = id,
-                             pattern = "^mod_exp_([0-9]*$)",
-                             replacement = "\\1"))
       # Get lipidomics r6 object
       r6 = module_controler$r6_exp
       m = "Lips_1"
-
-      # store session information visitor
-      # ip_df <- data.frame("date" = Sys.time(),
-      #                     "session" = session$token,
-      #                     "dataset" = r6$experiment_id)
-      # googlesheets4::sheet_append(ss = sheet_id,
-      #                             data = ip_df)
 
       #-------------------------------------------------------- Info server ----
       # Download data and meta tables
@@ -512,6 +501,14 @@ lipidomics_server = function(id, module_controler) { #, sheet_id) {
       pca_events(r6, dimensions_obj, color_palette, input, output, session)
       fa_analysis_events(r6, dimensions_obj, color_palette, input, output, session)
       fa_comp_events(r6, dimensions_obj, color_palette, input, output, session)
+
+
+      output$title_experiment <- shiny::renderUI({
+        shiny::h5(unique(module_controler$r6_exp$tables$raw_meta$experimentTitle),
+                  style = "color:#0255e9",
+                  align = "center")
+      })
+
 
       session$userData[[id]]$showPlots = shiny::observeEvent(input$showPlots,{
         # Update x dimensions in px and bs, and y in px

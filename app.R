@@ -184,19 +184,6 @@ server = function(input, output, session) {
 
   options(shiny.maxRequestSize = 300 * 1024^2)
 
-  # output$main_title <- shiny::renderUI({
-  #   req(!is.null(module_controler$r6_exp$name))
-  #
-  #   # show nice title
-  #   HTML(
-  #     paste0(
-  #       "<b>",
-  #       unique(module_controler$r6_exp$tables$raw_meta$experimentTitle),
-  #       "</b>"
-  #     )
-  #   )
-  # })
-
   controler <- shiny::reactive({
     mod_controler <- list(
       r6_exp = NULL,
