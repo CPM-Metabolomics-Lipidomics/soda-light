@@ -230,11 +230,11 @@ server = function(input, output, session) {
     } else {
       # for easy development
       print_tm(NULL, "Default experimentId: NLA_005")
-      query[["experimentId"]] <- "NLA_005" # "VDK_220223_01"
+      query[["experimentId"]] <- "NLA_005"
     }
 
     # temporary
-    query <- c("NLA_005", "NLA_007", "NLA_003")
+    # query <- c("NLA_005", "NLA_007", "NLA_003")
 
     return(query)
   })
@@ -349,7 +349,7 @@ server = function(input, output, session) {
     }
   })
 
-  # help
+  # about
   about_server(id = 'mod_about', main_output = output)
 }
 
