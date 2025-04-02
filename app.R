@@ -217,7 +217,9 @@ server = function(input, output, session) {
         },
         "c9orf" = {
           print_tm(NULL, "experimentId from URL: C9 Orf data set")
-          c("NLA_058", "NLA_059", "NLA_060")
+          c(sprintf("NLA_%03d", 32:33), sprintf("NLA_%03d", 35:37),
+            sprintf("NLA_%03d", 40:47), sprintf("NLA_%03d", 49:55),
+            sprintf("NLA_%03d", 58:70))
         },
         {
           print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
@@ -302,7 +304,7 @@ server = function(input, output, session) {
             .list = data_items_list,
             text = "Data",
             icon = shiny::icon("l"),
-            startExpanded = TRUE,
+            startExpanded = FALSE,
             selected = TRUE
           ),
           bs4Dash::menuItem(
