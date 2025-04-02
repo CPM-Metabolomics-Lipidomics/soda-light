@@ -335,6 +335,9 @@ lipidomics_server = function(id, module_controler) { #, sheet_id) {
     function(input, output, session) {
       ns = session$ns
 
+      idx <- as.integer(gsub(x = id,
+                             pattern = "^mod_exp_([0-9]*$)",
+                             replacement = "\\1"))
       # Get lipidomics r6 object
       r6 = module_controler$r6_exp
       m = "Lips_1"
