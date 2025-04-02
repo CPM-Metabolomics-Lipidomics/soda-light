@@ -184,20 +184,6 @@ server = function(input, output, session) {
 
   options(shiny.maxRequestSize = 300 * 1024^2)
 
-  # module_controler = shiny::reactiveValues(
-  #   r6_exp = shiny::reactiveValues(),
-  #   dims = list(
-  #     x_box = 0.9,
-  #     y_box = 0.72,
-  #     x_plot = 0.8,
-  #     y_plot = 0.69,
-  #     x_plot_full = 0.95,
-  #     y_plot_full = 0.91,
-  #     xpx_total = NULL,
-  #     ypx_total = NULL
-  #   )
-  # )
-
   # output$main_title <- shiny::renderUI({
   #   req(!is.null(module_controler$r6_exp$name))
   #
@@ -247,37 +233,21 @@ server = function(input, output, session) {
       query[["experimentId"]] <- "NLA_005" # "VDK_220223_01"
     }
 
+    # temporary
+    query <- c("NLA_005", "NLA_007", "NLA_003")
+
     return(query)
   })
 
   # Single omics modules
   shiny::observe({
-    # shiny::req(module_controler,
-    #            session)
     print_tm(NULL, "App starting")
 
-    # moved from serv_lipidomics.R to here, app is loaded only once now
-    # module_controler$xpx_total = shinybrowser::get_width()
-    # module_controler$ypx_total = shinybrowser::get_height()
-    # module_controler$xbs = 12
-    # module_controler$xpx = shinybrowser::get_width()
-    # module_controler$ypx = shinybrowser::get_height()
-
-    # module_controler1$xpx_total = shinybrowser::get_width()
-    # module_controler1$ypx_total = shinybrowser::get_height()
-    # module_controler1$xbs = 12
-    # module_controler1$xpx = shinybrowser::get_width()
-    # module_controler1$ypx = shinybrowser::get_height()
-
     # get the experiment id
-    # experiment_id = experimentId()
+    experiment_id = experimentId()
 
     output$render_tabs <- shiny::renderUI({
       default_tabs <- list(
-        bs4Dash::tabItem(
-          tabName = "qc",
-          qc_ui(id = 'mod_qc')
-        ),
         bs4Dash::tabItem(
           tabName = "help_single_omics",
           help_single_omics_ui(id = 'mod_help_single_omics')
@@ -292,37 +262,51 @@ server = function(input, output, session) {
         )
       )
 
-      data_tabs <- lapply(1:3, function(x) {
+      qc_tabs <- lapply(1:length(experiment_id), function(x) {
         bs4Dash::tabItem(
-          tabName = paste0("data", x),
+          tabName = paste0("qc_", experiment_id[x]),
+          qc_ui(id = paste0("mod_qc_", x))
+        )
+      })
+
+      data_tabs <- lapply(1:length(experiment_id), function(x) {
+        bs4Dash::tabItem(
+          tabName = experiment_id[x],
           lipidomics_ui(id = paste0("mod_exp_", x))
         )
       })
-      all_tabs <- c(data_tabs, default_tabs)
+      all_tabs <- c(data_tabs, qc_tabs, default_tabs)
 
       do.call(bs4Dash::tabItems, all_tabs)
     })
 
 
     output$render_menu <- bs4Dash::renderMenu({
-      sub_items_list <- lapply(1:3, function(x) {
+      data_items_list <- lapply(1:length(experiment_id), function(x) {
         bs4Dash::menuSubItem(
-          text = paste0("Data ", x),
-          tabName = paste0("data", x)
+          text = experiment_id[x],
+          tabName = experiment_id[x]
+        )
+      })
+
+      qc_items_list <- lapply(1:length(experiment_id), function(x) {
+        bs4Dash::menuSubItem(
+          text = experiment_id[x],
+          tabName = paste0("qc_", experiment_id[x])
         )
       })
 
       shiny::tagList(
         bs4Dash::sidebarMenu(
           bs4Dash::menuItem(
-            .list = sub_items_list,
+            .list = data_items_list,
             text = "Data",
             icon = shiny::icon("l"),
             startExpanded = TRUE
           ),
           bs4Dash::menuItem(
+            .list = qc_items_list,
             text = "QC",
-            tabName = "qc",
             icon = shiny::icon("q")
           ),
           bs4Dash::menuItem(
@@ -345,25 +329,23 @@ server = function(input, output, session) {
       )
     })
 
-
-    # one time working
-    experimentId <- c("NLA_005", "NLA_007")
-    for(a in 1:length(experimentId)) {
+    for(a in 1:length(experiment_id)) {
       module_controler <- controler()
-      print_tm(NULL, paste0("Experiment: ", experimentId[a]))
+      print_tm(NULL, paste0("Experiment: ", experiment_id[a]))
       # Create lipidomics r6 object
       module_controler$r6_exp = example_lipidomics(name = paste0("Lips_", a),
                                                    id = NA,
                                                    slot = paste0("exp_", a),
-                                                   experiment_id = experimentId[a])
+                                                   experiment_id = experiment_id[a])
+
       # lipidomics server
       lipidomics_server(id = paste0("mod_exp_", a),
                         module_controler = shiny::isolate(module_controler))
 
 
       # QC
-      # qc_server(id = "mod_qc",
-      #           module_controler = shiny::isolate(module_controler))
+      qc_server(id = paste0("mod_qc_", a),
+                module_controler = shiny::isolate(module_controler))
     }
   })
 
