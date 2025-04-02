@@ -137,33 +137,7 @@ footer_ui = function() {
 sidebar_ui = function() {
   bs4Dash::dashboardSidebar(
     skin = "light",
-    bs4Dash::sidebarMenu(
-      bs4Dash::menuItem(
-        text = "Data",
-        tabName = "data",
-        icon = shiny::icon("l")
-      ),
-      bs4Dash::menuItem(
-        text = "QC",
-        tabName = "qc",
-        icon = shiny::icon("q")
-      ),
-      bs4Dash::menuItem(
-        text = "Help",
-        icon = shiny::icon("question"),
-        tabName = 'help_single_omics'
-      ),
-      bs4Dash::menuItem(
-        text = "About",
-        tabName = "about",
-        icon = shiny::icon("question")
-      ),
-      bs4Dash::menuItem(
-        text = "iSODA",
-        tabName = "iSODA",
-        icon = shiny::icon("i")
-      )
-    ),
+    bs4Dash::sidebarMenuOutput(outputId = "render_menu"),
     shiny::column(
       width = 12,
       br(),
@@ -190,7 +164,7 @@ body_ui = function() {
 
     bs4Dash::tabItems(
       bs4Dash::tabItem(
-        tabName = "data",
+        tabName = "data1",
         lipidomics_ui(id = 'mod_exp_1')
       ),
       bs4Dash::tabItem(
@@ -244,6 +218,81 @@ server = function(input, output, session) {
       ypx_total = NULL
     )
   )
+
+
+  output$render_tabs <- shiny::renderUI({
+    default_tabs <- list(
+      bs4Dash::tabItem(
+        tabName = "qc",
+        qc_ui(id = 'mod_qc')
+      ),
+      bs4Dash::tabItem(
+        tabName = "help_single_omics",
+        help_single_omics_ui(id = 'mod_help_single_omics')
+      ),
+      bs4Dash::tabItem(
+        tabName = "about",
+        about_ui(id = 'mod_about')
+      ),
+      bs4Dash::tabItem(
+        tabName = "iSODA",
+        isoda_ui(id = "mod_isoda")
+      )
+    )
+
+    data_tabs <- lapply(1:2, function(x) {
+      bs4Dash::tabItem(
+        tabName = paste0("data", x),
+        p(paste0("Data page ", x))
+      )
+    })
+    all_tabs <- c(data_tabs, default_tabs)
+
+    do.call(bs4Dash::tabItems, all_tabs)
+  })
+
+
+  output$render_menu <- bs4Dash::renderMenu({
+    sub_items_list <- lapply(1:2, function(x) {
+      bs4Dash::menuSubItem(
+        text = paste0("Data ", x),
+        icon = shiny::icon(as.character(x)),
+        tabName = paste0("data", x)
+      )
+    })
+
+    shiny::tagList(
+      bs4Dash::sidebarMenu(
+        bs4Dash::menuItem(
+          .list = sub_items_list,
+          text = "Data",
+          icon = shiny::icon("l"),
+          startExpanded = TRUE
+        ),
+        bs4Dash::menuItem(
+          text = "QC",
+          tabName = "qc",
+          icon = shiny::icon("q")
+        ),
+        bs4Dash::menuItem(
+          text = "Help",
+          icon = shiny::icon("question"),
+          tabName = 'help_single_omics'
+        ),
+        bs4Dash::menuItem(
+          text = "About",
+          tabName = "about",
+          icon = shiny::icon("question")
+        ),
+        bs4Dash::menuItem(
+          text = "iSODA",
+          tabName = "iSODA",
+          icon = shiny::icon("i")
+        )
+      )
+    )
+  })
+
 
   output$main_title <- shiny::renderUI({
     req(!is.null(module_controler$r6_exp$name))
@@ -302,7 +351,7 @@ server = function(input, output, session) {
       # lipidomics server
       lipidomics_server(id = "mod_exp_1",
                         module_controler = shiny::isolate(module_controler))
-                        # sheet_id = sheet_id)
+      # sheet_id = sheet_id)
       # QC
       qc_server(id = "mod_qc",
                 module_controler = shiny::isolate(module_controler))
