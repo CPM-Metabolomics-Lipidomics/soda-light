@@ -320,7 +320,6 @@ server = function(input, output, session) {
           bs4Dash::menuItem(
             text = "About",
             tabName = "about",
-            # selected = TRUE,
             icon = shiny::icon("question")
           ),
           bs4Dash::menuItem(
