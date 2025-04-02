@@ -189,9 +189,9 @@ server = function(input, output, session) {
       r6_exp = NULL,
       dims = list(
         x_box = 0.9,
-        y_box = 0.72,
+        y_box = 0.7,
         x_plot = 0.8,
-        y_plot = 0.69,
+        y_plot = 0.66,
         x_plot_full = 0.95,
         y_plot_full = 0.91,
         xpx_total = NULL,
@@ -209,21 +209,34 @@ server = function(input, output, session) {
 
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
-      print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]]))
-      if(!grepl(pattern = "NLA_[0-9]{3}",
-                x = query[["experimentId"]])) {
-        query[["experimentId"]] <- "NLA_005"
-      }
+      res <- switch(
+        query[[1]],
+        "apoE" = {
+          print_tm(NULL, "experimentId from URL: ApoE data set")
+          c("NLA_007", "NLA_005", "NLA_003")
+        },
+        "c9orf" = {
+          print_tm(NULL, "experimentId from URL: C9 Orf data set")
+          c("NLA_058", "NLA_059", "NLA_060")
+        },
+        {
+          print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
+          if(!grepl(pattern = "NLA_[0-9]{3}",
+                    x = query[["experimentId"]][[1]])) {
+            query[["experimentId"]] <- "NLA_005"
+          } else {
+            query[["experimentId"]][[1]]
+          }
+        }
+      )
     } else {
       # for easy development
       print_tm(NULL, "Default experimentId: NLA_005")
       query[["experimentId"]] <- "NLA_005"
+      res <- query[[1]]
     }
 
-    # temporary
-    # query <- c("NLA_005", "NLA_007", "NLA_003")
-
-    return(query)
+    return(res)
   })
 
   # Single omics modules
@@ -289,7 +302,8 @@ server = function(input, output, session) {
             .list = data_items_list,
             text = "Data",
             icon = shiny::icon("l"),
-            startExpanded = TRUE
+            startExpanded = TRUE,
+            selected = TRUE
           ),
           bs4Dash::menuItem(
             .list = qc_items_list,
@@ -304,7 +318,7 @@ server = function(input, output, session) {
           bs4Dash::menuItem(
             text = "About",
             tabName = "about",
-            selected = TRUE,
+            # selected = TRUE,
             icon = shiny::icon("question")
           ),
           bs4Dash::menuItem(
@@ -318,7 +332,13 @@ server = function(input, output, session) {
 
     for(a in 1:length(experiment_id)) {
       module_controler <- controler()
-      print_tm(NULL, paste0("Experiment: ", experiment_id[a]))
+
+      module_controler$xpx_total = shinybrowser::get_width()
+      module_controler$ypx_total = shinybrowser::get_height()
+      module_controler$xbs = 12
+      module_controler$xpx = shinybrowser::get_width()
+      module_controler$ypx = shinybrowser::get_height()
+
       # Create lipidomics r6 object
       module_controler$r6_exp = example_lipidomics(name = paste0("Lips_", a),
                                                    id = NA,
