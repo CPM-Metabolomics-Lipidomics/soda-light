@@ -61,6 +61,7 @@ Lips_exp = R6::R6Class(
         dataset = 'Z-scored total normalized table',
         impute = TRUE,
         cluster_samples = TRUE,
+        cluster_within = FALSE,
         sample_color_palette = "Set1",
         cluster_features = TRUE,
         map_sample_data = NULL,
@@ -421,11 +422,12 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, sample_color_palette, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, factor_height, img_format) {
+    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, cluster_within, map_sample_data, map_feature_data, sample_color_palette, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, factor_height, img_format) {
       self$params$heatmap$dataset = dataset
       self$params$heatmap$impute = impute
       self$params$heatmap$cluster_samples = cluster_samples
       self$params$heatmap$cluster_features = cluster_features
+      self$params$heatmap$cluster_within = cluster_within
       self$params$heatmap$map_sample_data = map_sample_data
       self$params$heatmap$sample_color_palette = sample_color_palette
       self$params$heatmap$map_feature_data = map_feature_data
@@ -758,6 +760,7 @@ Lips_exp = R6::R6Class(
                          impute = TRUE,
                          cluster_samples = TRUE,
                          cluster_features = TRUE,
+                         cluster_within = FALSE,
                          map_sample_data = self$indices$group_col,
                          map_feature_data = "lipid_class",
                          sample_color_palette = "Set1",
@@ -1159,6 +1162,7 @@ Lips_exp = R6::R6Class(
                             meta_table_features = self$tables$feature_table,
                             cluster_rows = self$params$heatmap$cluster_samples,
                             cluster_cols = self$params$heatmap$cluster_features,
+                            cluster_within = self$params$heatmap$cluster_within,
                             sample_color_palette = self$params$heatmap$sample_color_palette,
                             row_annotations = self$params$heatmap$map_sample_data,
                             col_annotations = self$params$heatmap$map_feature_data,
@@ -1223,6 +1227,8 @@ Lips_exp = R6::R6Class(
                                      color_palette = sample_color_palette,
                                      reverse_color_palette = TRUE)
             sample_colors <- c(sample_colors, tmp)
+            print("Rico")
+            print(sample_colors)
           }
         } else {
           # 1 annotation
@@ -1269,17 +1275,39 @@ Lips_exp = R6::R6Class(
 
       # customise the x-axis labels
       # use group name and the last 3 number of the sample name
-      group_names <- meta_table[, c(self$indices$group_col)]
+      group_names <- meta_table[, row_annotations[1]]
       names(group_names) <- rownames(meta_table)
-      xlabels <- paste0(group_names,
-                        "_",
-                        gsub(x = names(group_names),
-                             pattern = ".*([0-9]{3})$",
-                             replacement = "\\1"))
+      unique_group_names <- unique(group_names)
 
+      if(cluster_within) {
+        # within_dend <- ComplexHeatmap::cluster_between_groups(
+        #   mat = t(data_table),
+        #   factor = meta_table[, row_annotations[1]]
+        # )
+        dend_list <- vector(mode = "list", length(unique_group_names))
+        dend_p_list <- vector(mode = "list", length(unique_group_names))
+        for(a in 1:length(unique_group_names)) {
+          dend_list[[a]] <- stats::as.dendrogram(stats::hclust(stats::dist(data_table[names(group_names[group_names == unique_group_names[a]]), ])))
+          dend_p_list[[a]] <- base::colMeans(data_table[names(group_names[group_names == unique_group_names[a]]), ])
+        }
+        dend_p <-  stats::as.dendrogram(stats::hclust(stats::dist(do.call("rbind", dend_p_list))))
+        dend_m <- ComplexHeatmap::merge_dendrogram(x = dend_p,
+                                                   y = dend_list,
+                                                   only_parent = FALSE)
+
+        print("Rico")
+        # within_dend <- stats::order.dendrogram(within_dend)
+        plot(dend_p)
+        plot(dend_m)
+        print(class(dend_m))
+      } else {
+        dend_m <- NULL
+      }
 
       # Plot the data
       self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
+                                                Colv = dend_m,
+                                                # reorderfun = dend_m,
                                                 colors = base::rev(color_palette),
                                                 fontsize_row = 7,
                                                 plot_method = "plotly",

@@ -1127,6 +1127,19 @@ heatmap_server = function(r6, input, output, session) {
       ),
       shiny::fluidRow(
         shiny::column(
+          width = 8
+        ),
+        shiny::column(
+          width = 4,
+          shinyWidgets::awesomeCheckbox(
+            inputId = ns("heatmap_cluster_within"),
+            label = "cluster within groups",
+            value = FALSE
+          )
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
           width = 6,
           shiny::selectizeInput(
             inputId = ns("heatmap_map_rows"),
@@ -1262,6 +1275,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   iv_heatmap$add_rule("heatmap_impute", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_cluster_samples", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_cluster_features", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_cluster_within", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_map_rows", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_map_cols", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_sample_colors", shinyvalidate::sv_required())
@@ -1292,6 +1306,11 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = c(FALSE, TRUE),
                       name_plot = r6$name,
                       message = "Heatmap: Incorrect cluster features set!")
+  iv_heatmap$add_rule("heatmap_cluster_within",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect clustering within set!")
   iv_heatmap$add_rule("heatmap_map_rows",
                       iv_check_select_input,
                       choices = r6$hardcoded_settings$meta_column,
@@ -1397,6 +1416,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                      impute = input$heatmap_impute,
                      cluster_samples = input$heatmap_cluster_samples,
                      cluster_features = input$heatmap_cluster_features,
+                     cluster_within = input$heatmap_cluster_within,
                      map_sample_data = input$heatmap_map_rows,
                      map_feature_data = map_feature_data,
                      sample_color_palette = input$heatmap_sample_colors,
