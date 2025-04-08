@@ -1128,8 +1128,6 @@ apply_discriminant_analysis = function(data_table, group_list, nlambda = 100, al
 
   keep_cols = rownames(keep_cols)[which(keep_cols != 0)]
   keep_cols = keep_cols[2:length(keep_cols)]
-  print("Rico")
-  print(keep_cols)
   data_table = data_table[,keep_cols]
   return(data_table)
 }
