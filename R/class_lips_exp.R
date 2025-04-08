@@ -1214,8 +1214,56 @@ Lips_exp = R6::R6Class(
       zmin <- -zmax
 
 
-      # Annotations
+      # Annotations features
+      # Reorder the feature metadata according to the data_table order
+      meta_table_features = meta_table_features[c(colnames(data_table)),]
+
+      if (!is.null(col_annotations)) {
+        clean_names = col_annotations
+        col_annotations_df = as.data.frame(meta_table_features[, col_annotations],
+                                           row.names = rownames(meta_table_features))
+        colnames(col_annotations_df) = clean_names
+      } else {
+        col_annotations_df <- NULL
+      }
+
+      if (impute) {
+        print('Imputing NAs')
+        data_table <- t(apply(data_table, 1, function(x) {
+          x[is.na(x)] <- min(x, na.rm = TRUE)
+          return(x)
+        }))
+      }
+
+      # Get the color palette
+      color_count = colors_switch(color_palette)
+      color_palette <- get_colors(color_count = color_count,
+                                  color_palette = color_palette)
+      if(reverse_palette) {
+        color_palette <- rev(color_palette)
+      }
+
+      # within group clustering
+      if(cluster_within) {
+        group_names <- meta_table[, row_annotations[1]]
+        names(group_names) <- rownames(meta_table)
+        unique_group_names <- unique(group_names)
+
+        dend_list <- vector(mode = "list", length(unique_group_names))
+        data_list <- vector(mode = "list", length(unique_group_names))
+        for(a in 1:length(unique_group_names)) {
+          dend_list[[a]] <- stats::as.dendrogram(stats::hclust(stats::dist(data_table[names(group_names[group_names == unique_group_names[a]]), ])))
+          data_list[[a]] <- data_table[names(group_names[group_names == unique_group_names[a]]), ]
+        }
+        dend_m <- do.call("merge", dend_list)
+        data_table <- do.call("rbind.data.frame", data_list)
+      } else {
+        dend_m <- NULL
+      }
+
+      # Annotations samples
       if (!is.null(row_annotations)) {
+        meta_table <- meta_table[rownames(data_table), ]
         if (length(row_annotations) > 1) {
           # multiple annotations
           row_annotations_df = meta_table[, row_annotations]
@@ -1243,75 +1291,9 @@ Lips_exp = R6::R6Class(
         }
       }
 
-      # Reorder the feature metadata according to the data_table order
-      meta_table_features = meta_table_features[c(colnames(data_table)),]
-
-      if (!is.null(col_annotations)) {
-        clean_names = col_annotations
-        col_annotations_df = as.data.frame(meta_table_features[, col_annotations],
-                                           row.names = rownames(meta_table_features))
-        colnames(col_annotations_df) = clean_names
-      } else {
-        col_annotations_df <- NULL
-      }
-
-      if (impute) {
-        print('Imputing NAs')
-        # data_table[is.na(data_table)] <- min(data_table, na.rm = TRUE)
-        # use the minimum value per sample
-        data_table <- t(apply(data_table, 1, function(x) {
-          x[is.na(x)] <- min(x, na.rm = TRUE)
-          return(x)
-        }))
-      }
-
-      # Get the color palette
-      color_count = colors_switch(color_palette)
-      color_palette <- get_colors(color_count = color_count,
-                                  color_palette = color_palette)
-      if(reverse_palette) {
-        color_palette <- rev(color_palette)
-      }
-
-      # customise the x-axis labels
-      # use group name and the last 3 number of the sample name
-      group_names <- meta_table[, row_annotations[1]]
-      names(group_names) <- rownames(meta_table)
-      unique_group_names <- unique(group_names)
-      print(group_names)
-      print(unique_group_names)
-
-      if(cluster_within) {
-        # within_dend <- ComplexHeatmap::cluster_within_group(
-        #   mat = t(data_table),
-        #   factor = meta_table[, row_annotations[1]]
-        # )
-        dend_list <- vector(mode = "list", length(unique_group_names))
-        data_list <- vector(mode = "list", length(unique_group_names))
-        dend_p_list <- vector(mode = "list", length(unique_group_names))
-        for(a in 1:length(unique_group_names)) {
-          dend_list[[a]] <- stats::as.dendrogram(stats::hclust(stats::dist(data_table[names(group_names[group_names == unique_group_names[a]]), ])))
-          data_list[[a]] <- data_table[names(group_names[group_names == unique_group_names[a]]), ]
-          dend_p_list[[a]] <- base::colMeans(data_table[names(group_names[group_names == unique_group_names[a]]), ])
-        }
-        dend_p <-  stats::as.dendrogram(stats::hclust(stats::dist(do.call("rbind", dend_p_list))))
-        # dend_m <- ComplexHeatmap::merge_dendrogram(x = dend_p,
-        #                                            y = dend_list,
-        #                                            only_parent = FALSE)
-        dend_m <- do.call("merge", dend_list)
-        hm_data_table <- do.call("rbind.data.frame", data_list)
-        print(head(hm_data_table))
-        plot(dend_m)
-        print("Rico")
-      } else {
-        dend_m <- NULL
-        hm_data_table <- data_table
-      }
-
       # Plot the data
-      self$plots$heatmap = heatmaply::heatmaply(x = t(hm_data_table),
+      self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
                                                 Colv = dend_m,
-                                                seriate = "none",
                                                 colors = base::rev(color_palette),
                                                 fontsize_row = 7,
                                                 plot_method = "plotly",
