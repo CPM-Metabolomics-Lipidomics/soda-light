@@ -1278,36 +1278,40 @@ Lips_exp = R6::R6Class(
       group_names <- meta_table[, row_annotations[1]]
       names(group_names) <- rownames(meta_table)
       unique_group_names <- unique(group_names)
+      print(group_names)
+      print(unique_group_names)
 
       if(cluster_within) {
-        # within_dend <- ComplexHeatmap::cluster_between_groups(
+        # within_dend <- ComplexHeatmap::cluster_within_group(
         #   mat = t(data_table),
         #   factor = meta_table[, row_annotations[1]]
         # )
         dend_list <- vector(mode = "list", length(unique_group_names))
+        data_list <- vector(mode = "list", length(unique_group_names))
         dend_p_list <- vector(mode = "list", length(unique_group_names))
         for(a in 1:length(unique_group_names)) {
           dend_list[[a]] <- stats::as.dendrogram(stats::hclust(stats::dist(data_table[names(group_names[group_names == unique_group_names[a]]), ])))
+          data_list[[a]] <- data_table[names(group_names[group_names == unique_group_names[a]]), ]
           dend_p_list[[a]] <- base::colMeans(data_table[names(group_names[group_names == unique_group_names[a]]), ])
         }
         dend_p <-  stats::as.dendrogram(stats::hclust(stats::dist(do.call("rbind", dend_p_list))))
-        dend_m <- ComplexHeatmap::merge_dendrogram(x = dend_p,
-                                                   y = dend_list,
-                                                   only_parent = FALSE)
-
-        print("Rico")
-        # within_dend <- stats::order.dendrogram(within_dend)
-        plot(dend_p)
+        # dend_m <- ComplexHeatmap::merge_dendrogram(x = dend_p,
+        #                                            y = dend_list,
+        #                                            only_parent = FALSE)
+        dend_m <- do.call("merge", dend_list)
+        hm_data_table <- do.call("rbind.data.frame", data_list)
+        print(head(hm_data_table))
         plot(dend_m)
-        print(class(dend_m))
+        print("Rico")
       } else {
         dend_m <- NULL
+        hm_data_table <- data_table
       }
 
       # Plot the data
-      self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
+      self$plots$heatmap = heatmaply::heatmaply(x = t(hm_data_table),
                                                 Colv = dend_m,
-                                                # reorderfun = dend_m,
+                                                seriate = "none",
                                                 colors = base::rev(color_palette),
                                                 fontsize_row = 7,
                                                 plot_method = "plotly",
