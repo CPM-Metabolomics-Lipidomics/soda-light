@@ -1127,7 +1127,7 @@ heatmap_server = function(r6, input, output, session) {
       ),
       shiny::fluidRow(
         shiny::column(
-          width = 8
+          width = 4
         ),
         shiny::column(
           width = 4,
@@ -1136,6 +1136,9 @@ heatmap_server = function(r6, input, output, session) {
             label = "cluster within groups",
             value = FALSE
           )
+        ),
+        shiny::column(
+          width = 4
         )
       ),
       shiny::fluidRow(
