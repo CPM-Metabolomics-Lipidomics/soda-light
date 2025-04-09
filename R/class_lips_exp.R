@@ -61,6 +61,7 @@ Lips_exp = R6::R6Class(
         dataset = 'Z-scored total normalized table',
         impute = TRUE,
         cluster_samples = TRUE,
+        cluster_within = FALSE,
         sample_color_palette = "Set1",
         cluster_features = TRUE,
         map_sample_data = NULL,
@@ -326,6 +327,7 @@ Lips_exp = R6::R6Class(
 
       # Plot tables
       class_distribution_table = NULL,
+      class_distribution_all_table = NULL,
       volcano_table = NULL,
       heatmap_table = NULL,
       pca_scores_table = NULL,
@@ -421,11 +423,12 @@ Lips_exp = R6::R6Class(
 
     },
 
-    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, map_sample_data, map_feature_data, sample_color_palette, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, factor_height, img_format) {
+    param_heatmap = function(dataset, impute, cluster_samples, cluster_features, cluster_within, map_sample_data, map_feature_data, sample_color_palette, group_column_da, apply_da, alpha_da, color_palette, reverse_palette, factor_height, img_format) {
       self$params$heatmap$dataset = dataset
       self$params$heatmap$impute = impute
       self$params$heatmap$cluster_samples = cluster_samples
       self$params$heatmap$cluster_features = cluster_features
+      self$params$heatmap$cluster_within = cluster_within
       self$params$heatmap$map_sample_data = map_sample_data
       self$params$heatmap$sample_color_palette = sample_color_palette
       self$params$heatmap$map_feature_data = map_feature_data
@@ -758,6 +761,7 @@ Lips_exp = R6::R6Class(
                          impute = TRUE,
                          cluster_samples = TRUE,
                          cluster_features = TRUE,
+                         cluster_within = FALSE,
                          map_sample_data = self$indices$group_col,
                          map_feature_data = "lipid_class",
                          sample_color_palette = "Set1",
@@ -892,6 +896,14 @@ Lips_exp = R6::R6Class(
       rownames(plot_table) = class_list
       colnames(plot_table) = group_list
 
+      export_table <- merge(
+        x = meta_table[, group_col, drop = FALSE],
+        y = as.data.frame(table),
+        by = 0
+      )
+      colnames(export_table)[1:2] <- c("sampleName", "group")
+      self$tables$class_distribution_all_table <- export_table
+
       for (c in class_list) {
         for (g in group_list){
           s = rownames(meta_table)[meta_table[,group_col] == g]
@@ -953,6 +965,14 @@ Lips_exp = R6::R6Class(
                                      width = NULL,
                                      height = NULL){
       data_table = self$table_check_convert(data_table)
+
+      export_table <- merge(
+        x = meta_table[, group_col, drop = FALSE],
+        y = as.data.frame(data_table),
+        by = 0
+      )
+      colnames(export_table)[1:2] <- c("sampleName", "group")
+      self$tables$class_distribution_all_table <- export_table
 
       # Get sample groups and the list of classes
       groups = sort(unique(meta_table[, group_col]))
@@ -1159,6 +1179,7 @@ Lips_exp = R6::R6Class(
                             meta_table_features = self$tables$feature_table,
                             cluster_rows = self$params$heatmap$cluster_samples,
                             cluster_cols = self$params$heatmap$cluster_features,
+                            cluster_within = self$params$heatmap$cluster_within,
                             sample_color_palette = self$params$heatmap$sample_color_palette,
                             row_annotations = self$params$heatmap$map_sample_data,
                             col_annotations = self$params$heatmap$map_feature_data,
@@ -1210,33 +1231,7 @@ Lips_exp = R6::R6Class(
       zmin <- -zmax
 
 
-      # Annotations
-      if (!is.null(row_annotations)) {
-        if (length(row_annotations) > 1) {
-          # multiple annotations
-          row_annotations_df = meta_table[, row_annotations]
-          colnames(row_annotations_df) = stringr::str_replace_all(colnames(row_annotations_df), "_", " ")
-
-          sample_colors <- c()
-          for(a in 1:length(row_annotations)) {
-            tmp <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations[a]])),
-                                     color_palette = sample_color_palette,
-                                     reverse_color_palette = TRUE)
-            sample_colors <- c(sample_colors, tmp)
-          }
-        } else {
-          # 1 annotation
-          row_names = row_annotations
-          row_annotations_df = as.data.frame(meta_table[, row_annotations],
-                                             row.names = rownames(meta_table))
-          colnames(row_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
-
-          sample_colors <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations])),
-                                             color_palette = sample_color_palette,
-                                             reverse_color_palette = TRUE)
-        }
-      }
-
+      # Annotations features
       # Reorder the feature metadata according to the data_table order
       meta_table_features = meta_table_features[c(colnames(data_table)),]
 
@@ -1251,8 +1246,6 @@ Lips_exp = R6::R6Class(
 
       if (impute) {
         print('Imputing NAs')
-        # data_table[is.na(data_table)] <- min(data_table, na.rm = TRUE)
-        # use the minimum value per sample
         data_table <- t(apply(data_table, 1, function(x) {
           x[is.na(x)] <- min(x, na.rm = TRUE)
           return(x)
@@ -1267,19 +1260,57 @@ Lips_exp = R6::R6Class(
         color_palette <- rev(color_palette)
       }
 
-      # customise the x-axis labels
-      # use group name and the last 3 number of the sample name
-      group_names <- meta_table[, c(self$indices$group_col)]
-      names(group_names) <- rownames(meta_table)
-      xlabels <- paste0(group_names,
-                        "_",
-                        gsub(x = names(group_names),
-                             pattern = ".*([0-9]{3})$",
-                             replacement = "\\1"))
+      # within group clustering
+      if(cluster_within) {
+        group_names <- meta_table[, row_annotations[1]]
+        names(group_names) <- rownames(meta_table)
+        unique_group_names <- unique(group_names)
 
+        dend_list <- vector(mode = "list", length(unique_group_names))
+        data_list <- vector(mode = "list", length(unique_group_names))
+        for(a in 1:length(unique_group_names)) {
+          dend_list[[a]] <- stats::as.dendrogram(stats::hclust(stats::dist(data_table[names(group_names[group_names == unique_group_names[a]]), ])))
+          data_list[[a]] <- data_table[names(group_names[group_names == unique_group_names[a]]), ]
+        }
+        dend_m <- do.call("merge", dend_list)
+        data_table <- do.call("rbind.data.frame", data_list)
+      } else {
+        dend_m <- NULL
+      }
+
+      # Annotations samples
+      if (!is.null(row_annotations)) {
+        meta_table <- meta_table[rownames(data_table), ]
+        if (length(row_annotations) > 1) {
+          # multiple annotations
+          row_annotations_df = meta_table[, row_annotations]
+          colnames(row_annotations_df) = stringr::str_replace_all(colnames(row_annotations_df), "_", " ")
+
+          sample_colors <- c()
+          for(a in 1:length(row_annotations)) {
+            tmp <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations[a]])),
+                                     color_palette = sample_color_palette,
+                                     reverse_color_palette = TRUE)
+            sample_colors <- c(sample_colors, tmp)
+            print("Rico")
+            print(sample_colors)
+          }
+        } else {
+          # 1 annotation
+          row_names = row_annotations
+          row_annotations_df = as.data.frame(meta_table[, row_annotations],
+                                             row.names = rownames(meta_table))
+          colnames(row_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
+
+          sample_colors <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations])),
+                                             color_palette = sample_color_palette,
+                                             reverse_color_palette = TRUE)
+        }
+      }
 
       # Plot the data
       self$plots$heatmap = heatmaply::heatmaply(x = t(data_table),
+                                                Colv = dend_m,
                                                 colors = base::rev(color_palette),
                                                 fontsize_row = 7,
                                                 plot_method = "plotly",

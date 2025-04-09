@@ -76,6 +76,11 @@ class_distribution_server = function(r6, input, output, session) {
         outputId = ns("download_class_distribution_table"),
         label = "Download associated table",
         style = "width:100%;"
+      ),
+      shiny::downloadButton(
+        outputId = ns("download_class_distribution_all_table"),
+        label = "Download associated table (samples)",
+        style = "width:100%;"
       )
     )
   })
@@ -115,37 +120,44 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
                         input$class_distribution_metacol,
                         input$class_distribution_color_palette,
                         input$class_distribution_img_format), {
-    shiny::req(iv_class_distribution$is_valid())
+                          shiny::req(iv_class_distribution$is_valid())
 
-    if(r6$name == "Error") {
-      output$class_distribution_message <- shiny::renderUI({
-        shiny::p("Error! No data available!")
-      })
-    } else {
+                          if(r6$name == "Error") {
+                            output$class_distribution_message <- shiny::renderUI({
+                              shiny::p("Error! No data available!")
+                            })
+                          } else {
 
-      print_tm(r6$name, "Class distribution: Updating params...")
+                            print_tm(r6$name, "Class distribution: Updating params...")
 
-      r6$param_class_distribution(dataset = input$class_distribution_dataset,
-                                  group_col = input$class_distribution_metacol,
-                                  color_palette = input$class_distribution_color_palette,
-                                  img_format = input$class_distribution_img_format)
+                            r6$param_class_distribution(dataset = input$class_distribution_dataset,
+                                                        group_col = input$class_distribution_metacol,
+                                                        color_palette = input$class_distribution_color_palette,
+                                                        img_format = input$class_distribution_img_format)
 
-      base::tryCatch({
-        class_distribution_generate(r6, color_palette, dimensions_obj, input)
-        class_distribution_spawn(r6, input$class_distribution_img_format, output)
-      },error=function(e){
-        print_tm(r6$name, 'Class distribution: ERROR.')
-      },finally={}
-      )
-    }
+                            base::tryCatch({
+                              class_distribution_generate(r6, color_palette, dimensions_obj, input)
+                              class_distribution_spawn(r6, input$class_distribution_img_format, output)
+                            },error=function(e){
+                              print_tm(r6$name, 'Class distribution: ERROR.')
+                            },finally={}
+                            )
+                          }
 
-  })
+                        })
 
   # Download associated table
   output$download_class_distribution_table = shiny::downloadHandler(
     filename = function(){timestamped_name("class_distribution_table.csv")},
     content = function(file_name){
       write.csv(r6$tables$class_distribution_table, file_name)
+    }
+  )
+
+  output$download_class_distribution_all_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("class_distribution_table_all_samples.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$class_distribution_all_table, file_name)
     }
   )
 
@@ -245,6 +257,11 @@ class_comparison_server = function(r6, input, output, session) {
         outputId = ns("download_class_comparison_table"),
         label = "Download associated table",
         style = "width:100%;"
+      ),
+      shiny::downloadButton(
+        outputId = ns("download_class_comparison_all_table"),
+        label = "Download associated table (samples)",
+        style = "width:100%;"
       )
     )
   })
@@ -312,6 +329,12 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
     }
   )
 
+  output$download_class_comparison_all_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("class_comparison_table_all_samples.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$class_distribution_all_table, file_name)
+    }
+  )
 
   # Expanded boxes
   class_comparison_proxy = plotly::plotlyProxy(outputId = "class_comparison_plot",
@@ -967,7 +990,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                         input$fa_analysis_fa_norm,
                         input$fa_analysis_color_palette,
                         input$fa_analysis_img_format), {
-    shiny::req(iv_fa_analysis$is_valid())
+                          shiny::req(iv_fa_analysis$is_valid())
 
                           if(r6$name == "Error") {
                             output$fa_analysis_message <- shiny::renderUI({
@@ -1004,7 +1027,7 @@ fa_analysis_events = function(r6, dimensions_obj, color_palette, input, output, 
                             finally = {}
                             )
                           }
-  })
+                        })
 
   # Download associated table
   output$download_fa_analysis_table = shiny::downloadHandler(
@@ -1123,6 +1146,22 @@ heatmap_server = function(r6, input, output, session) {
                                     offLabel = 'NO',
                                     labelWidth = '150px'
           )
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 4
+        ),
+        shiny::column(
+          width = 4,
+          shinyWidgets::awesomeCheckbox(
+            inputId = ns("heatmap_cluster_within"),
+            label = "cluster within groups",
+            value = FALSE
+          )
+        ),
+        shiny::column(
+          width = 4
         )
       ),
       shiny::fluidRow(
@@ -1262,6 +1301,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   iv_heatmap$add_rule("heatmap_impute", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_cluster_samples", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_cluster_features", shinyvalidate::sv_required())
+  iv_heatmap$add_rule("heatmap_cluster_within", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_map_rows", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_map_cols", shinyvalidate::sv_required())
   iv_heatmap$add_rule("heatmap_sample_colors", shinyvalidate::sv_required())
@@ -1292,6 +1332,11 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = c(FALSE, TRUE),
                       name_plot = r6$name,
                       message = "Heatmap: Incorrect cluster features set!")
+  iv_heatmap$add_rule("heatmap_cluster_within",
+                      iv_check_select_input,
+                      choices = c(FALSE, TRUE),
+                      name_plot = r6$name,
+                      message = "Heatmap: Incorrect clustering within set!")
   iv_heatmap$add_rule("heatmap_map_rows",
                       iv_check_select_input,
                       choices = r6$hardcoded_settings$meta_column,
@@ -1397,6 +1442,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                      impute = input$heatmap_impute,
                      cluster_samples = input$heatmap_cluster_samples,
                      cluster_features = input$heatmap_cluster_features,
+                     cluster_within = input$heatmap_cluster_within,
                      map_sample_data = input$heatmap_map_rows,
                      map_feature_data = map_feature_data,
                      sample_color_palette = input$heatmap_sample_colors,
@@ -1420,6 +1466,9 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
         } else if(grepl(x = e,
                         pattern = "Heatmap: not enough groups")) {
           return(shiny::p("Error: not enough groups with a least 3 samples!"))
+        } else if (grepl(x = e,
+                         pattern = "in data_table\\[, keep_cols\\]")) {
+          return(shiny::p("Error: No discriminating features / species found! Can not generate heatmap!"))
         } else {
           return(shiny::p("An error occurred! Can not generate heatmap!"))
         }
@@ -1754,6 +1803,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                               shiny::p("Error! No data available!")
                             })
                           } else {
+                            shinyjs::hide(id = "pca_message")
                             shiny::req(iv_pca$is_valid())
 
                             if (!input$pca_auto_refresh) {
@@ -1782,13 +1832,25 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
                             base::tryCatch({
                               pca_generate(r6, color_palette, dimensions_obj, input)
                               pca_spawn(r6, input$pca_img_format, output)
-                            },error=function(e){
+                            },
+                            error = function(e){
+                              shinyjs::show(id = "pca_message")
+                              output$pca_message <- shiny::renderUI({
+                                if (grepl(x = e,
+                                          pattern = "in data_table\\[, keep_cols\\]")) {
+                                  return(shiny::p("Error: No discriminating features / species found! Can not recalculate PCA!"))
+                                } else {
+                                  return(shiny::p("An error occurred! Can not do PCA!"))
+                                }
+                              })
                               print_tm(r6$name, 'PCA: ERROR.')
                               print(e)
-                            },finally={}
-                            )
+                            },
+                            finally = {
+
+                            })
                           }
-  })
+                        })
 
 
   # Download associated tables
@@ -1841,7 +1903,7 @@ fa_comp_generate = function(r6, colour_list, dimensions_obj, input) {
   }
 
   r6$plot_fa_comp(width = width,
-                      height = height)
+                  height = height)
 }
 
 fa_comp_spawn = function(r6, format, output) {
@@ -1850,10 +1912,10 @@ fa_comp_spawn = function(r6, format, output) {
   output$fa_comp_plot = plotly::renderPlotly({
     r6$plots$fa_comp_plot
     plotly::config(r6$plots$fa_comp_plot, toImageButtonOptions = list(format = format,
-                                                                          filename = timestamped_name('fa_comp'),
-                                                                          height = NULL,
-                                                                          width = NULL,
-                                                                          scale = 1))
+                                                                      filename = timestamped_name('fa_comp'),
+                                                                      height = NULL,
+                                                                      width = NULL,
+                                                                      scale = 1))
   })
 }
 
@@ -2061,7 +2123,7 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
 
   # Expanded boxes
   fa_comp_proxy = plotly::plotlyProxy(outputId = "fa_comp_plot",
-                                          session = session)
+                                      session = session)
 
   shiny::observeEvent(input$fa_comp_plotbox,{
     if (input$fa_comp_plotbox$maximized) {
