@@ -250,7 +250,8 @@ server = function(input, output, session) {
       print_tm(NULL, "Default experimentId: NLA_005")
       query[["experimentId"]] <- "NLA_005"
       tabNames(query[["experimentId"]])
-      res <- query[[1]]
+
+      res <- query[["experimentId"]]
     }
 
     return(res)
