@@ -202,6 +202,8 @@ server = function(input, output, session) {
     return(mod_controler)
   })
 
+  tabNames <- shiny::reactiveVal()
+
   experimentId <- shiny::reactive({
     query <- list("experimentId" = NULL)
     client_data <- session$clientData
@@ -211,12 +213,21 @@ server = function(input, output, session) {
     if (!is.null(query[["experimentId"]])) {
       res <- switch(
         query[[1]],
+        "NLA_010" = {
+          print_tm(NULL, "experimentId from URL: ApoE data set")
+          tabNames(c("blabla 1", "blabla 2", "blabla3"))
+          c("NLA_010", "NLA_011", "NLA_012")
+        },
         "apoE" = {
           print_tm(NULL, "experimentId from URL: ApoE data set")
+          tabNames(c("KOLF replicate 1", "KOLF replicate 2", "KOLF replicate 3"))
           c("NLA_007", "NLA_005", "NLA_003")
         },
         "c9orf" = {
           print_tm(NULL, "experimentId from URL: C9 Orf data set")
+          tabNames(c(sprintf("NLA_%03d", 32:33), sprintf("NLA_%03d", 35:37),
+                     sprintf("NLA_%03d", 40:47), sprintf("NLA_%03d", 49:55),
+                     sprintf("NLA_%03d", 58:70)))
           c(sprintf("NLA_%03d", 32:33), sprintf("NLA_%03d", 35:37),
             sprintf("NLA_%03d", 40:47), sprintf("NLA_%03d", 49:55),
             sprintf("NLA_%03d", 58:70))
@@ -226,8 +237,10 @@ server = function(input, output, session) {
           if(!grepl(pattern = "NLA_[0-9]{3}",
                     x = query[["experimentId"]][[1]])) {
             query[["experimentId"]] <- "NLA_005"
+            tabNames(query[["experimentId"]])
           } else {
             query[["experimentId"]][[1]]
+            tabNames(query[["experimentId"]][[1]])
           }
         }
       )
@@ -235,6 +248,7 @@ server = function(input, output, session) {
       # for easy development
       print_tm(NULL, "Default experimentId: NLA_005")
       query[["experimentId"]] <- "NLA_005"
+      tabNames(query[["experimentId"]])
       res <- query[[1]]
     }
 
@@ -247,6 +261,7 @@ server = function(input, output, session) {
 
     # get the experiment id
     experiment_id = experimentId()
+    tab_names <- tabNames()
 
     output$render_tabs <- shiny::renderUI({
       default_tabs <- list(
@@ -284,51 +299,86 @@ server = function(input, output, session) {
 
 
     output$render_menu <- bs4Dash::renderMenu({
-      data_items_list <- lapply(1:length(experiment_id), function(x) {
-        bs4Dash::menuSubItem(
-          text = experiment_id[x],
-          tabName = experiment_id[x]
-        )
-      })
+      # get the experiment id
 
-      qc_items_list <- lapply(1:length(experiment_id), function(x) {
-        bs4Dash::menuSubItem(
-          text = experiment_id[x],
-          tabName = paste0("qc_", experiment_id[x])
-        )
-      })
-
-      shiny::tagList(
-        bs4Dash::sidebarMenu(
-          bs4Dash::menuItem(
-            .list = data_items_list,
-            text = "Data",
-            icon = shiny::icon("l"),
-            startExpanded = FALSE,
-            selected = TRUE
-          ),
-          bs4Dash::menuItem(
-            .list = qc_items_list,
-            text = "QC",
-            icon = shiny::icon("q")
-          ),
-          bs4Dash::menuItem(
-            text = "Help",
-            icon = shiny::icon("question"),
-            tabName = 'help_single_omics'
-          ),
-          bs4Dash::menuItem(
-            text = "About",
-            tabName = "about",
-            icon = shiny::icon("question")
-          ),
-          bs4Dash::menuItem(
-            text = "iSODA",
-            tabName = "iSODA",
-            icon = shiny::icon("i")
+      if(length(experiment_id) == 1) {
+        shiny::tagList(
+          bs4Dash::sidebarMenu(
+            bs4Dash::menuItem(
+              text = "Data",
+              icon = shiny::icon("l"),
+              tabName = experiment_id
+            ),
+            bs4Dash::menuItem(
+              text = "QC",
+              icon = shiny::icon("q"),
+              tabName = paste0("qc_", experiment_id)
+            ),
+            bs4Dash::menuItem(
+              text = "Help",
+              icon = shiny::icon("question"),
+              tabName = 'help_single_omics'
+            ),
+            bs4Dash::menuItem(
+              text = "About",
+              tabName = "about",
+              icon = shiny::icon("question")
+            ),
+            bs4Dash::menuItem(
+              text = "iSODA",
+              tabName = "iSODA",
+              icon = shiny::icon("i")
+            )
           )
         )
-      )
+      } else {
+        data_items_list <- lapply(1:length(experiment_id), function(x) {
+          bs4Dash::menuSubItem(
+            text = tab_names[x], #experiment_id[x],
+            tabName = experiment_id[x]
+          )
+        })
+
+        qc_items_list <- lapply(1:length(experiment_id), function(x) {
+          bs4Dash::menuSubItem(
+            text = tab_names[x], #experiment_id[x],
+            tabName = paste0("qc_", experiment_id[x])
+          )
+        })
+
+        shiny::tagList(
+          bs4Dash::sidebarMenu(
+            bs4Dash::menuItem(
+              .list = data_items_list,
+              text = "Data",
+              icon = shiny::icon("l"),
+              startExpanded = FALSE,
+              selected = TRUE
+            ),
+            bs4Dash::menuItem(
+              .list = qc_items_list,
+              text = "QC",
+              icon = shiny::icon("q")
+            ),
+            bs4Dash::menuItem(
+              text = "Help",
+              icon = shiny::icon("question"),
+              tabName = 'help_single_omics'
+            ),
+            bs4Dash::menuItem(
+              text = "About",
+              tabName = "about",
+              icon = shiny::icon("question")
+            ),
+            bs4Dash::menuItem(
+              text = "iSODA",
+              tabName = "iSODA",
+              icon = shiny::icon("i")
+            )
+          )
+        )
+      } # end if
+
     })
 
     for(a in 1:length(experiment_id)) {
