@@ -215,13 +215,14 @@ server = function(input, output, session) {
         query[[1]],
         "NLA_010" = {
           print_tm(NULL, "experimentId from URL: ApoE data set")
-          tabNames(c("blabla 1", "blabla 2", "blabla3"))
+          tabNames(c("blabla 1", "blabla 2", "blabla 3"))
           c("NLA_010", "NLA_011", "NLA_012")
         },
         "apoE" = {
-          print_tm(NULL, "experimentId from URL: ApoE data set")
-          tabNames(c("KOLF replicate 1", "KOLF replicate 2", "KOLF replicate 3"))
-          c("NLA_007", "NLA_005", "NLA_003")
+          print_tm(NULL, "experimentId from URL: ApoE data set (KOLF)")
+          tabNames(paste0("KOLF replicate ", 1:9))
+          c(sprintf("NLA_%03d", 3:5), sprintf("NLA_%03d", 7:9),
+            c("NLA_014", "NLA_015", "NLA_017"))
         },
         "c9orf" = {
           print_tm(NULL, "experimentId from URL: C9 Orf data set")
@@ -236,11 +237,11 @@ server = function(input, output, session) {
           print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
           if(!grepl(pattern = "NLA_[0-9]{3}",
                     x = query[["experimentId"]][[1]])) {
+            tabNames("NLA_005")
             query[["experimentId"]] <- "NLA_005"
-            tabNames(query[["experimentId"]])
           } else {
-            query[["experimentId"]][[1]]
             tabNames(query[["experimentId"]][[1]])
+            query[["experimentId"]][[1]]
           }
         }
       )
@@ -299,8 +300,6 @@ server = function(input, output, session) {
 
 
     output$render_menu <- bs4Dash::renderMenu({
-      # get the experiment id
-
       if(length(experiment_id) == 1) {
         shiny::tagList(
           bs4Dash::sidebarMenu(
@@ -390,7 +389,6 @@ server = function(input, output, session) {
       module_controler$xpx = shinybrowser::get_width()
       module_controler$ypx = shinybrowser::get_height()
 
-      # Create lipidomics r6 object
       module_controler$r6_exp = example_lipidomics(name = paste0("Lips_", a),
                                                    id = NA,
                                                    slot = paste0("exp_", a),
@@ -405,7 +403,7 @@ server = function(input, output, session) {
       qc_server(id = paste0("mod_qc_", a),
                 module_controler = shiny::isolate(module_controler))
     }
-  })
+  }) # end observe
 
   # about
   about_server(id = 'mod_about', main_output = output)
