@@ -205,56 +205,38 @@ server = function(input, output, session) {
   tabNames <- shiny::reactiveVal()
 
   experimentId <- shiny::reactive({
+    groupedDatasets <- readxl::read_excel(path = file.path("data", "Database", "GroupedDataSets.xlsx"))
+    groupedIds <- unique(groupedDatasets$experimentId)
+
     query <- list("experimentId" = NULL)
     client_data <- session$clientData
     query <- shiny::parseQueryString(client_data$url_search)
 
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
-      res <- switch(
-        query[[1]],
-        "NLA_010" = {
-          print_tm(NULL, "experimentId from URL: ApoE data set")
-          tabNames(c("blabla 1", "blabla 2", "blabla 3"))
-          c("NLA_010", "NLA_011", "NLA_012")
-        },
-        "apoE" = {
-          print_tm(NULL, "experimentId from URL: ApoE data set (KOLF)")
-          tabNames(paste0("KOLF replicate ", 1:9))
-          c(sprintf("NLA_%03d", 3:5), sprintf("NLA_%03d", 7:9),
-            c("NLA_014", "NLA_015", "NLA_017"))
-        },
-        "c9orf" = {
-          print_tm(NULL, "experimentId from URL: C9 Orf data set")
-          tabNames(c(sprintf("NLA_%03d", 32:33), sprintf("NLA_%03d", 35:37),
-                     sprintf("NLA_%03d", 40:47), sprintf("NLA_%03d", 49:55),
-                     sprintf("NLA_%03d", 58:70)))
-          c(sprintf("NLA_%03d", 32:33), sprintf("NLA_%03d", 35:37),
-            sprintf("NLA_%03d", 40:47), sprintf("NLA_%03d", 49:55),
-            sprintf("NLA_%03d", 58:70))
-        },
-        {
-          print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
-          if(!grepl(pattern = "NLA_[0-9]{3}",
-                    x = query[["experimentId"]][[1]])) {
-            tabNames("NLA_005")
-            query[["experimentId"]] <- "NLA_005"
-          } else {
-            tabNames(query[["experimentId"]][[1]])
-            query[["experimentId"]][[1]]
-          }
+      if(query[["experimentId"]] %in% groupedIds) {
+            print_tm(NULL, paste0("experimentId from URL: ", query[["experimentId"]]))
+            tabNames(groupedDatasets$shortTitle[groupedDatasets$experimentId == query[["experimentId"]]])
+            query[["experimentId"]] <- groupedDatasets$experiments[groupedDatasets$experimentId == query[["experimentId"]]]
+      } else {
+        print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
+        if(!grepl(pattern = "NLA_[0-9]{3}",
+                  x = query[["experimentId"]][[1]])) {
+          tabNames("NLA_005")
+          query[["experimentId"]] <- "NLA_005"
+        } else {
+          tabNames(query[["experimentId"]][[1]])
+          query[["experimentId"]][[1]]
         }
-      )
+      }
     } else {
       # for easy development
       print_tm(NULL, "Default experimentId: NLA_005")
       query[["experimentId"]] <- "NLA_005"
       tabNames(query[["experimentId"]])
-
-      res <- query[["experimentId"]]
     }
 
-    return(res)
+    return(query[["experimentId"]])
   })
 
   # Single omics modules
