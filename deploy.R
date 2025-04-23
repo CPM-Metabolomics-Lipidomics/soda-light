@@ -19,4 +19,5 @@ incl_files <- incl_files[!grepl(x = incl_files,
 
 
 # deploy the app
-rsconnect::deployApp(appFiles = incl_files)
+rsconnect::deployApp(appFiles = incl_files,
+                     appName = "soda-light")
