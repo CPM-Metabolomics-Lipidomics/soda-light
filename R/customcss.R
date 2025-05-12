@@ -17,9 +17,9 @@ if(dev){
       bg = "#ededed",  # working for bg whole sidebar
       # header_color = "#094af9",  # not working
       color = "#db285a",  # working, text color
-      hover_color = "#0255e9"
+      hover_color = "#0255e9",
       # submenu_bg = "#FF0000",
-      # submenu_color = "#FFF",
+      submenu_color = "#db285a",
       # submenu_hover_color = "#FFF"
     ),
     bs4dash_sidebar_dark(

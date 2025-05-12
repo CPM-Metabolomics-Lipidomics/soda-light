@@ -3,9 +3,14 @@ dev <- FALSE
 if(dev) {
   library(openxlsx2)
 
-  meta_data <- read_xlsx(file = "./data/Database/SampleMasterfile.xlsx",
-                         sheet = 1,
-                         skip_empty_rows = TRUE)
+  # get all meta data
+  meta_data <- openxlsx2::read_xlsx(file = "./data/Database/SampleMasterfile.xlsx",
+                                    sheet = 1,
+                                    skip_empty_rows = TRUE)
+
+  # get the grouped datasets
+  grouped_data <- openxlsx2::read_xlsx(file = "./data/Database/GroupedDataSets.xlsx",
+                                       sheet = 1)
 
   # remove QC and blanks
   meta_data <- meta_data[!grepl(x = meta_data$sampleType,
@@ -14,10 +19,6 @@ if(dev) {
 
   # get all experiments / comparisons
   experiments <- sort(unique(meta_data$experimentId))
-
-  # remove all NLA stuff
-  # experiments <- experiments[!grepl(pattern = "^NLA_.*",
-  #                                   x = experiments)]
 
   export <- data.frame(matrix(ncol = 11,
                               nrow = length(experiments)))
@@ -57,12 +58,6 @@ if(dev) {
     sex <- sex[sex != "NA"]
     sex <- paste(sex, collapse = ", ")
 
-    ## Method column not present
-    # method <- unique(meta_data$method[meta_data$experimentId == experiments[a]])
-    # method <- method[!is.na(method)]
-    # method <- method[method != "NA"]
-    # method <- paste(method, collapse = ", ")
-
     contributingLab <- unique(meta_data$lab[meta_data$experimentId == experiments[a]])
     contributingLab <- contributingLab[!is.na(contributingLab)]
     contributingLab <- contributingLab[contributingLab != "NA"]
@@ -90,15 +85,44 @@ if(dev) {
     export$harvestDate[a] <- harvestDate
     export$doi[a] <- doi
 
-  }
+  } # end loop experiments
 
-  ## Need to do some cleaning before sending to Menno
-  # Remove datasets with multiple harvest dates
-  # keep <- !grepl(pattern = ",",
-  #                x = export$harvestDate)
-  # export <- export[keep, ]
-  # # Remove experiment VDK_230406_01
-  # export <- export[export$experimentId != "VDK_230406_01", ]
+  # grouped datasets need to be added and the single experiments need to be removed
+  grouped_ids <- unique(grouped_data$experimentId)
+
+  for(a in 1:length(grouped_ids)) {
+    nla_ids <- grouped_data$experiments[grouped_data$experimentId == grouped_ids[a]]
+
+    new_dataset <- data.frame(
+      "experimentId" = grouped_ids[a],
+      "experimentTitle" = unique(grouped_data$title[grouped_data$experimentId == grouped_ids[a]]),
+      "genoType" = paste(unique(unlist(strsplit(x = export$genoType[export$experimentId %in% nla_ids],
+                                                split = ", "))), collapse = ", "),
+      "cellType" = paste(unique(unlist(strsplit(x = export$cellType[export$experimentId %in% nla_ids],
+                                                split = ", "))), collapse = ", "),
+      "parentCellLine" = paste(unique(unlist(strsplit(x = export$parentCellLine[export$experimentId %in% nla_ids],
+                                                      split = ", "))), collapse = ", "),
+      "drugTreatment" = paste(unique(unlist(strsplit(x = export$drugTreatment[export$experimentId %in% nla_ids],
+                                                split = ", "))), collapse = ", "),
+      "sex" = paste(unique(unlist(strsplit(x = export$sex[export$experimentId %in% nla_ids],
+                                                split = ", "))), collapse = ", "),
+      "method" = paste(unique(unlist(strsplit(x = export$method[export$experimentId %in% nla_ids],
+                                                split = ", "))), collapse = ", "),
+      "contributingLab" = paste(unique(unlist(strsplit(x = export$contributingLab[export$experimentId %in% nla_ids],
+                                                split = ", "))), collapse = ", "),
+      "harvestDate" = paste(unique(unlist(strsplit(x = export$harvestDate[export$experimentId %in% nla_ids],
+                                                split = ", "))), collapse = ", "),
+      "doi" = paste(unique(unlist(strsplit(x = export$doi[export$experimentId %in% nla_ids],
+                                                split = ", "))), collapse = ", ")
+    )
+
+    export <- rbind.data.frame(
+      export,
+      new_dataset
+    )
+
+    export <- export[!(export$experimentId %in% nla_ids), ]
+  } # end loop grouped_ids
 
   write.table(x = export,
               file = "./neurolipid_meta.csv",
