@@ -1933,6 +1933,11 @@ fa_comp_server = function(r6, input, output, session) {
 
   # set some UI
   output$fa_comp_sidebar_ui = shiny::renderUI({
+    if(unique(r6$tables$raw_meta$Machine) %in% c("5500", "6500", "6500+")) {
+      choices_lipidclass <- c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class))
+    } else {
+      choices_lipidclass <- c("All" = "All", unique(r6$tables$feature_table$lipid_class))
+    }
     shiny::tagList(
       shiny::selectInput(
         inputId = ns("fa_comp_composition"),
@@ -1956,11 +1961,7 @@ fa_comp_server = function(r6, input, output, session) {
       shiny::selectizeInput(
         inputId = ns("fa_comp_selected_lipidclass"),
         label = "Select lipid class",
-        choices = ifelse(
-          unique(r6$tables$raw_meta$Machine) %in% c("5500", "6500", "6500+"),
-          c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class)),
-          c("All" = "All", unique(r6$tables$feature_table$lipid_class))
-        ),
+        choices = choices_lipidclass,
         selected = r6$params$fa_comp_plot$selected_lipidclass,
         multiple = FALSE
       ),
@@ -2026,38 +2027,6 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
                       choices = r6$hardcoded_settings$image_format,
                       name_plot = r6$name,
                       message = "FA composition analysis: Incorrect image format selected!")
-
-  # auto-update the lipid classes
-  shiny::observeEvent(input$fa_comp_composition, {
-    if(r6$name == "Error") {
-      output$fa_comp_message <- shiny::renderUI({
-        shiny::p("Error! No data available!")
-      })
-    } else {
-      if(input$fa_comp_composition == "fa_tail") {
-        if(unique(r6$tables$raw_meta$Machine) %in% c("5500", "6500", "6500+")) {
-          lipidclass_choices <- c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class))
-        } else(
-          lipidclass_choices <- c("All" = "All", unique(r6$tables$feature_table$lipid_class))
-        )
-      } else {
-        lipidclass_choices <- unique(r6$tables$feature_table$lipid_class)
-      }
-
-      if(r6$params$fa_comp_plot$selected_lipidclass == "All") {
-        selected_lipidclass = "CE"
-      } else {
-        selected_lipidclass <- r6$params$fa_comp_plot$selected_lipidclass
-      }
-
-      shiny::updateSelectizeInput(
-        inputId = "fa_comp_selected_lipidclass",
-        session = session,
-        choices = lipidclass_choices,
-        selected = selected_lipidclass,
-      )
-    }
-  })
 
   # auto-update selected groups
   shiny::observeEvent(input$fa_comp_metacol, {

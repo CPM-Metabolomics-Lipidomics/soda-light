@@ -2577,6 +2577,7 @@ fa_comp_hm_calc.fa <- function(data_table = NULL,
   }
   # calculate the proportion
   res <- res / sum(res)
+
   return(res)
 }
 
