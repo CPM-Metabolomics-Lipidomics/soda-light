@@ -718,14 +718,20 @@ get_lipid_classes = function(feature_list, uniques = TRUE){
              fixed = TRUE)[[1]][1])
   classes = as.vector(classes)
 
-  # classes <- ifelse(
-  #   grepl(x = feature_list,
-  #         pattern = "( [OP]-| O\\+P-)"),
-  #   gsub(x = feature_list,
-  #        pattern = "^(.*) ([OP]-|O\\+P-).*$",
-  #        replacement = "\\2\\1"),
-  #   classes
-  # )
+  # detect QTRAP or QE+ data
+  if(any(grepl(x = feature_list,
+               pattern = "( O-| O\\+P-)")) &
+     any(grepl(x = feature_list,
+               pattern = " P-"))) {
+    classes <- ifelse(
+      grepl(x = feature_list,
+            pattern = "( [OP]-| O\\+P-)"),
+      gsub(x = feature_list,
+           pattern = "^(.*) ([OP]-|O\\+P-).*$",
+           replacement = "\\2\\1"),
+      classes
+    )
+  }
 
   if (uniques) {
     return(unique(classes))}
@@ -791,9 +797,6 @@ get_feature_metadata = function(data_table) {
   feature_table$unsat_sum[idx_tg] = feature_table$unsat_1[idx_tg]
   feature_table$unsat_sum[!idx_tg] = feature_table$unsat_1[!idx_tg] + feature_table$unsat_2[!idx_tg]
 
-  print("Rico")
-  write.csv(x = feature_table,
-            file = "./feature-table.csv")
   return(feature_table)
 }
 
