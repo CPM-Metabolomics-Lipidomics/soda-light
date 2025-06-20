@@ -1797,7 +1797,11 @@ Lips_exp = R6::R6Class(
                              titleY = TRUE) |>
         plotly::layout(title = list(
           text = ifelse(selected_lipidclass == "All",
-                        paste0("<b>Lipid class: ", selected_lipidclass, " (excl. PA)</b>"),
+                        ifelse(
+                          unique(sample_meta$Machin) %in% c("5500", "6500", "6500+"),
+                          paste0("<b>Lipid class: All (excl. PA)</b>"),
+                          paste0("<b>Lipid class: All</b>")
+                        ),
                         paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
           size = 14
         ),

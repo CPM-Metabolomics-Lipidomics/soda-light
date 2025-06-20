@@ -1956,7 +1956,11 @@ fa_comp_server = function(r6, input, output, session) {
       shiny::selectizeInput(
         inputId = ns("fa_comp_selected_lipidclass"),
         label = "Select lipid class",
-        choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class)),
+        choices = ifelse(
+          unique(r6$tables$raw_meta$Machine) %in% c("5500", "6500", "6500+"),
+          c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class)),
+          c("All" = "All", unique(r6$tables$feature_table$lipid_class))
+        ),
         selected = r6$params$fa_comp_plot$selected_lipidclass,
         multiple = FALSE
       ),
@@ -2031,7 +2035,11 @@ fa_comp_events = function(r6, dimensions_obj, color_palette, input, output, sess
       })
     } else {
       if(input$fa_comp_composition == "fa_tail") {
-        lipidclass_choices <- c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class))
+        if(unique(r6$tables$raw_meta$Machine) %in% c("5500", "6500", "6500+")) {
+          lipidclass_choices <- c("All (excl. PA)" = "All", unique(r6$tables$feature_table$lipid_class))
+        } else(
+          lipidclass_choices <- c("All" = "All", unique(r6$tables$feature_table$lipid_class))
+        )
       } else {
         lipidclass_choices <- unique(r6$tables$feature_table$lipid_class)
       }
