@@ -717,6 +717,16 @@ get_lipid_classes = function(feature_list, uniques = TRUE){
              split = " ",
              fixed = TRUE)[[1]][1])
   classes = as.vector(classes)
+
+  # classes <- ifelse(
+  #   grepl(x = feature_list,
+  #         pattern = "( [OP]-| O\\+P-)"),
+  #   gsub(x = feature_list,
+  #        pattern = "^(.*) ([OP]-|O\\+P-).*$",
+  #        replacement = "\\2\\1"),
+  #   classes
+  # )
+
   if (uniques) {
     return(unique(classes))}
   else{
@@ -739,13 +749,21 @@ get_feature_metadata = function(data_table) {
     if (c == "TG") {
       # For triglycerides
       for (i in stringr::str_split(string = idx, pattern = " |:|-FA")) {
-        c_count_1 = c(c_count_1, i[2])
-        c_count_2 = c(c_count_2, i[4])
-        s_count_1 = c(s_count_1, i[3])
-        s_count_2 = c(s_count_2, i[5])
+        if(length(i) == 5) {
+          c_count_1 = c(c_count_1, i[2])
+          c_count_2 = c(c_count_2, i[4])
+          s_count_1 = c(s_count_1, i[3])
+          s_count_2 = c(s_count_2, i[5])
+        } else {
+          c_count_1 <- c(c_count_1, i[2])
+          c_count_2 <- c(c_count_2, 0)
+          s_count_1 <- c(s_count_1, i[3])
+          s_count_2 <- c(s_count_2, 0)
+        }
+
       }
-    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) >0) {
-      # For species with asyl groups ("/" or "_")
+    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) > 0) {
+      # For species with acyl groups ("/" or "_")
       for (i in stringr::str_split(string = idx, pattern = " |:|_|/")) {
         c_count_1 = c(c_count_1, gsub("[^0-9]", "", i[2]))
         c_count_2 = c(c_count_2, i[4])
@@ -754,7 +772,7 @@ get_feature_metadata = function(data_table) {
       }
     } else {
       # For the rest
-      for (i in stringr::str_split(string = idx, pattern = " |:")) {
+      for (i in stringr::str_split(string = idx, pattern = " O\\+P-| [OP]-| [dt]| |:")) {
         c_count_1 = c(c_count_1, i[2])
         c_count_2 = c(c_count_2, 0)
         s_count_1 = c(s_count_1, i[3])
@@ -772,6 +790,10 @@ get_feature_metadata = function(data_table) {
   feature_table$unsat_2 = as.numeric(s_count_2)
   feature_table$unsat_sum[idx_tg] = feature_table$unsat_1[idx_tg]
   feature_table$unsat_sum[!idx_tg] = feature_table$unsat_1[!idx_tg] + feature_table$unsat_2[!idx_tg]
+
+  print("Rico")
+  write.csv(x = feature_table,
+            file = "./feature-table.csv")
   return(feature_table)
 }
 
