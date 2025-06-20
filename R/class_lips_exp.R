@@ -1292,8 +1292,6 @@ Lips_exp = R6::R6Class(
                                      color_palette = sample_color_palette,
                                      reverse_color_palette = TRUE)
             sample_colors <- c(sample_colors, tmp)
-            print("Rico")
-            print(sample_colors)
           }
         } else {
           # 1 annotation
