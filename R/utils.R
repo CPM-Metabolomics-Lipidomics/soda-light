@@ -2475,7 +2475,6 @@ fa_comp_hm_calc <- function(data_table = NULL,
                             selected_group = NULL,
                             sample_meta = NULL,
                             selected_lipidclass = NULL) {
-
   res <- switch(
     composition,
     "fa_tail" = fa_comp_hm_calc.fa(data_table = data_table,
@@ -2553,6 +2552,7 @@ fa_comp_hm_calc.fa <- function(data_table = NULL,
   colnames(res) <- uniq_carbon[1]:uniq_carbon[2]
   rownames(res) <- uniq_unsat[1]:uniq_unsat[2]
 
+  # can we do this faster?
   for(a in rownames(res)) { # unsaturation
     for(b in colnames(res)) { # carbons
       idx_lipids <- selected_features$lipid[(selected_features$carbons_1 == b &
@@ -2569,17 +2569,14 @@ fa_comp_hm_calc.fa <- function(data_table = NULL,
       } else {
         res[a, b] <- 0
       }
-
       # compensate for if a specific tails appears twice in a lipid, sum again
       if(length(idx_lipids_double) > 0) {
         res[a, b] <- sum(res[a, b], hm_data[, idx_lipids_double], na.rm = TRUE)
       }
     }
   }
-
   # calculate the proportion
   res <- res / sum(res)
-
   return(res)
 }
 
