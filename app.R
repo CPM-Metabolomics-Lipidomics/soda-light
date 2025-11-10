@@ -239,6 +239,7 @@ server = function(input, output, session) {
                                        split = ";|; ")[[1]])
 
         if(query[["experimentId"]] %in% experiments) {
+          # is it a grouped experiment or single experiment
           if(query[["experimentId"]] %in% groupedIds) {
             print_tm(NULL, paste0("experimentId from URL: ", query[["experimentId"]]))
             tabNames(groupedDatasets$shortTitle[groupedDatasets$experimentId == query[["experimentId"]]])
