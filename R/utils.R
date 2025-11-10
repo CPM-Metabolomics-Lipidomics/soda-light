@@ -624,7 +624,6 @@ get_group_median_table = function(data_table,
 }
 
 get_lipid_class_table = function(table, norm = FALSE){
-
   # Get unique lipid classes
   classes = get_lipid_classes(feature_list = colnames(table), uniques = TRUE)
 
@@ -632,11 +631,14 @@ get_lipid_class_table = function(table, norm = FALSE){
   col_vector = get_lipid_classes(feature_list = colnames(table), uniques = FALSE)
 
   # correct the TG is
-  table[, col_vector == "TG"] <-  table[, col_vector == "TG"] / 3
+  # detect here if it is lipidyzer data, lipidyzer needs the correction
+  tgs <- colnames(table)[col_vector == "TG"]
+  if(all(grepl(x = tgs, pattern = "^TG [0-9]{1,2}:[0-9]{1,2}\\-FA[0-9]{1,2}:[0-9]$"))) {
+    table[, col_vector == "TG"] <-  table[, col_vector == "TG"] / 3
+  }
 
   # normalise the data first
   if(norm == TRUE) {
-    # correct TG
     table <- table / rowSums(table, na.rm = TRUE) * 100
   }
 
