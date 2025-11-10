@@ -1,0 +1,15 @@
+240220_data.csv
+240220_features.csv
+240220_meta.csv
+neurolipid_meta.csv
+users.csv
+
+install.packages.R
+deploy.R
+
+soda_home.html
+
+soda-light.Rproj
+
+data/Database/NLA_2024_701/Norm_mgprotein_40.xlsx
+data/Database/NLA_2024_801/Raw_concatenated.xlsx

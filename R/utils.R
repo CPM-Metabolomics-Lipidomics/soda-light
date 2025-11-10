@@ -717,6 +717,22 @@ get_lipid_classes = function(feature_list, uniques = TRUE){
              split = " ",
              fixed = TRUE)[[1]][1])
   classes = as.vector(classes)
+
+  # detect QTRAP or QE+ data
+  if(any(grepl(x = feature_list,
+               pattern = "( O-| O\\+P-)")) &
+     any(grepl(x = feature_list,
+               pattern = " P-"))) {
+    classes <- ifelse(
+      grepl(x = feature_list,
+            pattern = "( [OP]-| O\\+P-)"),
+      gsub(x = feature_list,
+           pattern = "^(.*) ([OP]-|O\\+P-).*$",
+           replacement = "\\2\\1"),
+      classes
+    )
+  }
+
   if (uniques) {
     return(unique(classes))}
   else{
@@ -739,13 +755,21 @@ get_feature_metadata = function(data_table) {
     if (c == "TG") {
       # For triglycerides
       for (i in stringr::str_split(string = idx, pattern = " |:|-FA")) {
-        c_count_1 = c(c_count_1, i[2])
-        c_count_2 = c(c_count_2, i[4])
-        s_count_1 = c(s_count_1, i[3])
-        s_count_2 = c(s_count_2, i[5])
+        if(length(i) == 5) {
+          c_count_1 = c(c_count_1, i[2])
+          c_count_2 = c(c_count_2, i[4])
+          s_count_1 = c(s_count_1, i[3])
+          s_count_2 = c(s_count_2, i[5])
+        } else {
+          c_count_1 <- c(c_count_1, i[2])
+          c_count_2 <- c(c_count_2, 0)
+          s_count_1 <- c(s_count_1, i[3])
+          s_count_2 <- c(s_count_2, 0)
+        }
+
       }
-    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) >0) {
-      # For species with asyl groups ("/" or "_")
+    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) > 0) {
+      # For species with acyl groups ("/" or "_")
       for (i in stringr::str_split(string = idx, pattern = " |:|_|/")) {
         c_count_1 = c(c_count_1, gsub("[^0-9]", "", i[2]))
         c_count_2 = c(c_count_2, i[4])
@@ -754,7 +778,7 @@ get_feature_metadata = function(data_table) {
       }
     } else {
       # For the rest
-      for (i in stringr::str_split(string = idx, pattern = " |:")) {
+      for (i in stringr::str_split(string = idx, pattern = " O\\+P-| [OP]-| [dt]| |:")) {
         c_count_1 = c(c_count_1, i[2])
         c_count_2 = c(c_count_2, 0)
         s_count_1 = c(s_count_1, i[3])
@@ -772,6 +796,7 @@ get_feature_metadata = function(data_table) {
   feature_table$unsat_2 = as.numeric(s_count_2)
   feature_table$unsat_sum[idx_tg] = feature_table$unsat_1[idx_tg]
   feature_table$unsat_sum[!idx_tg] = feature_table$unsat_1[!idx_tg] + feature_table$unsat_2[!idx_tg]
+
   return(feature_table)
 }
 
@@ -2450,7 +2475,6 @@ fa_comp_hm_calc <- function(data_table = NULL,
                             selected_group = NULL,
                             sample_meta = NULL,
                             selected_lipidclass = NULL) {
-
   res <- switch(
     composition,
     "fa_tail" = fa_comp_hm_calc.fa(data_table = data_table,
@@ -2528,6 +2552,7 @@ fa_comp_hm_calc.fa <- function(data_table = NULL,
   colnames(res) <- uniq_carbon[1]:uniq_carbon[2]
   rownames(res) <- uniq_unsat[1]:uniq_unsat[2]
 
+  # can we do this faster?
   for(a in rownames(res)) { # unsaturation
     for(b in colnames(res)) { # carbons
       idx_lipids <- selected_features$lipid[(selected_features$carbons_1 == b &
@@ -2544,14 +2569,12 @@ fa_comp_hm_calc.fa <- function(data_table = NULL,
       } else {
         res[a, b] <- 0
       }
-
       # compensate for if a specific tails appears twice in a lipid, sum again
       if(length(idx_lipids_double) > 0) {
         res[a, b] <- sum(res[a, b], hm_data[, idx_lipids_double], na.rm = TRUE)
       }
     }
   }
-
   # calculate the proportion
   res <- res / sum(res)
 
@@ -2800,20 +2823,15 @@ qc_histogram <- function(data = NULL,
 
 qc_trend_plot <- function(data = NULL,
                           title = NULL) {
-  # get the lipid class
-  data$lipidclass <- gsub(x = data$lipid,
-                          pattern = "^([a-zA-Z]*) .*",
-                          replacement = "\\1")
-
   p <- data |>
     ggplot2::ggplot(ggplot2::aes(x = ID,
                                  y = log2fc,
                                  group = lipid,
-                                 color = lipidclass,
+                                 color = lipid_class,
                                  text = paste("Sample name:", ID, "<br>",
                                               "Log2(fold change): ", round(log2fc, 3), "<br>",
                                               "Lipid: ", lipid, "<br>",
-                                              "Lipid class:", lipidclass))) +
+                                              "Lipid class:", lipid_class))) +
     ggplot2::geom_line(alpha = 0.3) +
     ggplot2::geom_point(size = 1,
                         alpha = 0.3) +
@@ -2861,12 +2879,8 @@ qc_prep_trend <- function(data = NULL) {
 
 qc_rsd_violin <- function(data = NULL,
                           title = NULL) {
-  data$lipidclass <- gsub(x = data$lipid,
-                          pattern = "^([a-zA-Z]*) .*",
-                          replacement = "\\1")
-
   p <- data |>
-    ggplot2::ggplot(ggplot2::aes(x = lipidclass,
+    ggplot2::ggplot(ggplot2::aes(x = lipid_class,
                                  y = rsd)) +
     ggplot2::geom_violin() +
     ggplot2::geom_jitter(size = 1,
