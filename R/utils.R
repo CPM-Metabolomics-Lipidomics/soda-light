@@ -2823,20 +2823,15 @@ qc_histogram <- function(data = NULL,
 
 qc_trend_plot <- function(data = NULL,
                           title = NULL) {
-  # get the lipid class
-  data$lipidclass <- gsub(x = data$lipid,
-                          pattern = "^([a-zA-Z]*) .*",
-                          replacement = "\\1")
-
   p <- data |>
     ggplot2::ggplot(ggplot2::aes(x = ID,
                                  y = log2fc,
                                  group = lipid,
-                                 color = lipidclass,
+                                 color = lipid_class,
                                  text = paste("Sample name:", ID, "<br>",
                                               "Log2(fold change): ", round(log2fc, 3), "<br>",
                                               "Lipid: ", lipid, "<br>",
-                                              "Lipid class:", lipidclass))) +
+                                              "Lipid class:", lipid_class))) +
     ggplot2::geom_line(alpha = 0.3) +
     ggplot2::geom_point(size = 1,
                         alpha = 0.3) +
@@ -2884,12 +2879,8 @@ qc_prep_trend <- function(data = NULL) {
 
 qc_rsd_violin <- function(data = NULL,
                           title = NULL) {
-  data$lipidclass <- gsub(x = data$lipid,
-                          pattern = "^([a-zA-Z]*) .*",
-                          replacement = "\\1")
-
   p <- data |>
-    ggplot2::ggplot(ggplot2::aes(x = lipidclass,
+    ggplot2::ggplot(ggplot2::aes(x = lipid_class,
                                  y = rsd)) +
     ggplot2::geom_violin() +
     ggplot2::geom_jitter(size = 1,

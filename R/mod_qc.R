@@ -112,6 +112,15 @@ qc_server = function(id, module_controler) {
         }))
         qc_data$lipid <- rownames(qc_data)
 
+        # add the lipid classes
+        feature_table <- r6$tables$feature_table
+        feature_table$lipid <- rownames(feature_table)
+        qc_data <- merge(
+          x = qc_data,
+          y = feature_table[, c("lipid", "lipid_class")],
+          by = "lipid"
+        )
+
         p <- qc_rsd_violin(data = qc_data,
                            title = "QC cells")
 
@@ -131,6 +140,15 @@ qc_server = function(id, module_controler) {
 
         # prepare the trend data
         qc_data <- qc_prep_trend(data = r6$tables$qc_cells_table)
+
+        # add the lipid classes
+        feature_table <- r6$tables$feature_table
+        feature_table$lipid <- rownames(feature_table)
+        qc_data <- merge(
+          x = qc_data,
+          y = feature_table[, c("lipid", "lipid_class")],
+          by = "lipid"
+        )
 
         p <- qc_trend_plot(data = qc_data,
                            title = "Trend plot QC cells")
@@ -199,6 +217,15 @@ qc_server = function(id, module_controler) {
         }))
         qc_data$lipid <- rownames(qc_data)
 
+        # add the lipid classes
+        feature_table <- r6$tables$feature_table
+        feature_table$lipid <- rownames(feature_table)
+        qc_data <- merge(
+          x = qc_data,
+          y = feature_table[, c("lipid", "lipid_class")],
+          by = "lipid"
+        )
+
         p <- qc_rsd_violin(data = qc_data,
                            title = "QC plasma")
 
@@ -221,6 +248,15 @@ qc_server = function(id, module_controler) {
 
         # prepare the trend data
         qc_data <- qc_prep_trend(data = r6$tables$qc_plasma_table)
+
+        # add the lipid classes
+        feature_table <- r6$tables$feature_table
+        feature_table$lipid <- rownames(feature_table)
+        qc_data <- merge(
+          x = qc_data,
+          y = feature_table[, c("lipid", "lipid_class")],
+          by = "lipid"
+        )
 
         p <- qc_trend_plot(data = qc_data,
                            title = "Trend plot QC plasma")
