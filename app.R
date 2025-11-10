@@ -6,7 +6,7 @@ library(shinyjs)
 library(bs4Dash)
 library(shinyWidgets)
 library(shinybrowser)
-# library(shinymanager)
+library(shinymanager)
 library(shinyvalidate)
 
 # Plotting
@@ -200,23 +200,30 @@ server = function(input, output, session) {
     check_credentials = shinymanager::check_credentials(db = credentials)
   )
 
-  controler = shiny::reactiveValues(
-    r6_exp = shiny::reactiveValues(),
-    dims = list(
-      x_box = 0.9,
-      y_box = 0.7,
-      x_plot = 0.8,
-      y_plot = 0.66,
-      x_plot_full = 0.95,
-      y_plot_full = 0.91,
-      xpx_total = NULL,
-      ypx_total = NULL
+  controler = shiny::reactive({
+    mod_controler <- list(
+      r6_exp = NULL,
+      dims = list(
+        x_box = 0.9,
+        y_box = 0.7,
+        x_plot = 0.8,
+        y_plot = 0.66,
+        x_plot_full = 0.95,
+        y_plot_full = 0.91,
+        xpx_total = NULL,
+        ypx_total = NULL
+      )
     )
-  )
+
+    return(mod_controler)
+  })
 
   tabNames <- shiny::reactiveVal()
 
   experimentId <- shiny::reactive({
+    login_user <- reactiveValuesToList(res_auth)$user
+    print_tm(NULL, paste("User :", login_user, "logging in!"))
+
     groupedDatasets <- readxl::read_excel(path = file.path("data", "Database", "GroupedDataSets.xlsx"))
     groupedIds <- unique(groupedDatasets$experimentId)
 
@@ -226,25 +233,37 @@ server = function(input, output, session) {
 
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
-      if(query[["experimentId"]] %in% groupedIds) {
-        print_tm(NULL, paste0("experimentId from URL: ", query[["experimentId"]]))
-        tabNames(groupedDatasets$shortTitle[groupedDatasets$experimentId == query[["experimentId"]]])
-        query[["experimentId"]] <- groupedDatasets$experiments[groupedDatasets$experimentId == query[["experimentId"]]]
-      } else {
-        print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
-        if(!grepl(pattern = "NLA_[0-9]{3}",
-                  x = query[["experimentId"]][[1]])) {
-          tabNames("NLA_005")
-          query[["experimentId"]] <- "NLA_005"
+      # check the login
+      if(!is.null(login_user)) {
+        experiments <- trimws(strsplit(x = credentials$experiments[credentials$user == login_user],
+                                       split = ";|; ")[[1]])
+
+        if(query[["experimentId"]] %in% experiments) {
+          if(query[["experimentId"]] %in% groupedIds) {
+            print_tm(NULL, paste0("experimentId from URL: ", query[["experimentId"]]))
+            tabNames(groupedDatasets$shortTitle[groupedDatasets$experimentId == query[["experimentId"]]])
+            query[["experimentId"]] <- groupedDatasets$experiments[groupedDatasets$experimentId == query[["experimentId"]]]
+          } else {
+            print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
+            if(!grepl(pattern = "NLA_[0-9]{3}",
+                      x = query[["experimentId"]][[1]])) {
+              tabNames("NLA_000")
+              query[["experimentId"]] <- "NLA_000"
+            } else {
+              tabNames(query[["experimentId"]][[1]])
+              query[["experimentId"]][[1]]
+            }
+          }
         } else {
-          tabNames(query[["experimentId"]][[1]])
-          query[["experimentId"]][[1]]
+          # if experiment requested not belonging to user
+          tabNames("NLA_000")
+          query[["experimentId"]] <- "NLA_000"
         }
       }
     } else {
       # for easy development
-      print_tm(NULL, "Default experimentId: NLA_005")
-      query[["experimentId"]] <- "NLA_005"
+      print_tm(NULL, "Default experimentId: NLA_000")
+      query[["experimentId"]] <- "NLA_000"
       tabNames(query[["experimentId"]])
     }
 
@@ -255,9 +274,6 @@ server = function(input, output, session) {
   # Single omics modules
   shiny::observe({
     print_tm(NULL, "App starting")
-
-    login_user <- reactiveValuesToList(res_auth)$user
-    print_tm(NULL, paste("User :", login_user, "logging in!"))
 
     # get the experiment id
     experiment_id = experimentId()
