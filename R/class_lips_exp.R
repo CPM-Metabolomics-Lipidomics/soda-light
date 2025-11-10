@@ -1456,6 +1456,36 @@ Lips_exp = R6::R6Class(
 
       plot_table <- do.call(rbind.data.frame, plot_table)
 
+      # sort by carbon and double bond
+      lipids <- data.frame(
+        names = unique(plot_table$names)
+      )
+      lipids$carbon <- as.numeric(
+        gsub(
+          x = lipids$names,
+          pattern = "^([0-9]{1,2}):([0-9]{1,2})$",
+          replacement = "\\1"
+        )
+      )
+      lipids$db <- as.numeric(
+        gsub(
+          x = lipids$names,
+          pattern = "^([0-9]{1,2}):([0-9]{1,2})$",
+          replacement = "\\2"
+        )
+      )
+      idx <- order(
+        lipids$carbon,
+        lipids$db
+      )
+      lipids <- lipids[idx, ]
+
+      plot_table$names <- factor(
+        x = plot_table$names,
+        levels = lipids$names,
+        labels = lipids$names
+      )
+
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
 
