@@ -1938,11 +1938,19 @@ fa_comp_server = function(r6, input, output, session) {
     } else {
       choices_lipidclass <- c("All" = "All", unique(r6$tables$feature_table$lipid_class))
     }
+
+    # check if all FA tail 1 is equal to total
+    if(all(r6$tables$feature_table$carbons_1 == r6$tables$feature_table$carbons_sum)) {
+      choices_composition <-  c("Total lipid" = "total_lipid")
+    } else {
+      choices_composition <- r6$hardcoded_settings$fa_composition$composition_options
+    }
+
     shiny::tagList(
       shiny::selectInput(
         inputId = ns("fa_comp_composition"),
         label = "Select composition",
-        choices = r6$hardcoded_settings$fa_composition$composition_options,
+        choices = choices_composition,
         selected = r6$params$fa_comp_plot$composition
       ),
       shiny::selectInput(
