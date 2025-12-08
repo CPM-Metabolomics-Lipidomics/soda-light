@@ -10,6 +10,9 @@ NLA_071,APOE Halo/KO mice Brain (Stefan Berghoff),"WT, APOE-Halo, APOE KO",Mouse
 NLA_072,APOE Halo/KO mice Plasma (Stefan Berghoff),"WT, APOE-Halo, APOE KO",Mouse,Plasma,,Male,SLA,Mikael Simons,,10.1016/j.immuni.2024.09.014
 NLA_073,NPC1 cKO vs control mouse BMDM's - Wang et al.,"Control, NPC1 cKO",Mouse,,,Unknown,SLA,Giera,Unknown,10.1007/s00216-025-05890-4
 NLA_087,Control vs reactive (IL1a_TNF_C1q) Mouse astrocytes vs human iAstrocytes (Feringa and Koppes-den Hertog),ApoE3/3,"Mouse, Astrocyte","Astrocyte, KOLF2.1J","Mouse_noFBS_vehicle, Mouse_FBS_24h_noFBS_vehicle, Mouse_noFBS_TNFa/Il1a/C1q, Mouse_FBS_24h_noFBS_TNFa/Il1a/C1q, KOLF2.1J_FBS_24h_noFBS_vehicle, KOLF2.1J_FBS_24h_noFBS_TNFa/Il1a/C1q",Male,SLA,van der Kant,2025/02/13,
+NLA_179,Mouse hippocampus MAPT P301S (PS19) vs WT (Maroto Juanes),"WT, MAPT P301S (PS19), Pooled sample Brain","Mouse, Pooled sample Brain",Hippocampus,,Female,SLA,van der Kant,,
+NLA_180,Mouse cortex MAPT P301S (PS19) vs WT (Maroto Juanes),"MAPT P301S (PS19), WT, Pooled Sample","Mouse, Pooled Sample",Cortex,,Female,SLA,van der Kant,,
+NLA_181,Mouse WT cortex vs hippocampus (Maroto Juanes),WT,"Mouse, Pooled sample Brain, Pooled Sample Brain","Hippocampus, Cortex",,Female,SLA,van der Kant,,
 NLA_900,Mouse cortex ApoE4 vs ApoE3 target replacement mice,"ApoE3/3, ApoE4/4",Mouse,Cortex,,Female,SLA,van der Kant,"2020/10/29, 2021/01/14",
 NLA_901,ApoE4 vs ApoE3 isogenic iAstrocytes with FBS (Feringa and Koppes-den Hertog),"ApoE3/3, ApoE4/4",Astrocyte,"KOLF2.1J, BIONi037-A",,"Male, Female",SLA,van der Kant,"2022/08/31, 2023/09/20, 2021/12/22, 2022/04/21",
 NLA_902,ApoE4 vs ApoE3 isogenic iAstrocytes no FBS (Feringa and Koppes-den Hertog),"ApoE3/3, ApoE4/4",Astrocyte,"KOLF2.1J, BIONi037-A, Kolf2.1J",,"Male, Female",SLA,van der Kant,"2022/08/31, 2023/09/20, 2021/12/22, 2022/04/21, 2024/11/27, 2024/04/12",
