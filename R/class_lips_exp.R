@@ -334,7 +334,13 @@ Lips_exp = R6::R6Class(
       pca_loadings_table = NULL,
       dbplot_table = NULL,
       satindex_table = NULL,
-      fa_analysis_table = NULL
+      fa_analysis_table = NULL,
+      fa_comp_right_hm = NULL,
+      fa_comp_right_top_bar = NULL,
+      fa_comp_right_bar = NULL,
+      fa_comp_left_hm = NULL,
+      fa_comp_left_top_bar = NULL,
+      fa_comp_left_bar = NULL
     ),
 
     #-------------------------------------------------------------- Local table
@@ -1609,6 +1615,14 @@ Lips_exp = R6::R6Class(
       # get the min and max value for the heatmap colorbar
       min_value <- min(c(min(hm_left_data), min(hm_right_data)))
       max_value <- max(c(max(hm_left_data), max(hm_right_data)))
+
+      ## Store the data
+      self$tables$fa_comp_right_hm <- hm_right_data
+      self$tables$fa_comp_right_top_bar <- bar_top_right_data
+      self$tables$fa_comp_right_bar <- bar_right_data
+      self$tables$fa_comp_left_hm <- hm_left_data
+      self$tables$fa_comp_left_top_bar <- bar_top_left_data
+      self$tables$fa_comp_left_bar <- bar_left_data
 
       ## plots
       # left side
