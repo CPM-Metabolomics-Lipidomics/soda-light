@@ -13,9 +13,9 @@ NLA_087,Control vs reactive (IL1a_TNF_C1q) Mouse astrocytes vs human iAstrocytes
 NLA_129,iTF microglia with and without B-27 (WTC11) (Toda Robert et al.),"iTF-iTF, iTF-iTF (+B27)",Microglia,WTC11,,Male,SLA,van der Kant,"45566, 45573, 45580",
 NLA_130,"EB microglia media switches changing GM-CSF, TGFb, NBM, dox (KOLF2.1J) (Toda Robert et al.)","iTF-iTF, EB-EB, EB-EB (-B27) (+ GM-CSF,TGFb), EB-EB (+B27) (+ GM-CSF,TGFb), EB-iTF",Microglia,"WTC11, KOLF2.1J",,Male,SLA,van der Kant,"45377, 45413, 45419, 45433, 45440",
 NLA_131,iTF microglia with and without B-27 or L-carnitine (WTC11) (Toda Robert et al.),"iTF-iTF, iTF-iTF (+B27), iTF-iTF (+L-car)",Microglia,WTC11,,Male,SLA,van der Kant,"45930, 45937, 45944",
-NLA_179,Mouse hippocampus MAPT P301S (PS19) vs WT (Maroto Juanes),"WT, MAPT P301S (PS19)",Mouse,"B6;C3-Tg(Prnp-MAPT*P301S)PS19Vle/J, B6;C3",,Female,SLA,van der Kant,,10.1016/j.jlr.2025.100952
-NLA_180,Mouse cortex MAPT P301S (PS19) vs WT (Maroto Juanes),"MAPT P301S (PS19), WT",Mouse,"B6;C3-Tg(Prnp-MAPT*P301S)PS19Vle/J, B6;C3",,Female,SLA,van der Kant,,10.1016/j.jlr.2025.100952
-NLA_181,Mouse WT cortex vs hippocampus (Maroto Juanes),WT,Mouse,B6;C3 background ,,Female,SLA,van der Kant,,10.1016/j.jlr.2025.100952
+NLA_179,"Mouse hippocampus 9mo MAPT P301S (PS19) vs WT (Maroto Juanes et al, 2025)","WT, MAPT P301S (PS19)",Mouse,"B6;C3-Tg(Prnp-MAPT*P301S)PS19Vle/J, B6;C3 background",,Female,SLA,van der Kant,,10.1016/j.jlr.2025.100952
+NLA_180,"Mouse cortex 9mo MAPT P301S (PS19) vs WT (Maroto Juanes et al, 2025)","MAPT P301S (PS19), WT",Mouse,"B6;C3-Tg(Prnp-MAPT*P301S)PS19Vle/J, B6;C3 background",,Female,SLA,van der Kant,,10.1016/j.jlr.2025.100952
+NLA_181,"Mouse 9mo WT cortex vs hippocampus (Maroto Juanes et al, 2025)",WT,Mouse,B6;C3 background,,Female,SLA,van der Kant,,10.1016/j.jlr.2025.100952
 NLA_900,Mouse cortex ApoE4 vs ApoE3 target replacement mice,"ApoE3/3, ApoE4/4",Mouse,Cortex,,Female,SLA,van der Kant,"2020/10/29, 2021/01/14",
 NLA_901,ApoE4 vs ApoE3 isogenic iAstrocytes with FBS (Feringa and Koppes-den Hertog),"ApoE3/3, ApoE4/4",Astrocyte,"KOLF2.1J, BIONi037-A",,"Male, Female",SLA,van der Kant,"2022/08/31, 2023/09/20, 2021/12/22, 2022/04/21",
 NLA_902,ApoE4 vs ApoE3 isogenic iAstrocytes no FBS (Feringa and Koppes-den Hertog),"ApoE3/3, ApoE4/4",Astrocyte,"KOLF2.1J, BIONi037-A, Kolf2.1J",,"Male, Female",SLA,van der Kant,"2022/08/31, 2023/09/20, 2021/12/22, 2022/04/21, 2024/11/27, 2024/04/12",
