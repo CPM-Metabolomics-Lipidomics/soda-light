@@ -6,7 +6,7 @@ library(shinyjs)
 library(bs4Dash)
 library(shinyWidgets)
 library(shinybrowser)
-library(shinymanager)
+# library(shinymanager)
 library(shinyvalidate)
 
 # Plotting
@@ -38,9 +38,6 @@ library(pcaMethods)
 library(reshape2)
 library(dplyr)
 library(tidyr)
-
-# Authentication
-library(shinymanager)
 
 # metrics
 # library(googledrive)
@@ -89,10 +86,6 @@ $(function () {
   $('[data-toggle=tooltip]').tooltip()
 })
 "
-#-------------------------------------------------------------- credentials ----
-credentials <- read.csv(file = "./users.csv",
-                        colClasses = c("character", "character", "character"))
-print("* Credentials loaded.")
 
 #------------------------------------------------------------- Setup header ----
 header_ui = function() {
@@ -186,21 +179,12 @@ ui = bs4Dash::dashboardPage(header = header,
                             dark = NULL,
                             help = NULL)
 
-# Wrap your UI with secure_app
-ui <- shinymanager::secure_app(ui = ui)
-
 #------------------------------------------------------------------- Server ----
 server = function(input, output, session) {
 
   options(shiny.maxRequestSize = 300 * 1024^2)
 
-  # call the server part
-  # check_credentials returns a function to authenticate users
-  res_auth <- shinymanager::secure_server(
-    check_credentials = shinymanager::check_credentials(db = credentials)
-  )
-
-  controler = shiny::reactive({
+  controler <- shiny::reactive({
     mod_controler <- list(
       r6_exp = NULL,
       dims = list(
@@ -221,9 +205,6 @@ server = function(input, output, session) {
   tabNames <- shiny::reactiveVal()
 
   experimentId <- shiny::reactive({
-    login_user <- reactiveValuesToList(res_auth)$user
-    print_tm(NULL, paste("User :", login_user, "logging in!"))
-
     groupedDatasets <- readxl::read_excel(path = file.path("data", "Database", "GroupedDataSets.xlsx"))
     groupedIds <- unique(groupedDatasets$experimentId)
 
@@ -233,44 +214,30 @@ server = function(input, output, session) {
 
     # simple sanity check
     if (!is.null(query[["experimentId"]])) {
-      # check the login
-      if(!is.null(login_user)) {
-        experiments <- trimws(strsplit(x = credentials$experiments[credentials$user == login_user],
-                                       split = ";|; ")[[1]])
-
-        if(query[["experimentId"]] %in% experiments) {
-          # is it a grouped experiment or single experiment
-          if(query[["experimentId"]] %in% groupedIds) {
+      if(query[["experimentId"]] %in% groupedIds) {
             print_tm(NULL, paste0("experimentId from URL: ", query[["experimentId"]]))
             tabNames(groupedDatasets$shortTitle[groupedDatasets$experimentId == query[["experimentId"]]])
             query[["experimentId"]] <- groupedDatasets$experiments[groupedDatasets$experimentId == query[["experimentId"]]]
-          } else {
-            print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
-            if(!grepl(pattern = "NLA_[0-9]{3}",
-                      x = query[["experimentId"]][[1]])) {
-              tabNames("NLA_000")
-              query[["experimentId"]] <- "NLA_000"
-            } else {
-              tabNames(query[["experimentId"]][[1]])
-              query[["experimentId"]][[1]]
-            }
-          }
+      } else {
+        print_tm(NULL, paste("experimentId from URL:", query[["experimentId"]][[1]]))
+        if(!grepl(pattern = "NLA_[0-9]{3}",
+                  x = query[["experimentId"]][[1]])) {
+          tabNames("NLA_005")
+          query[["experimentId"]] <- "NLA_005"
         } else {
-          # if experiment requested not belonging to user
-          tabNames("NLA_000")
-          query[["experimentId"]] <- "NLA_000"
+          tabNames(query[["experimentId"]][[1]])
+          query[["experimentId"]][[1]]
         }
       }
     } else {
       # for easy development
-      print_tm(NULL, "Default experimentId: NLA_000")
-      query[["experimentId"]] <- "NLA_000"
+      print_tm(NULL, "Default experimentId: NLA_005")
+      query[["experimentId"]] <- "NLA_005"
       tabNames(query[["experimentId"]])
     }
 
     return(query[["experimentId"]])
   })
-
 
   # Single omics modules
   shiny::observe({
