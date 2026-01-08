@@ -28,3 +28,5 @@ data/Database/*/*
 
 # ignore shinyapps.io
 soda-light.dcf
+
+users.csv

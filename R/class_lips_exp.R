@@ -1292,8 +1292,6 @@ Lips_exp = R6::R6Class(
                                      color_palette = sample_color_palette,
                                      reverse_color_palette = TRUE)
             sample_colors <- c(sample_colors, tmp)
-            print("Rico")
-            print(sample_colors)
           }
         } else {
           # 1 annotation
@@ -1457,6 +1455,36 @@ Lips_exp = R6::R6Class(
       })
 
       plot_table <- do.call(rbind.data.frame, plot_table)
+
+      # sort by carbon and double bond
+      lipids <- data.frame(
+        names = unique(plot_table$names)
+      )
+      lipids$carbon <- as.numeric(
+        gsub(
+          x = lipids$names,
+          pattern = "^([0-9]{1,2}):([0-9]{1,2})$",
+          replacement = "\\1"
+        )
+      )
+      lipids$db <- as.numeric(
+        gsub(
+          x = lipids$names,
+          pattern = "^([0-9]{1,2}):([0-9]{1,2})$",
+          replacement = "\\2"
+        )
+      )
+      idx <- order(
+        lipids$carbon,
+        lipids$db
+      )
+      lipids <- lipids[idx, ]
+
+      plot_table$names <- factor(
+        x = plot_table$names,
+        levels = lipids$names,
+        labels = lipids$names
+      )
 
       # Store the plot_table
       self$tables$fa_analysis_table <- plot_table
@@ -1799,7 +1827,11 @@ Lips_exp = R6::R6Class(
                              titleY = TRUE) |>
         plotly::layout(title = list(
           text = ifelse(selected_lipidclass == "All",
-                        paste0("<b>Lipid class: ", selected_lipidclass, " (excl. PA)</b>"),
+                        ifelse(
+                          unique(sample_meta$Machin) %in% c("5500", "6500", "6500+"),
+                          paste0("<b>Lipid class: All (excl. PA)</b>"),
+                          paste0("<b>Lipid class: All</b>")
+                        ),
                         paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
           size = 14
         ),
