@@ -418,7 +418,12 @@ lipidomics_server = function(id, module_controler) { #, sheet_id) {
             paste(unique(raw_meta$sex), collapse = ", "),
             paste(unique(raw_meta$treatmentDiagnosis), collapse = ", "),
             paste(unique(raw_meta$lab), collapse = ", "),
-            paste(unique(paste0("Sciex QTRAP ", raw_meta$Machine)), collapse = ", ")
+            if(unique(raw_meta$Machine) %in% c("5500", "6500", "6500+")) {
+              paste(unique(paste0("Sciex QTRAP ", raw_meta$Machine)), collapse = ", ")
+            } else {
+              paste(unique(raw_meta$Machine), collapse = ", ")
+            }
+
           )
         )
 

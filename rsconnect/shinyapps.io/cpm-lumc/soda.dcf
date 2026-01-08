@@ -1,0 +1,10 @@
+name: soda
+title:
+username: cpm-lumc
+account: cpm-lumc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13635105
+bundleId: 9560253
+url: https://cpm-lumc.shinyapps.io/soda/
+version: 1
