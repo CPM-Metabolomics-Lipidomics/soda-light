@@ -391,6 +391,9 @@ Lips_exp = R6::R6Class(
       fa_comp_plot = NULL
     ),
 
+    #--------------------------------------------------------------- violin ----
+    violin_selected_value = NULL,
+
     #---------------------------------------------------- Parameter methods ----
 
     param_class_distribution = function(dataset, group_col, color_palette, img_format) {

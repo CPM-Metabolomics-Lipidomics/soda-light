@@ -1809,6 +1809,7 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
     # significant data
     main_plot = plotly::add_trace(
       main_plot,
+      customdata = subset_data$names,
       x = subset_data$log2_fold_change,
       y = subset_data$log10_p_values,
       text = subset_data$names,
@@ -1825,46 +1826,49 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
     )
   }
 
-  main_plot = plotly::layout(main_plot,
-                             title = list(text = label,
-                                          xref = "paper"),
-                             xaxis = list(title = "Log2(Fold Change)",
-                                          zeroline = T,
-                                          range = c(-ceiling(max(abs(data$log2_fold_change))),
-                                                    ceiling(max(abs(data$log2_fold_change)))
-                                          )
-                             ),
-                             yaxis = list(title = y_axis_title),
-                             hovermode = "closest",
-                             shapes = list(
-                               # Vertical line at x = -1
-                               list(
-                                 type = "line",
-                                 x0 = -log2(fc_threshold),
-                                 x1 = -log2(fc_threshold),
-                                 y0 = 0,
-                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
-                                 line = list(color = "black", width = 1, dash = "dot")
-                               ),
-                               # Vertical line at x = 1
-                               list(
-                                 type = "line",
-                                 x0 = log2(fc_threshold),
-                                 x1 = log2(fc_threshold),
-                                 y0 = 0,
-                                 y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
-                                 line = list(color = "black", width = 1, dash = "dot")
-                               ),
-                               # Horizontal line at y = -log10(0.05)
-                               list(
-                                 type = "line",
-                                 x0 = -1.2 * round(max(abs(data$log2_fold_change))),
-                                 x1 = 1.2 * round(max(abs(data$log2_fold_change))),
-                                 y0 = -log10(p_val_threshold),
-                                 y1 = -log10(p_val_threshold),
-                                 line = list(color = "black", width = 1, dash = "dot")
-                               )
-                             ))
+  main_plot = plotly::layout(
+    main_plot,
+    title = list(text = label,
+                 xref = "paper"),
+    xaxis = list(title = "Log2(Fold Change)",
+                 zeroline = T,
+                 range = c(-ceiling(max(abs(data$log2_fold_change))),
+                           ceiling(max(abs(data$log2_fold_change)))
+                 )
+    ),
+    yaxis = list(title = y_axis_title),
+    hovermode = "closest",
+    shapes = list(
+      # Vertical line at x = -1
+      list(
+        type = "line",
+        x0 = -log2(fc_threshold),
+        x1 = -log2(fc_threshold),
+        y0 = 0,
+        y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
+        line = list(color = "black", width = 1, dash = "dot")
+      ),
+      # Vertical line at x = 1
+      list(
+        type = "line",
+        x0 = log2(fc_threshold),
+        x1 = log2(fc_threshold),
+        y0 = 0,
+        y1 = 1.2 * max(c(data$log10_p_values, -log10(p_val_threshold))),
+        line = list(color = "black", width = 1, dash = "dot")
+      ),
+      # Horizontal line at y = -log10(0.05)
+      list(
+        type = "line",
+        x0 = -1.2 * round(max(abs(data$log2_fold_change))),
+        x1 = 1.2 * round(max(abs(data$log2_fold_change))),
+        y0 = -log10(p_val_threshold),
+        y1 = -log10(p_val_threshold),
+        line = list(color = "black", width = 1, dash = "dot")
+      )
+    )
+  )
+
   return(main_plot)
 }
 
