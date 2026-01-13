@@ -498,6 +498,8 @@ get_plotly_box = function(id, label, dimensions_obj, session) {
       )
     ),
     shiny::uiOutput(outputId = ns(paste0(id, "_message"))),
+    # rico: add as a test
+    shiny::uiOutput(outputId = ns(paste0(id, "_tip"))),
     plotly::plotlyOutput(
       outputId = ns(paste0(id, "_plot")),
       width = dimensions_obj$xpx * dimensions_obj$x_plot,

@@ -761,17 +761,21 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                         r6$violin_selected_value <- ed$customdata[1]
                         print(r6$violin_selected_value)
 
-                        shiny::showModal(
-                          shiny::modalDialog(
-                            title = "",
-                            size = "l",
-                            easyClose = TRUE,
-                            footer = shiny::modalButton(label = "Close"),
-                            plotly::plotlyOutput(outputId = "violin_modal",
-                                                 height = "450px"),
-                            shiny::htmlOutput(outputId = "tip")
-                          )
-                        )
+                        # rico: this is for testings
+                        output$volcano_plot_tip <- shiny::renderUI({
+                          "hi, there"
+                        })
+                        # shiny::showModal(
+                        #   shiny::modalDialog(
+                        #     title = "",
+                        #     size = "l",
+                        #     easyClose = TRUE,
+                        #     footer = shiny::modalButton(label = "Close"),
+                        #     # plotly::plotlyOutput(outputId = "violin_modal",
+                        #     #                      height = "450px"),
+                        #     # shiny::htmlOutput(outputId = "tip")
+                        #   )
+                        # )
 
 
                       })
