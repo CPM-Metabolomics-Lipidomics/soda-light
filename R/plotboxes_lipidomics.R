@@ -382,6 +382,7 @@ volcano_plot_generate = function(r6, colour_list, dimensions_obj, input) {
 
 volcano_plot_spawn = function(r6, format, output) {
   print_tm(r6$name, "Volcano plot: spawning plot.")
+
   output$volcano_plot_plot = plotly::renderPlotly({
     r6$plots$volcano_plot
     plotly::config(r6$plots$volcano_plot, toImageButtonOptions = list(format= format,
@@ -407,6 +408,10 @@ volcano_plot_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "Volcano plot: START.")
+
+  output$tip <- shiny::renderUI({
+    shiny::p("Hi there!")
+  })
 
   # Set UI
   output$volcano_plot_sidebar_ui = shiny::renderUI({
@@ -753,11 +758,8 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
                         if (is.null(ed) || is.null(ed$customdata)) return()
 
-                        r6$violin_selected_value <- ed$custumdata[1]
-
-                        output$tip <- shiny::renderText({
-                          print("hi there")
-                        })
+                        r6$violin_selected_value <- ed$customdata[1]
+                        print(r6$violin_selected_value)
 
                         shiny::showModal(
                           shiny::modalDialog(
@@ -767,7 +769,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                             footer = shiny::modalButton(label = "Close"),
                             plotly::plotlyOutput(outputId = "violin_modal",
                                                  height = "450px"),
-                            shiny::textOutput(outputId = "tip")
+                            shiny::htmlOutput(outputId = "tip")
                           )
                         )
 

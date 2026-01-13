@@ -599,5 +599,9 @@ lipidomics_server = function(id, module_controler) { #, sheet_id) {
           NULL
         )
       })
+
+      output$tip <- shiny::renderText({
+        print("hi there")
+      })
     })
 }
