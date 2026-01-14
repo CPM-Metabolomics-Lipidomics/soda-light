@@ -795,7 +795,9 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                           ) |>
                             plotly::layout(
                               xaxis = list(title = "Group"),
-                              yaxis = list(title = "Value"),
+                              yaxis = list(title = "Value",
+                                           zeroline = TRUE,
+                                           rangemode = "tozero"),
                               showlegend = FALSE
                             )
 
