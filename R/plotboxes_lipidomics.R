@@ -751,33 +751,69 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
     })
 
+  # output$volcano_plot_plot <- shiny::renderUI({
+  #   ns <- session$ns
+  #
+  #   shiny::tagList(
+  #     p("Show volcano plot plot"),
+  #     plotly::plotlyOutput(
+  #       outputId = ns("volcano_plot_plotly"),
+  #       width = dimensions_obj$xpx * dimensions_obj$x_plot,
+  #       height = dimensions_obj$ypx * dimensions_obj$y_plot
+  #     )
+  #   )
+  # })
+
   # show violin plot
   shiny::observeEvent(plotly::event_data(event = "plotly_click"),
                       {
+                        ns <- session$ns
+
                         ed <- event_data(event = "plotly_click")
 
                         if (is.null(ed) || is.null(ed$customdata)) return()
 
-                        r6$violin_selected_value <- ed$customdata[1]
-                        print(r6$violin_selected_value)
+                        selected_feature <- strsplit(x = ed$customdata[1],
+                                                     split = "<br />")[[1]][1]
 
-                        # rico: this is for testings
-                        output$volcano_plot_tip <- shiny::renderUI({
-                          "hi, there"
+                        output$violin_modal <- plotly::renderPlotly({
+                          plot_data <- r6$tables$violin_table[r6$tables$violin_table$lipidName == selected_feature, ]
+
+                          ply <- plotly::plot_ly(
+                            data = plot_data,
+                            type = "violin",
+                            x = ~group,
+                            y = ~value,
+                            color = ~group,
+                            colors = c("#1F77B4", "#FF7F0E"),
+                            meanline = list(
+                              visible = TRUE
+                            ),
+                            points = "all",
+                            jitter = 0.5,
+                            pointpos = 0
+                          ) |>
+                            plotly::layout(
+                              xaxis = list(title = "Group"),
+                              yaxis = list(title = "Value"),
+                              showlegend = FALSE
+                            )
+
+                          return(ply)
                         })
-                        # shiny::showModal(
-                        #   shiny::modalDialog(
-                        #     title = "",
-                        #     size = "l",
-                        #     easyClose = TRUE,
-                        #     footer = shiny::modalButton(label = "Close"),
-                        #     # plotly::plotlyOutput(outputId = "violin_modal",
-                        #     #                      height = "450px"),
-                        #     # shiny::htmlOutput(outputId = "tip")
-                        #   )
-                        # )
 
-
+                        # the pop-up
+                        shiny::showModal(
+                          shiny::modalDialog(
+                            title = paste("Selected lipid:", selected_feature),
+                            size = "l",
+                            easyClose = TRUE,
+                            footer = shiny::modalButton(label = "Close"),
+                            plotly::plotlyOutput(outputId = ns("violin_modal"),
+                                                 height = "450px")
+                          ),
+                          session = session
+                        )
                       })
 
 
