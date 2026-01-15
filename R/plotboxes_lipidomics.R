@@ -779,27 +779,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
                         output$violin_modal <- plotly::renderPlotly({
                           plot_data <- r6$tables$violin_table[r6$tables$violin_table$lipidName == selected_feature, ]
 
-                          ply <- plotly::plot_ly(
-                            data = plot_data,
-                            type = "violin",
-                            x = ~group,
-                            y = ~value,
-                            color = ~group,
-                            colors = c("#1F77B4", "#FF7F0E"),
-                            meanline = list(
-                              visible = TRUE
-                            ),
-                            points = "all",
-                            jitter = 0.5,
-                            pointpos = 0
-                          ) |>
-                            plotly::layout(
-                              xaxis = list(title = "Group"),
-                              yaxis = list(title = "Value",
-                                           zeroline = TRUE,
-                                           rangemode = "tozero"),
-                              showlegend = FALSE
-                            )
+                          ply <- plot_violin(data = plot_data)
 
                           return(ply)
                         })

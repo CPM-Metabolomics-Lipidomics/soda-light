@@ -1875,6 +1875,33 @@ plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
 }
 
 
+plot_violin <- function(data = NULL) {
+  ply <- plotly::plot_ly(
+    data = data,
+    type = "violin",
+    x = ~group,
+    y = ~value,
+    color = ~group,
+    colors = c("#1F77B4", "#FF7F0E"),
+    meanline = list(
+      visible = TRUE
+    ),
+    points = "all",
+    jitter = 0.5,
+    pointpos = 0
+  ) |>
+    plotly::layout(
+      xaxis = list(title = "Group"),
+      yaxis = list(title = "Value",
+                   zeroline = TRUE,
+                   rangemode = "tozero"),
+      showlegend = FALSE
+    )
+
+  return(ply)
+}
+
+
 # sort the legend alphabetically and make sure numbers are sorted correctly
 sort_legend <- function(text = NULL) {
   uniq_text <- unique(text)
