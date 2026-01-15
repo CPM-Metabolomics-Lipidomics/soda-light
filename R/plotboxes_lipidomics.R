@@ -382,6 +382,7 @@ volcano_plot_generate = function(r6, colour_list, dimensions_obj, input) {
 
 volcano_plot_spawn = function(r6, format, output) {
   print_tm(r6$name, "Volcano plot: spawning plot.")
+
   output$volcano_plot_plot = plotly::renderPlotly({
     r6$plots$volcano_plot
     plotly::config(r6$plots$volcano_plot, toImageButtonOptions = list(format= format,
@@ -407,6 +408,10 @@ volcano_plot_server = function(r6, input, output, session) {
 
   ns = session$ns
   print_tm(r6$name, "Volcano plot: START.")
+
+  output$tip <- shiny::renderUI({
+    shiny::p("Hi there!")
+  })
 
   # Set UI
   output$volcano_plot_sidebar_ui = shiny::renderUI({
@@ -745,6 +750,53 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       }
 
     })
+
+  # output$volcano_plot_plot <- shiny::renderUI({
+  #   ns <- session$ns
+  #
+  #   shiny::tagList(
+  #     p("Show volcano plot plot"),
+  #     plotly::plotlyOutput(
+  #       outputId = ns("volcano_plot_plotly"),
+  #       width = dimensions_obj$xpx * dimensions_obj$x_plot,
+  #       height = dimensions_obj$ypx * dimensions_obj$y_plot
+  #     )
+  #   )
+  # })
+
+  # show violin plot
+  shiny::observeEvent(plotly::event_data(event = "plotly_click"),
+                      {
+                        ns <- session$ns
+
+                        ed <- event_data(event = "plotly_click")
+
+                        if (is.null(ed) || is.null(ed$customdata)) return()
+
+                        selected_feature <- strsplit(x = ed$customdata[1],
+                                                     split = "<br />")[[1]][1]
+
+                        output$violin_modal <- plotly::renderPlotly({
+                          plot_data <- r6$tables$violin_table[r6$tables$violin_table$lipidName == selected_feature, ]
+
+                          ply <- plot_violin(data = plot_data)
+
+                          return(ply)
+                        })
+
+                        # the pop-up
+                        shiny::showModal(
+                          shiny::modalDialog(
+                            title = paste("Selected lipid:", selected_feature),
+                            size = "l",
+                            easyClose = TRUE,
+                            footer = shiny::modalButton(label = "Close"),
+                            plotly::plotlyOutput(outputId = ns("violin_modal"),
+                                                 height = "450px")
+                          ),
+                          session = session
+                        )
+                      })
 
 
   # Save selection

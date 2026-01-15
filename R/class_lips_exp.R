@@ -329,6 +329,7 @@ Lips_exp = R6::R6Class(
       class_distribution_table = NULL,
       class_distribution_all_table = NULL,
       volcano_table = NULL,
+      violin_table = NULL,
       heatmap_table = NULL,
       pca_scores_table = NULL,
       pca_loadings_table = NULL,
@@ -390,6 +391,9 @@ Lips_exp = R6::R6Class(
       fa_analysis_plot = NULL,
       fa_comp_plot = NULL
     ),
+
+    #--------------------------------------------------------------- violin ----
+    violin_selected_value = NULL,
 
     #---------------------------------------------------- Parameter methods ----
 
@@ -842,6 +846,20 @@ Lips_exp = R6::R6Class(
       idx_group_1 = which(rownames(data_table) %in% rownames_group_1)
       idx_group_2 = which(rownames(data_table) %in% rownames_group_2)
 
+      # create the table for the violin plot
+      violin_table <- as.data.frame(data_table)
+      violin_table$group <- NA
+      violin_table$group[idx_group_1] <- group_1
+      violin_table$group[idx_group_2] <- group_2
+      violin_table$sampleName <- rownames(violin_table)
+      violin_table <- violin_table |>
+        tidyr::pivot_longer(
+          cols = -c("sampleName", "group"),
+          names_to = "lipidName",
+          values_to = "value"
+        )
+      self$tables$violin_table <- violin_table
+
       if(length(idx_group_1) <= 1 | length(idx_group_2) <= 1) {
         stop("not enough observations")
       }
@@ -855,7 +873,6 @@ Lips_exp = R6::R6Class(
         dead_features = which(rownames(volcano_table) %in% dead_features)
         volcano_table = volcano_table[-dead_features,]
       }
-
 
       # Collect fold change and p-values
       volcano_table$fold_change = get_fold_changes(data_table = data_table,
