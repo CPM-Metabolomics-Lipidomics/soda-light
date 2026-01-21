@@ -1149,7 +1149,8 @@ Lips_exp = R6::R6Class(
                             opacity = self$params$volcano_plot$opacity,
                             color_palette = self$params$volcano_plot$color_palette,
                             width = NULL,
-                            height = NULL){
+                            height = NULL,
+                            name = self$name){
       data_table = self$table_check_convert(data_table)
 
       p_val_threshold = as.numeric(p_val_threshold)
@@ -1189,7 +1190,8 @@ Lips_exp = R6::R6Class(
                          p_val_threshold = p_val_threshold,
                          fc_threshold = fc_threshold,
                          marker_size = marker_size,
-                         opacity = opacity)
+                         opacity = opacity,
+                         name = self$name)
 
 
       self$plots$volcano_plot = fig

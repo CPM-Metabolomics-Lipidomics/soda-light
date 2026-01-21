@@ -765,11 +765,13 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   # })
 
   # show violin plot
-  shiny::observeEvent(plotly::event_data(event = "plotly_click"),
+  shiny::observeEvent(plotly::event_data(event = "plotly_click",
+                                         source = paste0("volcano_", r6$name)),
                       {
                         ns <- session$ns
 
-                        ed <- event_data(event = "plotly_click")
+                        ed <- plotly::event_data(event = "plotly_click",
+                                                 source = paste0("volcano_", r6$name))
 
                         if (is.null(ed) || is.null(ed$customdata)) return()
 
