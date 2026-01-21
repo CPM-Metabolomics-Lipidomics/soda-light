@@ -336,7 +336,7 @@ lipidomics_server = function(id, module_controler) { #, sheet_id) {
 
       # Get lipidomics r6 object
       r6 = module_controler$r6_exp
-      m = "Lips_1"
+      m = id
 
       #-------------------------------------------------------- Info server ----
       # Download data and meta tables

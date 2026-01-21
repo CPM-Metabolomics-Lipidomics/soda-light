@@ -1384,7 +1384,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                         p_val_threshold = 0.05,
                         fc_threshold = 2,
                         marker_size = 6,
-                        opacity = 1) {
+                        opacity = 1,
+                        name = NULL) {
 
   # Checks
   if (!(displayed_plot %in% c('main', 'all', 'left', 'right', 'top'))) {
@@ -1457,7 +1458,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                                      side = 'top',
                                      opacity = opacity,
                                      marker_size = marker_size,
-                                     show_legend = F)
+                                     show_legend = F,
+                                     name = name)
 
   } else {top_data = NULL}
 
@@ -1472,7 +1474,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                                       y_label = y_label,
                                       opacity = opacity,
                                       marker_size = marker_size,
-                                      show_legend = F)
+                                      show_legend = F,
+                                      name = name)
 
   } else {left_data = NULL}
 
@@ -1487,7 +1490,8 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                                        y_label = y_label,
                                        opacity = opacity,
                                        marker_size = marker_size,
-                                       show_legend = F)
+                                       show_legend = F,
+                                       name = name)
 
   } else {right_data = NULL}
 
@@ -1501,10 +1505,11 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
                            fc_threshold = fc_threshold,
                            opacity = opacity,
                            y_axis_title = y_label,
-                           show_y_title = T)
+                           show_y_title = T,
+                           name = name)
 
   # Blank plot
-  blank_plot = plotly::plot_ly(type = 'scatter', mode = 'markers')
+  blank_plot = plotly::plot_ly(type = 'scatter', mode = 'markers', source = paste0("volcano_", name))
   blank_plot = plotly::layout(blank_plot,
                               title = 'Error',
                               xaxis = list(zeroline = F,
@@ -1632,7 +1637,9 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
 }
 
-plot_volcano_violin = function(data, threshold, side, label, y_label, opacity = 1, marker_size = 6, show_legend = F) {
+plot_volcano_violin = function(data, threshold, side, label, y_label,
+                               opacity = 1, marker_size = 6, show_legend = F,
+                               name = NULL) {
 
   if (!(side %in% c('left', 'right', 'top'))) {
     stop('side must be in [left, right, top]')
@@ -1649,12 +1656,15 @@ plot_volcano_violin = function(data, threshold, side, label, y_label, opacity = 
                                    threshold = threshold,
                                    opacity = opacity,
                                    marker_size = marker_size,
-                                   show_legend = show_legend))
+                                   show_legend = show_legend,
+                                   name = name))
   }
 
   x_val = paste0(label, ' only')
 
-  p = plotly::plot_ly()
+  p = plotly::plot_ly(
+    source = paste0("volcano_", name)
+  )
 
   # add violin
   p = plotly::add_trace(p,
@@ -1727,9 +1737,12 @@ plot_volcano_violin_top = function(data,
                                    threshold,
                                    opacity,
                                    marker_size,
-                                   show_legend) {
+                                   show_legend,
+                                   name = NULL) {
 
-  p = plotly::plot_ly()
+  p = plotly::plot_ly(
+    source = paste0("volcano_", name)
+  )
 
   p = plotly::add_trace(p,
                         y = 'No p-value',
@@ -1789,13 +1802,17 @@ plot_volcano_violin_top = function(data,
   return(p)
 }
 
-plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05, fc_threshold = 2, opacity = 1, show_y_title = F , y_axis_title = '-Log10(p-value)') {
+plot_volcano = function(data, label = NULL, marker_size, p_val_threshold = 0.05,
+                        fc_threshold = 2, opacity = 1, show_y_title = F ,
+                        y_axis_title = '-Log10(p-value)', name = NULL) {
 
   if (!show_y_title){
     y_axis_title = NULL
   }
 
-  main_plot = plotly::plot_ly()
+  main_plot = plotly::plot_ly(
+    source = paste0("volcano_", name)
+  )
 
   sort_group <- sort_legend(text = data$groups)
 
