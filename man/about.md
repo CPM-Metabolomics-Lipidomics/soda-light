@@ -9,6 +9,21 @@ The CZI Neurodegeneration Challenge Network aims to take a new approach to tackl
 
 Find out [more](https://cziscience.medium.com/a-new-approach-to-solving-neurodegeneration-2aa50654ed04) about CZI NDCN.
 
+# License
+
+All data provided on **NeuroLipid Atlas** is released under the 
+**Creative Commons CC0 1.0 Universal (Public Domain Dedication)**.
+
+This means you are free to:
+
+- Copy, modify, distribute, and use the data, even for commercial purposes
+- Do so without asking permission
+
+For full legal details, please see the official CC0 1.0 Universal license:
+[![Creative Commons License](https://licensebuttons.net/l/zero/1.0/88x31.png)](https://creativecommons.org/publicdomain/zero/1.0/)
+
+When citing or reusing this resource, attribution is appreciated but not required.
+
 # Issues / Questions
 
 If you have any questions please visit our [GitHub repository](https://github.com/CPM-Metabolomics-Lipidomics/soda-light) and submit an issue.

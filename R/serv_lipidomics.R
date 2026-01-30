@@ -240,6 +240,13 @@ lipidomics_ui = function(id) {
           width = 12,
           shiny::HTML(paste0("<p>Several tables are available for download. Select a table below and click <i>Download table</i> to download the selected table.<br>",
                              "<b>Note:</b> The imported tables are unfiltered and the other tables are filtered!</p>")),
+          shiny::HTML("
+            <p>All data provided on <strong>NeuroLipid Atlas</strong> is released under the
+            <strong>Creative Commons CC0 1.0 Universal (Public Domain Dedication)</strong>.
+            <a href=\"https://creativecommons.org/publicdomain/zero/1.0/\" target=\"_blank\" rel=\"noopener\">
+            <img alt=\"Creative Commons License\" src=\"https://licensebuttons.net/l/zero/1.0/88x31.png\"></a>
+            </p>
+          "),
           shiny::selectInput(
             inputId = ns("info_download_table_select"),
             label = "Select table:",
